@@ -2,3 +2,4 @@ node_modules
 /storage/framework
 /storage/logs
 /storage/replicalp
+/vendor/laravel_ide
