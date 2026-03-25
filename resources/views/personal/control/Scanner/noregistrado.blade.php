@@ -1,0 +1,15 @@
+<div class="containerbody">
+    <div class="main_container">                                
+        <div class="col-xs-12" style=" background-color: #1B3155;"> 
+            <br/>
+            <p align="center"><img style="border-radius:50%; border: solid #fc020310px; width:auto; height:50%" src="{{ asset('img/restringido.jpg') }}" alt="" ></p>
+            <br/>                                                   
+        </div>
+        <div class="col-xs-12" style=" font-size: 2rem; color:red;"> 
+            <br/>
+            <p align="center"> Personal No Autorizado para Ingresar a las Instalaciones.</p>            
+            <p align="center"> Motivo: Personal No se Encuentra Registrado en nuestro Sistema </p>
+            <br/> 
+        </div>           
+    </div> 
+</div>  
