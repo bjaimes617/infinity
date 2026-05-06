@@ -48,7 +48,8 @@ class CursosController extends Controller {
                 ->orwhere('nombre_cargo', 'like', 'Analista%')
                 ->orwhere('nombre_cargo', 'like', 'Senior Formacion%')
                 ->orwhere('nombre_cargo', 'like', 'Senior de Captación%')
-                ->orwhere('nombre_cargo', 'like', 'Coordinador de Operaciones%')->pluck('id');
+                ->orwhere('nombre_cargo', 'like', 'Coordinador de Operaciones%')
+                 ->orwhere('nombre_cargo', 'like', 'Gerente de%')->pluck('id');
         
         $this->facilitadores = $facilitadores;
 

@@ -47,6 +47,7 @@
                                                 </div>
                                                 <select class="form-control required" name="nomina" id="nomina" required>                                          
                                                     <option value="">[SELECCIONE]</option>
+                                                    <option value="todos">DG y DIGA</option>
                                                     @foreach($nomina as $nom)
                                                     <option value="{{$nom->id}}"> {{$nom->nombre_nomina}}</option>
                                                     @endforeach
@@ -61,8 +62,8 @@
                                                 <div class="input-group-prepend">
                                                     <span class="input-group-text"><i class="fas fa-th-list"></i></span>
                                                 </div>
-                                                <select class="form-control required" name="tprecibo" id="tprecibo" disabled required>
-                                                    <option value="">[SELECCIONE]</option>
+                                                <select class="form-control required" name="tprecibo" disabled id="tprecibo" required>
+                                                    <option value="">[SELECCIONE]</option>                                                  
                                                     @foreach($tiponomina as $tiponomina)
                                                     <option value="{{trim($tiponomina->codigo)}}" data-nomina="{{$tiponomina->nomina_id}}"> {{$tiponomina->descripcion}}</option>
                                                     @endforeach

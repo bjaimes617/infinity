@@ -72,7 +72,7 @@ class UsersController extends Controller
         
         $permissionrols = Role::find($rol->id)->permissions()->select('permission_id')->pluck('permission_id')->toarray();
         
-///permisos adicionales del usuario
+    ///permisos adicionales del usuario
         $permisosAdicionales = $user->getpermissions()->whereNotIn('id',$permissionrols);
        
         foreach($permisosAdicionales as $perms){

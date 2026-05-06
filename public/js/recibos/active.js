@@ -10,16 +10,36 @@ $(function () {
 $('#nomina').on('change', function () {
 
     var selectedOption = $(this).val();
-    $('#tprecibo option').hide(); // Oculta todas las opciones primero
+    if (selectedOption == "todos") {
+        $('#tprecibo option').hide(); // Oculta todas las opciones primero
 
-    // Muestra la opción sin valor
-    $('#tprecibo option[value=""]').show();
+        // Muestra la opción sin valor
+        $('#tprecibo option[value=""]').show();
+        
+        var seenValues = [];
+        $('#tprecibo option').each(function() {
+            var val = $(this).val();
+            // Verifica que el valor no esté vacío y no se haya mostrado ya
+            if (val !== "" && $.inArray(val, seenValues) === -1) {
+                seenValues.push(val);
+                $(this).show(); // Muestra solo el primer elemento con este valor
+            }
+        });
 
-    // Muestra las opciones que coinciden con el valor seleccionado
-    $('#tprecibo option[data-nomina="' + selectedOption + '"]').show();
+        $('#tprecibo').val('');
+        $('#tprecibo').removeAttr('disabled');
 
-    $('#tprecibo').val('');
-    $('#tprecibo').removeAttr('disabled');
+        return;
+    } else {
+        $('#tprecibo option').hide(); // Oculta todas las opciones primero
+
+        // Muestra la opción sin valor
+        $('#tprecibo option[value=""]').show();
+        // Muestra las opciones que coinciden con el valor seleccionado
+        $('#tprecibo option[data-nomina="' + selectedOption + '"]').show();
+        $('#tprecibo').val('');
+        $('#tprecibo').removeAttr('disabled');
+    }
 });
 
 $('#tprecibo').on('change', function () {

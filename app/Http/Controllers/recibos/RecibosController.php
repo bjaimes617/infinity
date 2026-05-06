@@ -20,6 +20,7 @@ use Carbon\Carbon;
 
 class RecibosController extends Controller {
 
+    private $mes, $anio;
     ///carga masiva manual de los recibos
     public function index() {
         $nomina = NominaModel::all();
@@ -492,19 +493,29 @@ class RecibosController extends Controller {
             $this->anio = $arrayBegin->copy()->format('Y');
             $this->mes = $arrayBegin->copy()->format('F');
 
-            $idperiodos = PeriodosModels::where('rp_cont_nomina', $request->tprecibo)
-            ->where('anio', $this->anio)
-            ->where('tiponomina', $request->nomina)->pluck('id');
-        } else {
+            $sql =  PeriodosModels::where('rp_cont_nomina', $request->tprecibo)
+            ->where('anio', $this->anio);
+
+                if($request->nomina !== "todos"){
+                    $sql->where('tiponomina', $request->nomina);
+                } 
+                
+                $idperiodos = $sql->pluck('id');
+        } else {            
             $arrayBegin = carbon::createFromFormat('m/Y', $request->mes, 'UTC');
             $this->mes = $arrayBegin->copy()->format('F');
             $this->anio = $arrayBegin->copy()->format('Y');
 
-            $idperiodos = PeriodosModels::where('rp_cont_nomina', $request->tprecibo)
+            $sql = PeriodosModels::where('rp_cont_nomina', $request->tprecibo)
                 ->where('mes', $this->mes)
-                ->where('anio', $this->anio)
-                ->where('tiponomina', $request->nomina)->pluck('id');
-        }
+                ->where('anio', $this->anio);
+                if($request->nomina !== "todos"){                                    
+                    $sql->where('tiponomina', $request->nomina);
+                }
+
+            $idperiodos = $sql->pluck('id');
+            
+        }     
      
         $totalItems=RecibosNominaModel::select('rp_items_id','descripcion')
         ->leftJoin('rp_asignaciones_deducciones','rp_asignaciones_deducciones.rp_nomina_id','rp_nomina.id')
@@ -567,8 +578,10 @@ class RecibosController extends Controller {
            array_push($structData,$array);
         }
         $tipo= ContNominaModels::where('codigo',$request->tprecibo)->first();
-        $nameFecha =  $nomina[$request->nomina].' - '.$tipo->descripcion.' Periodo '.trans('meses.' . $this->mes).'-'.$this->anio;
-
+        
+        $nombre_de_las_nominas = $request->nomina == "todos" ? "DG y DIGA" : ($nomina[$request->nomina]);
+        $nameFecha =  $nombre_de_las_nominas.' - '.$tipo->descripcion.' Periodo '.trans('meses.' . $this->mes).'-'.$this->anio;
+        
         usort($structData, function($a, $b) {
             // Comparar por cedula (numérico)
             $cedulaComparison = strcmp($a['cedula'], $b['cedula']);

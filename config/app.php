@@ -32,7 +32,7 @@ return [
     
     //// recursos para los modulos personal y cursos generales.
        
-    'horariolaboral'=> ['1' => '7:00 AM a 1:00 PM', '2' => '8:00 AM a 2:00 PM', '3' => '8:00 AM a 5:00 PM', '4' => '9:00 AM a 3:00 PM', '9' => '9:00 AM a 6:00 PM', '5' => '10:00 AM a 4:00 PM', '6' => '1:00 PM a 7:00 PM', '7' => '2:00 PM a 8:00 PM', '8' => '3:00 PM a 9:00 PM', '10' => '8:00 AM a 4:00 PM', ' 11' => '9:00 AM a 5:00 PM', '16'=>"10:00 AM a 6:00 PM",'12' => '11:00 AM a 7:00 PM', '13' => '11:00 AM a 9:00 PM', '14' => '11:00 AM a 8:00 PM','15'=>"12:00 PM a 8:00 PM"],
+    'horariolaboral'=> ['1' => '7:00 AM a 1:00 PM', '2' => '8:00 AM a 2:00 PM', '3' => '8:00 AM a 5:00 PM', '4' => '9:00 AM a 3:00 PM', '9' => '9:00 AM a 6:00 PM', '5' => '10:00 AM a 4:00 PM', '6' => '1:00 PM a 7:00 PM', '7' => '2:00 PM a 8:00 PM', '8' => '3:00 PM a 9:00 PM', '10' => '8:00 AM a 4:00 PM','11'=>'9:00 AM a 5:00 PM', '16'=>"10:00 AM a 6:00 PM",'12' => '11:00 AM a 7:00 PM', '13' => '11:00 AM a 9:00 PM', '14' => '11:00 AM a 8:00 PM','15'=>"12:00 PM a 8:00 PM"],
     'especialidad'  => ['1' => 'BACHILLER', '2' => 'T.S.U', '3' => 'LIC', '4' => 'ING.', '6' => 'TECNICO MEDIO', '7' => 'MAGISTER', '5' => 'OTRO', '8' => 'ESTUDIANTE'],
     'contractual'   => ['1' => 'Contratado', '2' => 'Fijo', '3' => 'Freelance', '4' => 'Honorarios', '5' => 'Finalizado', '7' => 'Pendiente Por Contrato','9'=>'Pendiente Por Documentacion'],
     'jornada'       => ["1" => "8 Horas", "2" => "6 Horas"],    

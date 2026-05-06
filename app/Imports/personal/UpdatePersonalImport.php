@@ -440,20 +440,20 @@ class UpdatePersonalImport implements ToCollection, WithHeadingRow, WithValidati
                     $objPersonal->ciudad_id = in_array($objPersonal->sede_laboral, ['STV', 'ATENAS']) ? CiudadesModel::where('ciudad', 'like', '%' . $row['ciudad'] . '%')->first()->id : 149;
                 }
             
-               if (\Auth::user()->hasPermission('personal.cecos.autorice')) {
+               if (\Auth::user()->hasPermission('personal.cecos.autorice')) {                 
                     /// Tengo permisos para editar CECOS
                     if ($row["cod_ceco"] != "" && $row["porcentajes"] != "" || $row["cod_ceco"] != null && $row["porcentajes"] != null) {
                          ///columnas tienen datos   
                         $cods = explode("|", $row["cod_ceco"]);
-                        $porcentajes = explode("|", $row["porcentajes"]);                        
+                        $porcentajes = explode("|", $row["porcentajes"]);                                
                         CentroCostoAsignadoModel::where('personal_id', $objPersonal->id)->delete();
-                        foreach ($cods as $llave => $codigosCecos) {                     
-                            switch ($codigosCecos) {
+                        foreach ( $cods as $llave => $codigosCecos) {                     
+                            switch ((string) $codigosCecos) {
                                 case "30540":
                                     $aplicar = 21;
                                     $cecocarcartera = $objPersonal->cartera_id;
                                     break;
-                                case "00001":
+                                case "00001":                                
                                     $aplicar = 19;
                                     $cecocarcartera = $objPersonal->cartera_id;
                                     break;
@@ -474,10 +474,9 @@ class UpdatePersonalImport implements ToCollection, WithHeadingRow, WithValidati
                             $cecos->porcentaje = $porcentajes[$llave];
                             $cecos->save();
                         }
-                    } else {
-                    ///columnas no tienen datos
-                    $verifiSkill = SkillModels::find($objPersonal->skill_id);
-                        if($verifiSkill->cod_ceco != "00000" || $verifiSkill->cod_ceco != null){
+                    } else {                   
+                        $verifiSkill = SkillModels::find($objPersonal->skill_id);                  
+                        if($verifiSkill->cod_ceco != "00000" || $verifiSkill->cod_ceco == null){
                             CentroCostoAsignadoModel::where('personal_id', $objPersonal->id)->delete();
                             $areas = new CentroCostoAsignadoModel();
                             $areas->personal_id = $objPersonal->id;
@@ -488,17 +487,17 @@ class UpdatePersonalImport implements ToCollection, WithHeadingRow, WithValidati
                         } 
                     }
                } else {
-                /// no tengo permisos para editar CEcos
-                    $verifiSkill = SkillModels::find($objPersonal->skill_id);
-                    if($verifiSkill->cod_ceco != "00000" || $verifiSkill->cod_ceco != null){
-                        CentroCostoAsignadoModel::where('personal_id', $objPersonal->id)->delete();
-                        $areas = new CentroCostoAsignadoModel();
-                        $areas->personal_id = $objPersonal->id;
-                        $areas->cartera_id  = $objPersonal->cartera_id;
-                        $areas->skill_id    = $objPersonal->skill_id;
-                        $areas->porcentaje  = null;
-                        $areas->save();  
-                    } 
+                /// no tengo permisos para editar CEcos                   
+                    $verifiSkill = SkillModels::find($objPersonal->skill_id);                  
+                        if($verifiSkill->cod_ceco != "00000" || $verifiSkill->cod_ceco == null){
+                            CentroCostoAsignadoModel::where('personal_id', $objPersonal->id)->delete();
+                            $areas = new CentroCostoAsignadoModel();
+                            $areas->personal_id = $objPersonal->id;
+                            $areas->cartera_id  = $objPersonal->cartera_id;
+                            $areas->skill_id    = $objPersonal->skill_id;
+                            $areas->porcentaje  = null;
+                            $areas->save();  
+                        }                    
                }
 
                 $nuevos_valores = [];
@@ -578,9 +577,12 @@ class UpdatePersonalImport implements ToCollection, WithHeadingRow, WithValidati
                                 $fecha2 = Carbon::parse($objPersonal->fecha_egreso);
                                 ///validamos cuantos dias han pasado desde que fue egresado
                                 $diferencia_en_dias = $fecha1->diffInDays($fecha2);
-                                if ($diferencia_en_dias <= config('app.diaspararecontratar')) {
-                                    $onFailure('Esta persona tiene menos de 90 Días de Egresado.');
+                                if(!\Auth::user()->hasPermission(['personal.update.blockregistred'])){
+                                    if ($diferencia_en_dias <= config('app.diaspararecontratar')) {
+                                        $onFailure('Esta persona tiene menos de 90 Días de Egresado.');
+                                    }
                                 }
+                               
                             }
                         }
                     }

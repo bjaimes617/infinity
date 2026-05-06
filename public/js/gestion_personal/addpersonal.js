@@ -24,17 +24,17 @@ var validation = function () {
                         data: { _token: $("input[name=_token]").val(), cedula: $('#cedula_empleado').val() }
                     }
                 },
-                cedulatitular: {
-                    equalTo: "#cedula_empleado"
-                },
+                /* cedulatitular: {
+                     equalTo: "La Cedula del titular debe ser igual a la cedula de la persona a registrar."
+                 }*/
             },
             messages: {
                 ctabancaria: {
                     remote: "La cuenta que a ingresado esta asignada a otro usuario. Ingrese una diferente."
                 },
-                cedulatitular: {
-                    equalTo: "La Cedula del titular debe ser igual a la cedula de la persona a registrar."
-                }
+                /* cedulatitular: {
+                     equalTo: "La Cedula del titular debe ser igual a la cedula de la persona a registrar."
+                 }*/
             },
             lang: 'es',
             errorElement: 'span',

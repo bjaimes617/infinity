@@ -1,22 +1,22 @@
 if ($('.daterange').length !== 0) {
     $('.daterange').daterangepicker({
-        locale:{
-             format: 'DD/MM/YYYY', 
-        },      
+        locale: {
+            format: 'DD/MM/YYYY',
+        },
         maxDate: moment(),
     });
 }
 
 if ($('.daterangedialy').length !== 0) {
-    $('.daterangedialy').datetimepicker({       
+    $('.daterangedialy').datetimepicker({
         format: 'DD/MM/YYYY',
-        minDate: moment().add(-8, 'days'),
+        //minDate: moment().add(-8, 'days'),
         maxDate: moment(),
     });
 }
 
 if ($('.select2').length !== 0) {
-    $('.select2').select2({theme: 'bootstrap4'});
+    $('.select2').select2({ theme: 'bootstrap4' });
 }
 
 var validation = function () {
@@ -50,7 +50,7 @@ var validation = function () {
                     if (result.isConfirmed) {    // Aquí se valida si se presionó 'Cancelar'
                         form.submit();
                     }
-                });               
+                });
             }
         });
     };
@@ -76,30 +76,30 @@ $('#asistenciasearchcursos').validate({
     unhighlight: function (element, errorClass, validClass) {
         $(element).removeClass('error is-invalid text-sm');
     },
-    submitHandler: function (form) {                      
-        event.preventDefault();        
+    submitHandler: function (form) {
+        event.preventDefault();
         $.ajax({
             type: form.method,
             url: form.action,
             data: $(form).serialize(),
             dataType: 'json',
             success: function (data) {
-                
-                $("#display_asistencia").empty();              
-                $("#display_asistencia").append(data.printhtml).fadeIn(); 
-                $('.inputasistencia').select2({theme: 'bootstrap4'});
+
+                $("#display_asistencia").empty();
+                $("#display_asistencia").append(data.printhtml).fadeIn();
+                $('.inputasistencia').select2({ theme: 'bootstrap4' });
                 $('#fechaasistencia').val($('#fecha').val());
-                 $('#datatable-asistencias').DataTable({
+                $('#datatable-asistencias').DataTable({
                     responsive: true,
                     "ordering": false,
                     "autoWidth": false,
                     //"lengthMenu": [10, 20, 50, 75],
                     "bPaginate": false,
                     "bProcessing": true,
-                 });
-                 
+                });
+
                 validation.init();
-                
+
             }, error: function (data) {
                 $("#display_asistencia").empty();
                 var Toastr = main();
@@ -110,7 +110,7 @@ $('#asistenciasearchcursos').validate({
             }
         });
     }
-});    
+});
 
 ///parte de adminsitracion y eliminacion
 $('#area_trabajo').on('change', function () {
@@ -121,10 +121,9 @@ $('#area_trabajo').on('change', function () {
     $.ajax({
         type: 'POST',
         url: url,
-        data: {area: area, _token: _token},
+        data: { area: area, _token: _token },
         dataType: 'json',
-        success: function (data)
-        {
+        success: function (data) {
             if ($('#FormIndicadores').length == 1) {
                 $('#carteras').empty();
                 $('#carteras').append($("<option></option>").attr("value", '').text("[SELECCIONE]"));
@@ -133,8 +132,7 @@ $('#area_trabajo').on('change', function () {
                 $('#carteras').append($("<option></option>").attr("value", '').text("[TODOS]"));
             }
 
-            for (i = 0; i < data.length; i++)
-            {
+            for (i = 0; i < data.length; i++) {
                 $('#carteras').append($("<option></option>").attr("value", data[i].id).text(data[i].nombre_cartera));
             }
         }
@@ -149,10 +147,9 @@ $('#carteras').on('change', function () {
     $.ajax({
         type: 'POST',
         url: url,
-        data: {cartera: cartera, _token: _token},
+        data: { cartera: cartera, _token: _token },
         dataType: 'json',
-        success: function (data)
-        {
+        success: function (data) {
             if ($('#FormIndicadores').length == 1) {
                 $('#skill').empty();
                 $('#skill').append($("<option></option>").attr("value", '').text("[SELECCIONE]"));
@@ -161,8 +158,7 @@ $('#carteras').on('change', function () {
                 $('#skill').append($("<option></option>").attr("value", '').text("[TODOS]"));
             }
 
-            for (i = 0; i < data.length; i++)
-            {
+            for (i = 0; i < data.length; i++) {
                 $('#skill').append($("<option></option>").attr("value", data[i].id).text(data[i].nombre_skill));
             }
         }
@@ -183,9 +179,9 @@ $('#formadministracion').validate({
     unhighlight: function (element, errorClass, validClass) {
         $(element).removeClass('error is-invalid text-sm');
     },
-    submitHandler: function (form) {                      
-        event.preventDefault(); 
-        
+    submitHandler: function (form) {
+        event.preventDefault();
+
         $.ajax({
             type: form.method,
             url: form.action,
@@ -210,15 +206,15 @@ $('#formadministracion').validate({
                     "bPaginate": true,
                     "bProcessing": true,
                     "columns": [
-                        {mData: 'cedula'},
-                        {mData: 'nombres'},
-                        {mData: 'area_trabajo'},
-                        {mData: 'cartera'},
-                        {mData: 'skill'},
-                        {mData: 'cargo'},
-                        {mData: 'dia'},
-                        {mData: 'prefijo'},
-                        {mData: 'acciones'}
+                        { mData: 'cedula' },
+                        { mData: 'nombres' },
+                        { mData: 'area_trabajo' },
+                        { mData: 'cartera' },
+                        { mData: 'skill' },
+                        { mData: 'cargo' },
+                        { mData: 'dia' },
+                        { mData: 'prefijo' },
+                        { mData: 'acciones' }
                     ]
                 });
             }, error: function (data) {
@@ -231,7 +227,7 @@ $('#formadministracion').validate({
             }
         });
     }
-});    
+});
 
 $('#asistencias_edit').validate({
     lang: 'es',
@@ -247,11 +243,11 @@ $('#asistencias_edit').validate({
     unhighlight: function (element, errorClass, validClass) {
         $(element).removeClass('error is-invalid text-sm');
     },
-    submitHandler: function (form) {                      
-        
+    submitHandler: function (form) {
+
         form.submit();
     }
-}); 
+});
 
 $('#formreportes').validate({
     lang: 'es',
@@ -267,8 +263,8 @@ $('#formreportes').validate({
     unhighlight: function (element, errorClass, validClass) {
         $(element).removeClass('error is-invalid text-sm');
     },
-    submitHandler: function (form) {                      
-        
+    submitHandler: function (form) {
+
         form.submit();
     }
 });
@@ -282,7 +278,7 @@ function checkAsistencia() {
         });
     } else {
         $('.inputasistencia').val('A').trigger('change');
-               
+
     }
 }
 
@@ -301,9 +297,9 @@ $('#formadministraciondeleted').validate({
     unhighlight: function (element, errorClass, validClass) {
         $(element).removeClass('error is-invalid text-sm');
     },
-    submitHandler: function (form) {                      
-        event.preventDefault(); 
-         $.ajax({
+    submitHandler: function (form) {
+        event.preventDefault();
+        $.ajax({
             type: form.method,
             url: form.action,
             data: $(form).serialize(),
@@ -327,16 +323,16 @@ $('#formadministraciondeleted').validate({
                     "bPaginate": true,
                     "bProcessing": true,
                     "columns": [
-                        {mData: 'cedula'},
-                        {mData: 'nombres'},
-                        {mData: 'area_trabajo'},
-                        {mData: 'cartera'},
-                        {mData: 'skill'},
-                        {mData: 'dia'},
-                        {mData: 'asistencias'},
-                        {mData: 'acciones'}
+                        { mData: 'cedula' },
+                        { mData: 'nombres' },
+                        { mData: 'area_trabajo' },
+                        { mData: 'cartera' },
+                        { mData: 'skill' },
+                        { mData: 'dia' },
+                        { mData: 'asistencias' },
+                        { mData: 'acciones' }
                     ]
-                });               
+                });
             }, error: function (data) {
                 $("#display_asistencia").empty();
                 var Toastr = main();
@@ -347,51 +343,51 @@ $('#formadministraciondeleted').validate({
             }
         });
     }
-}); 
+});
 
-function ValidateDestroyAsistencia(key){
-    
-var deletedasistencias = function () {
-    var EliminarAsistencias = function () {
-      $('#formulariodeleted'+key).validate({
-    lang: 'es',
-    errorElement: 'span',
-    validClass: "is-valid",
-    errorPlacement: function (error, element) {
-        error.addClass('is-invalid text-sm');
-        element.closest('.form-group').append(error);
-    },
-    highlight: function (element, errorClass, validClass) {
-        $(element).addClass('is-invalid text-sm');
-    },
-    unhighlight: function (element, errorClass, validClass) {
-        $(element).removeClass('error is-invalid text-sm');
-    },
-    submitHandler: function (form) {                      
-         Swal.fire({
-                    title: '¡Atención!',
-                    html: '¿Está seguro en eliminar estas asistencias?, Debera informar al Lider Inmediato para volver a cargarlas.',
-                    icon: 'info',
-                    showCancelButton: true,
-                    showConfirmButton: true,
-                    cancelButtonText: 'Cancelar',
-                    confirmButtonText: 'Confirmar',
-                }).then((result) => {     // Se agrega el método .then()
-                    if (result.isConfirmed) {    // Aquí se valida si se presionó 'Cancelar'
-                        form.submit();
-                    }
-                });    
-    }
-})
-    };
-    return {
-        init: function () {
-            EliminarAsistencias();
-        }
-    };
-}();
+function ValidateDestroyAsistencia(key) {
 
-deletedasistencias.init();
+    var deletedasistencias = function () {
+        var EliminarAsistencias = function () {
+            $('#formulariodeleted' + key).validate({
+                lang: 'es',
+                errorElement: 'span',
+                validClass: "is-valid",
+                errorPlacement: function (error, element) {
+                    error.addClass('is-invalid text-sm');
+                    element.closest('.form-group').append(error);
+                },
+                highlight: function (element, errorClass, validClass) {
+                    $(element).addClass('is-invalid text-sm');
+                },
+                unhighlight: function (element, errorClass, validClass) {
+                    $(element).removeClass('error is-invalid text-sm');
+                },
+                submitHandler: function (form) {
+                    Swal.fire({
+                        title: '¡Atención!',
+                        html: '¿Está seguro en eliminar estas asistencias?, Debera informar al Lider Inmediato para volver a cargarlas.',
+                        icon: 'info',
+                        showCancelButton: true,
+                        showConfirmButton: true,
+                        cancelButtonText: 'Cancelar',
+                        confirmButtonText: 'Confirmar',
+                    }).then((result) => {     // Se agrega el método .then()
+                        if (result.isConfirmed) {    // Aquí se valida si se presionó 'Cancelar'
+                            form.submit();
+                        }
+                    });
+                }
+            })
+        };
+        return {
+            init: function () {
+                EliminarAsistencias();
+            }
+        };
+    }();
+
+    deletedasistencias.init();
 }
 
 $('#FormIndicadores').validate({
@@ -408,8 +404,8 @@ $('#FormIndicadores').validate({
     unhighlight: function (element, errorClass, validClass) {
         $(element).removeClass('error is-invalid text-sm');
     },
-    submitHandler: function (form) {                      
-        
+    submitHandler: function (form) {
+
         form.submit();
     }
 });

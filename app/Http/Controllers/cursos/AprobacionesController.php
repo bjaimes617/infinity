@@ -58,7 +58,7 @@ class AprobacionesController extends Controller {
      */
     public function store(Request $request, $id) {
         try {
-
+            // dd("pruebas", $request->all());
             foreach ($request->participante as $participante) {
 
                 $parts = ParticipantesModel::find($participante);
@@ -147,6 +147,7 @@ class AprobacionesController extends Controller {
     public function aprobacionParticipantesStore(Request $request) {    
         $conteototal = count($request->participante);
         $contador = 0;
+       
         try{
             foreach ($request->participante as $participante) {
             if($request->input('accion' . $participante) == 1){

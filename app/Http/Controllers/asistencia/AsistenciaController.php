@@ -197,7 +197,7 @@ class AsistenciaController extends Controller {
             $begin  = carbon::createfromformat('d/m/Y',$request->fechaasistencia);             
             $dia = $begin->copy()->format('l'); ///dia de la semana en letras///            
           
-            if (FeriadosAnualesModel::where('feriado', $begin)->exists()) {
+            if (FeriadosAnualesModel::where('feriado', $begin->copy()->format('Y-m-d'))->exists()) {
                 $feriado = true;
                 $prefijo = "FER";
             } else {
