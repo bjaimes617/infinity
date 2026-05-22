@@ -692,6 +692,7 @@ class ComposerStaticInit9c13571c76eed724741ef7efd1d37ab9
         'App\\Exports\\ConstanciasExport' => __DIR__ . '/../..' . '/app/Exports/ConstanciasExport.php',
         'App\\Exports\\Evaluaciones\\EvaluacionExport' => __DIR__ . '/../..' . '/app/Exports/Evaluaciones/EvaluacionExport.php',
         'App\\Exports\\Evaluaciones\\IndicadorExport' => __DIR__ . '/../..' . '/app/Exports/Evaluaciones/IndicadorExport.php',
+        'App\\Exports\\ExportNominas' => __DIR__ . '/../..' . '/app/Exports/ExportNominas.php',
         'App\\Exports\\GerenciasExport' => __DIR__ . '/../..' . '/app/Exports/GerenciasExport.php',
         'App\\Exports\\Habilidades\\ReporteExport' => __DIR__ . '/../..' . '/app/Exports/Habilidades/ReporteExport.php',
         'App\\Exports\\Habilidades\\RespuestasFormExport' => __DIR__ . '/../..' . '/app/Exports/Habilidades/RespuestasFormExport.php',

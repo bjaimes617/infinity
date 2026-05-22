@@ -937,11 +937,14 @@
                                                 </div>                                    
                                             </div>
                                         @php                                            
-                                        if($personal->estatus_id == 2 || $personal->estatus_id == 6){                                            
-                                        $display="style=''";
+                                        if($personal->estatus_id == 2 || $personal->estatus_id == 6)                                            
+                                        {                                            
+                                        $display="style=''";     
+                                        $required="required";                                           
                                         }else{
                                         $display="style='display:none;'";
-                                        }                                                  
+                                        $required="";
+                                        }                                                    
                                         @endphp
                                         <div class="col-md-12" id="divegreso" {!!$display!!}>
                                             <div class="row mb-3">
@@ -957,13 +960,21 @@
                                                     </div>
                                                 </div>
                                                 <div class="col-md-4">
-                                                    <label class="col-form-label" for="motivoegreso">Motivo del Egreso <span style="color:red">*</span></label>                                                                                                                                                                                                      
-                                                    <div class="form-group">
-                                                        <div class="input-group">                                                                    
-                                                            <input name="motivoegreso" id="motivoegreso" value="{{$personal->motivo_egreso}}" class="form-control">
-                                                        </div>                                         
-                                                    </div>
-                                                </div>
+                                                    <label class="col-form-label" for="motivoegreso">Motivo del Egreso <span style="color:red">*</span></label>    
+                                                    <div class="form-group"> 
+                                                        <div class="input-group">
+                                                            <div class="input-group-prepend">
+                                                                <span class="input-group-text" data-toggle="tooltip" data-placement="top" title="Motivo del Egreso Anterior: {{ $personal->motivo_egreso }}"><i class="fas fa-question-circle"></i></span>
+                                                            </div> 
+                                                            <select class="form-control select2" {{ $required }} id="motivoegreso" name="motivoegreso">
+                                                                <option value="">[Seleccione]</option>                         
+                                                                @foreach ($motivoegreso as $index => $value)
+                                                                    <option value="{{ $value }}" @if((!empty($personal->motivo_egreso) && !empty($value) && stripos($personal->motivo_egreso, $value) !== false) || strtoupper((string)$value) == strtoupper((string)$personal->motivo_egreso)) selected @endif>{{ $value }}</option>
+                                                                @endforeach                                       
+                                                            </select> 
+                                                        </div> 
+                                                    </div>                                                     
+                                                </div>   
                                                 @php if($blacklist == "si") $style = 'style='; else $style = 'style=display:none;'; @endphp
                                                 <div class="col-md-4">                                                            
                                                     <div class="form-group text-center">

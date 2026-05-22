@@ -20,6 +20,7 @@ use App\Models\personal\PermisosCarteraModel;
 use App\Models\personal\EgresadosModel;
 use App\Models\personal\HistoricoPersonalModel;
 use App\Models\personal\SedeModel;
+use App\Models\personal\MotivosEgresosModel;
 use App\Models\asistencia\AsistenciaOperativaModel;
 use App\Models\RegionesModel;
 use App\Models\EstadosModel;
@@ -34,6 +35,7 @@ use jeremykenedy\LaravelLogger\App\Http\Traits\ActivityLogger;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 use Carbon\Carbon;
 use App\Exceptions\ValidateAditionals;
+use App\Models\personal\EstatusModel;
 
 class UpdatePersonalImport implements ToCollection, WithHeadingRow, WithValidation {
 
@@ -270,7 +272,7 @@ class UpdatePersonalImport implements ToCollection, WithHeadingRow, WithValidati
                     } else {
                         $objPersonal->activetransporte = 0;
                         $objPersonal->htransporte = null;
-                        $objPersonal->zona_transporte_id = ZonaTransporte::where('zonatransporte', '=', trim($row['zona_transporte']))->where('estatus_id', '=', 1)->first()->id;
+                        $objPersonal->zona_transporte_id =56;
                     }
                 }
                 if (!empty($row['fecha_ingreso'])) {
@@ -431,7 +433,7 @@ class UpdatePersonalImport implements ToCollection, WithHeadingRow, WithValidati
                     $objPersonal->status_carnet = $estatusCarnet;
                 }
                 if ($row['sede_laboral'] != "") {
-                    $objPersonal->sede_laboral = trim($row['sede_laboral']);
+                    $objPersonal->sede_laboral = SedeModel::where('active', 1)->where('nombre_sede', trim($row['sede_laboral']))->first()->nombre_sede;
                 }
                 if (!empty($row['estado'])) {
                     $objPersonal->estado_id = in_array($objPersonal->sede_laboral, ['STV', 'ATENAS']) ? EstadosModel::where('nombre_estado', 'like', '%' . $row['estado'] . '%')->first()->id : 3;
@@ -439,6 +441,18 @@ class UpdatePersonalImport implements ToCollection, WithHeadingRow, WithValidati
                 if (!empty($row['ciudad'])) {
                     $objPersonal->ciudad_id = in_array($objPersonal->sede_laboral, ['STV', 'ATENAS']) ? CiudadesModel::where('ciudad', 'like', '%' . $row['ciudad'] . '%')->first()->id : 149;
                 }
+                
+                if (!empty($row['estatus']) && !empty($row['fecha_egreso']) && !empty($row['motivo_egreso'])) {
+                        $objPersonal->estatus_id = EstatusModel::where('estatus', 'like', '%' . $row['estatus'] . '%')->first()->id;
+                        $objPersonal->fecha_egreso = Date::excelToDateTimeObject($row['fecha_egreso'])->format('Y-m-d');
+                        $objPersonal->motivo_egreso = ucwords(strtolower($row['motivo_egreso']));
+                        if (ENV('ACTIVE_API_AUTOSERVICIOS', false)) {
+                            $bashurl = "URL_DISBLED_AUTOSERVICIOS";
+                            $api = new ApiCheckautoservicios($bashurl, $objPersonal->cedula_empleado);
+                            $rs = $api->CheckInfinityPersonal();
+                        }
+                }
+
             
                if (\Auth::user()->hasPermission('personal.cecos.autorice')) {                 
                     /// Tengo permisos para editar CECOS
@@ -809,6 +823,27 @@ class UpdatePersonalImport implements ToCollection, WithHeadingRow, WithValidati
                 if ($value != null) {
                     if (!Date::excelToDateTimeObject(trim($value))) {
                         $onFailure('El Formato del Contrato 1 no es correcta ');
+                    }
+                }
+            },
+             'fecha_egreso' => function ($attribute, $value, $onFailure) {
+                if ($value != null) {
+                    if (!Date::excelToDateTimeObject(trim($value))) {
+                        $onFailure('El Formato de la fecha de egreso no es correcta ');
+                    }
+                }
+            },
+            'estatus' => function ($attribute, $value, $onFailure) {
+                if ($value != null) {
+                     if (!EstatusModel::where('estatus', 'LIKE', '%' . $value . '%')->exists()) {
+                        $onFailure('El estatus ingresado no es Correcto');
+                    }
+                }
+            },
+             'motivo_egreso' => function ($attribute, $value, $onFailure) {
+                if ($value != null) {
+                     if (!MotivosEgresosModel::where('descripcion', 'LIKE', '%' . $value . '%')->exists()) {
+                        $onFailure('El motivo de egreso no es Correcto');
                     }
                 }
             },

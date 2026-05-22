@@ -23,6 +23,7 @@ use App\Models\personal\SkillModels;
 use App\Models\personal\BlacklistModel;
 use App\Models\personal\HistoricoPersonalModel;
 use App\Models\personal\SedeModel;
+use App\Models\personal\MotivosEgresosModel; 
 use App\Models\RegionModel;
 use App\Models\EstadosModel;
 use App\Models\CiudadesModel;
@@ -57,11 +58,11 @@ class PersonalController extends Controller {
         $this->horarioTransportes = config('app.horarioTransporte') != null ? config('app.horarioTransporte') : [];
         $this->jornadas = config('app.jornada') != null ? config('app.jornada') : [];
         $this->tiemposContrato = config('app.tiemposContrato') != null ? config('app.tiemposContrato') : [];
-
+        $this->motivosEgresos = MotivosEgresosModel::select('id','descripcion')->where('active', 1)->orderBy('descripcion','ASC')->pluck('descripcion','id')->toArray();
         $this->CargoGerentes = CargoModel::where('nombre_cargo', 'like', 'Director%')
                         ->Orwhere('nombre_cargo', 'like', 'Gerente%')
                         ->Orwhere('nombre_cargo', 'like', 'Customer Technical Support Manager%')
-                        ->Orwhere('nombre_cargo', 'like', '%Presidente%')->pluck('id');
+                        ->Orwhere('nombre_cargo', 'like', '%Presidente%')->pluck('id');                   
     }
 
     public function Imagesave($file) {
@@ -141,7 +142,8 @@ class PersonalController extends Controller {
                     "banco" => $banco,
                     "roles" => $rol,
                     "tiemposContrato" => $this->tiemposContrato,
-                    "region" => $region
+                    "region" => $region,
+                    "motivoegreso"=> $this->motivosEgresos,
                 ])->render();
     }
 
@@ -753,7 +755,8 @@ class PersonalController extends Controller {
                             "ciudad" => $ciudad,
                             "estado" => $estado,
                             "region" => $region,
-                            "tiemposContrato" => $this->tiemposContrato
+                            "tiemposContrato" => $this->tiemposContrato,
+                            "motivoegreso"=> $this->motivosEgresos,
         ]);
     }
 
@@ -846,7 +849,8 @@ class PersonalController extends Controller {
                             "ciudad" => $ciudad,
                             "estado" => $estado,
                             "region" => $region,
-                            "tiemposContrato" => $this->tiemposContrato
+                            "tiemposContrato" => $this->tiemposContrato,
+                            "motivoegreso"=> $this->motivosEgresos
                         ])->render();
     }
 

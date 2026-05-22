@@ -39,6 +39,7 @@ return array(
     'App\\Exports\\ConstanciasExport' => $baseDir . '/app/Exports/ConstanciasExport.php',
     'App\\Exports\\Evaluaciones\\EvaluacionExport' => $baseDir . '/app/Exports/Evaluaciones/EvaluacionExport.php',
     'App\\Exports\\Evaluaciones\\IndicadorExport' => $baseDir . '/app/Exports/Evaluaciones/IndicadorExport.php',
+    'App\\Exports\\ExportNominas' => $baseDir . '/app/Exports/ExportNominas.php',
     'App\\Exports\\GerenciasExport' => $baseDir . '/app/Exports/GerenciasExport.php',
     'App\\Exports\\Habilidades\\ReporteExport' => $baseDir . '/app/Exports/Habilidades/ReporteExport.php',
     'App\\Exports\\Habilidades\\RespuestasFormExport' => $baseDir . '/app/Exports/Habilidades/RespuestasFormExport.php',

@@ -893,12 +893,18 @@
                                                     </div>
                                                 </div>
                                                 <div class="col-md-4">
-                                                    <label class="col-form-label" for="motivoegreso">Motivo del Egreso <span style="color:red">*</span></label>
-                                                    <div class="form-group">
-                                                        <div class="input-group ">
-                                                            <input name="motivoegreso" id="motivoegreso" class="form-control">
-                                                        </div>
-                                                    </div>
+                                                    <label class="col-form-label" for="motivoegreso">Motivo del Egreso <span style="color:red">*</span></label>                                                    
+                                                    <div class="input-group mb-3">
+                                                        <div class="input-group-prepend">
+                                                            <span class="input-group-text"><i class="fas fa-edit"></i></span>
+                                                        </div> 
+                                                        <select class="form-control" id="motivoegreso" name="motivoegreso">
+                                                            <option value="">[Seleccione]</option>                         
+                                                            @foreach ($motivoegreso as $index => $value)
+                                                                <option value="{{ $value }}">{{ $value }}</option>
+                                                            @endforeach                                       
+                                                        </select>
+                                                    </div> 
                                                 </div>
                                                 <div class="col-md-4">
                                                     <div class="form-group text-center">

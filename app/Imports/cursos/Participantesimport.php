@@ -15,10 +15,12 @@ use App\Models\cursos\CursosModel;
 use App\Models\personal\CarteraModel;
 use App\Models\personal\SkillModels;
 use App\Models\personal\EstatusModel;
+use jeremykenedy\LaravelLogger\App\Http\Traits\ActivityLogger;
 use Carbon\Carbon;
 
 class Participantesimport implements ToCollection, WithHeadingRow, WithValidation {
 
+    use ActivityLogger;
     use Importable;
 
     public $curso;
@@ -123,6 +125,8 @@ class Participantesimport implements ToCollection, WithHeadingRow, WithValidatio
                         $historial->save();
                         break;
                 }
+
+                 ActivityLogger::activity("Curso - Registro de Participante: " . $row["cedula"] ." Curso ".$this->curso." ".json_encode($row));
             }
 
             \Session::flash('success', 'Los participantes han sido asignados correctamente');

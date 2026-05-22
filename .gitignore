@@ -3,3 +3,4 @@ node_modules
 /storage/logs
 /storage/replicalp
 /vendor/laravel_ide
+.env
