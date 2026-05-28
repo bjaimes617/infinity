@@ -100,7 +100,8 @@ class PersonalCecosExport implements ShouldAutoSize, WithColumnFormatting, FromC
             "Fotografia",
             "Cod. CECO",
             "Nombre CECOS",
-            "Porcentaje CECO"
+            "Porcentaje CECO",
+            "Usuario_crm_portabilidad"
         ];
         return $columns;
     }
@@ -320,6 +321,7 @@ class PersonalCecosExport implements ShouldAutoSize, WithColumnFormatting, FromC
             "Cod. CECO" => $personal->codcecos,
             "Nombre CECOS" => $personal->cecos,
             "Porcentaje CECO" => $personal->porcentaje,
+            "Usuario_crm_portabilidad"=> $personal->usuario_crm_portabilidad,
         ];
 
         return $columns;

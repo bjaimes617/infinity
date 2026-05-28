@@ -775,11 +775,25 @@
                                                         </div>
                                                     </div>                                                                                             
                                                     <p class="text-center porcentajececo" {{ $dis }}><span style="color:red;">Atenci&oacute;n:</span> Coloque en números enteros el porcentaje del CECO y  en el orden que fue seleccionado.</p>
-                                                </div>                                                
+                                                </div>  
+                                                <div class="col-md-12" id="usuario_crm_porta_display" @if($personal->cartera_id == 20) style="" @else style="display:none;" @endif>
+                                                    <label class="col-form-label" for="usuario_crm_portabilidad">Usuario CRM Portabilidad <span style="color:red">*</span></label>
+                                                    <div class="form-group">
+                                                        <div class="input-group ">
+                                                            <input type="text"
+                                                                   class="form-control"
+                                                                   autocomplete="off"
+                                                                   name="usuario_crm_portabilidad"
+                                                                   id="usuario_crm_portabilidad"
+                                                                   value="{{old('usuario_crm_portabilidad', $personal->usuario_crm_portabilidad)}}"
+                                                                   >
+                                                        </div>
+                                                    </div>
+                                                </div>                                              
                                                 <div class='col-md-12'>                                                                                                     
                                                     <p><small><i class="fas fa-users"></i> Asignación de Gerente, Lideres/Jefes Inmediatos</Small></p>
                                                 </div>
-
+                                                
                                                 <div class="col-md-12">
                                                     <label class="col-form-label" for="gerente">Gerente de Área <span style="color:red">*</span></label>                                                                                                                                                                                                      
                                                     <div class="form-group">

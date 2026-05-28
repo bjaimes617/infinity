@@ -721,6 +721,20 @@
                                                         </div>
                                                     </div>
                                                 </div>
+                                                <div class="col-md-12" id="usuario_crm_porta_display" style="display:none;">
+                                                    <label class="col-form-label" for="usuario_crm_portabilidad">Usuario CRM Portabilidad <span style="color:red">*</span></label>
+                                                    <div class="form-group">
+                                                        <div class="input-group ">
+                                                            <input type="text"
+                                                                   class="form-control"
+                                                                   autocomplete="off"
+                                                                   name="usuario_crm_portabilidad"
+                                                                   id="usuario_crm_portabilidad"
+                                                                   value="{{old('usuario_crm_portabilidad')}}"
+                                                                   >
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                             <p class="text-center porcentajececo" style="display:none;"><span style="color:red;">Atenci&oacute;n:</span> Coloque en números enteros el porcentaje del CECO y  en el orden que fue seleccionado.</p>
                                         </div>

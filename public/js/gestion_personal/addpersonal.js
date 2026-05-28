@@ -423,6 +423,14 @@ $('#cartera').on('change', function () {
     var url = $(this).data('href');
     var data = { cartera: $(this).val(), _token: $("input[name=_token]").val(), };
     $('#skill').empty();
+
+    if ($(this).val() == 20) {
+        $('#usuario_crm_porta_display').show();
+        $('#usuario_crm_portabilidad').attr('required', 'required');
+    } else {
+        $('#usuario_crm_porta_display').hide();
+        $('#usuario_crm_portabilidad').removeAttr('required', 'required');
+    }
     $.ajax({
         type: 'POST',
         url: url,

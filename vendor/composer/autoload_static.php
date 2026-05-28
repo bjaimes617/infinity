@@ -852,6 +852,7 @@ class ComposerStaticInit9c13571c76eed724741ef7efd1d37ab9
         'App\\Models\\personal\\EstatusModel' => __DIR__ . '/../..' . '/app/Models/personal/EstatusModel.php',
         'App\\Models\\personal\\HistoricoPersonalModel' => __DIR__ . '/../..' . '/app/Models/personal/HistoricoPersonalModel.php',
         'App\\Models\\personal\\LibranzasModel' => __DIR__ . '/../..' . '/app/Models/personal/LibranzasModel.php',
+        'App\\Models\\personal\\MotivosEgresosModel' => __DIR__ . '/../..' . '/app/Models/personal/MotivosEgresosModel.php',
         'App\\Models\\personal\\NominaModel' => __DIR__ . '/../..' . '/app/Models/personal/NominaModel.php',
         'App\\Models\\personal\\PermisosCarteraModel' => __DIR__ . '/../..' . '/app/Models/personal/PermisosCarteraModel.php',
         'App\\Models\\personal\\PersonalModel' => __DIR__ . '/../..' . '/app/Models/personal/PersonalModel.php',

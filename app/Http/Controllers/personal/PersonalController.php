@@ -549,6 +549,8 @@ class PersonalController extends Controller {
             } else {
                 $objPersonal->contrato_2 = null;
             }
+
+            $objPersonal->usuario_crm_portabilidad = $request->cartera == 20 ? $request->usuario_crm_portabilidad ?? "No asignado" : "No asignado";
             $objPersonal->situacion_contractual = $request->scontrato;
             $objPersonal->status_carnet = 3; //// por defecto se esta colocando no impreso
             $objPersonal->save();
@@ -884,6 +886,7 @@ class PersonalController extends Controller {
         $historial->fecha_ingreso = $objPersonal->fecha_ingreso;
         $historial->nomina_id = $objPersonal->nomina_id;
         $historial->cargo_id = $objPersonal->cargo_id;
+        $historial->usuario_crm_portabilidad = $objPersonal->usuario_crm_portabilidad;
         $historial->estatuscargo = $objPersonal->getrawOriginal('estatuscargo');
         
        
@@ -1063,6 +1066,7 @@ class PersonalController extends Controller {
             $objPersonal->area_trabajo_id = $request->areatrabajo;
             $objPersonal->cartera_id = $request->cartera;
             $objPersonal->skill_id = $request->skill;
+            $objPersonal->usuario_crm_portabilidad = $request->cartera == 20 ? $request->usuario_crm_portabilidad ?? "No asignado" : "No asignado";
 
             $objPersonal->contrato_1 = Carbon::createFromFormat('d/m/Y', $request->contrato1)->format('Y-m-d');
             $objPersonal->finalizacion_1 = Carbon::createFromFormat('d/m/Y', $request->finalcontrato1)->format('Y-m-d');

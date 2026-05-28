@@ -373,6 +373,10 @@ class UpdatePersonalImport implements ToCollection, WithHeadingRow, WithValidati
 
                     $objPersonal->todoticket_alimentacion = strtolower($row['alimentacion']) == "si" ? 1 : 0;
                 }
+                if (!empty($row['usuario_crm_portabilidad'])) {
+
+                    $objPersonal->usuario_crm_portabilidad = ucwords(strtolower(trim($row['usuario_crm_portabilidad'])));
+                }
                 if (!empty($row['integral'])) {
                     $objPersonal->todoticket_integral = strtolower($row['integral']) == "si" ? 1 : 0;
                 }

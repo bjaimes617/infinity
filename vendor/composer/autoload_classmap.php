@@ -199,6 +199,7 @@ return array(
     'App\\Models\\personal\\EstatusModel' => $baseDir . '/app/Models/personal/EstatusModel.php',
     'App\\Models\\personal\\HistoricoPersonalModel' => $baseDir . '/app/Models/personal/HistoricoPersonalModel.php',
     'App\\Models\\personal\\LibranzasModel' => $baseDir . '/app/Models/personal/LibranzasModel.php',
+    'App\\Models\\personal\\MotivosEgresosModel' => $baseDir . '/app/Models/personal/MotivosEgresosModel.php',
     'App\\Models\\personal\\NominaModel' => $baseDir . '/app/Models/personal/NominaModel.php',
     'App\\Models\\personal\\PermisosCarteraModel' => $baseDir . '/app/Models/personal/PermisosCarteraModel.php',
     'App\\Models\\personal\\PersonalModel' => $baseDir . '/app/Models/personal/PersonalModel.php',
