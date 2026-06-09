@@ -2,5 +2,7 @@ node_modules
 /storage/framework
 /storage/logs
 /storage/replicalp
+/storage/app/cursos
 /vendor/laravel_ide
+.env
 .env

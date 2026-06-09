@@ -18,7 +18,8 @@ use App\Models\personal\EstatusModel;
 use jeremykenedy\LaravelLogger\App\Http\Traits\ActivityLogger;
 use Carbon\Carbon;
 
-class Participantesimport implements ToCollection, WithHeadingRow, WithValidation {
+class Participantesimport implements ToCollection, WithHeadingRow, WithValidation
+{
 
     use ActivityLogger;
     use Importable;
@@ -26,13 +27,16 @@ class Participantesimport implements ToCollection, WithHeadingRow, WithValidatio
     public $curso;
     public $referido;
 
-    public function __construct($curso,$referido) {
+    public function __construct($curso, $referido)
+    {
         $this->curso = $curso;
         $this->referido = $referido;
     }
 
-    public function collection(Collection $collection) {
-       try {
+    public function collection(Collection $collection)
+    {
+
+        try {
             foreach ($collection as $row) {
                 switch ($row["cambiocampana"]) {
                     case "SI":
@@ -46,7 +50,7 @@ class Participantesimport implements ToCollection, WithHeadingRow, WithValidatio
                             } else {
                                 $participante = new ParticipantesModel();
                             }
-                            
+
                             $participante->cedula_empleado = $row["cedula"];
                             $participante->primer_nombre = $row["primer_nombre"];
                             $participante->segundo_nombre = $row["segundo_nombre"];
@@ -126,7 +130,7 @@ class Participantesimport implements ToCollection, WithHeadingRow, WithValidatio
                         break;
                 }
 
-                 ActivityLogger::activity("Curso - Registro de Participante: " . $row["cedula"] ." Curso ".$this->curso." ".json_encode($row));
+                ActivityLogger::activity("Curso - Registro de Participante: " . $row["cedula"] . " Curso " . $this->curso . " " . json_encode($row));
             }
 
             \Session::flash('success', 'Los participantes han sido asignados correctamente');
@@ -137,14 +141,15 @@ class Participantesimport implements ToCollection, WithHeadingRow, WithValidatio
         }
     }
 
-    public function rules(): array {
+    public function rules(): array
+    {
         return [
             'cedula' => function ($attribute, $value, $onFailure) {
                 if (trim($value) == "") {
                     $onFailure('La Cedula de Identidad es Obligatoria');
                 } else if (!ctype_digit($value)) {
                     $onFailure('La Cedula de Identidad debe ser solo númerico');
-                } else if ($value >= 6 && $value <= 8) {
+                } else if ($value >= 6 || $value <= 8) {
                     $onFailure('La Cedula debe contener una logintud mayor a 6 o menor 8');
                 } else if (PersonalModel::where('cedula_empleado', $value)->exists()) {
                     $objPersonal = PersonalModel::where('cedula_empleado', $value)->first();
@@ -168,35 +173,50 @@ class Participantesimport implements ToCollection, WithHeadingRow, WithValidatio
                 } else if (BlacklistModel::where('cedula_empleado', $value)->exists()) {
                     $onFailure('Este participante no puede ser contratado Lista Negra, informar a Talento Humano');
                 }
-            }, 'primer_nombre' => function ($attribute, $value, $onFailure) {
+            },
+            'primer_nombre' => function ($attribute, $value, $onFailure) {
                 if (trim($value) == "") {
                     $onFailure('El primer nombre es Obligatorio');
                 }
-            }, 'primer_apellido' => function ($attribute, $value, $onFailure) {
+            },
+            'primer_apellido' => function ($attribute, $value, $onFailure) {
                 if (trim($value) == "") {
                     $onFailure('El primer apellido es Obligatorio');
                 }
-            }, 'nivel_academico' => function ($attribute, $value, $onFailure) {
+            },
+            'nivel_academico' => function ($attribute, $value, $onFailure) {
                 if (trim($value) == "") {
                     $onFailure('El Nivel Academico es Obligatorio');
                 } elseif (!in_array($value, config('app.especialidad'))) {
                     $onFailure('El nivel Academino que ingresaste, no existe');
                 }
-            }, 'local' => function ($attribute, $value, $onFailure) {
+            },
+            'local' => function ($attribute, $value, $onFailure) {
                 if (trim($value) == "") {
                     $onFailure('El número de Telefono Local es Obligatorio');
+                } else if (!ctype_digit($value)) {
+                    $onFailure('El numero de telefono local debe ser solo númerico');
+                } else if (strlen($value) > 10 || strlen($value) < 10) {
+                    $onFailure('El numero de telefono local debe contener una logintud de 10 digitos');
                 }
-            }, 'movil' => function ($attribute, $value, $onFailure) {
+            },
+            'movil' => function ($attribute, $value, $onFailure) {
                 if (trim($value) == "") {
                     $onFailure('El número de Telefono Movil es Obligatorio');
+                } else if (!ctype_digit($value)) {
+                    $onFailure('El numero de telefono movil debe ser solo númerico');
+                } else if (strlen($value) > 10 || strlen($value) < 10) {
+                    $onFailure('El numero de telefono movil debe contener una logintud de 10 digitos');
                 }
-            }, 'horario' => function ($attribute, $value, $onFailure) {
+            },
+            'horario' => function ($attribute, $value, $onFailure) {
                 if (trim($value) == "") {
                     $onFailure('El Horario Laboral es Obligatorio');
                 } elseif (!in_array($value, config('app.horariolaboral'))) {
                     $onFailure('El Horario Laboral que ingresaste no existe.');
                 }
-            }, 'cambiocampana' => function ($attribute, $value, $onFailure) {
+            },
+            'cambiocampana' => function ($attribute, $value, $onFailure) {
                 if (trim($value) == "") {
                     $onFailure('Debe indicar si es un cambio de Campaña');
                 }

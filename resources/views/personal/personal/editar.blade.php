@@ -776,7 +776,7 @@
                                                     </div>                                                                                             
                                                     <p class="text-center porcentajececo" {{ $dis }}><span style="color:red;">Atenci&oacute;n:</span> Coloque en números enteros el porcentaje del CECO y  en el orden que fue seleccionado.</p>
                                                 </div>  
-                                                <div class="col-md-12" id="usuario_crm_porta_display" @if($personal->cartera_id == 20) style="" @else style="display:none;" @endif>
+                                                <div class="col-md-12" id="usuario_crm_porta_display" @if(in_array($personal->cartera_id,[20,89])) style="" @else style="display:none;" @endif>
                                                     <label class="col-form-label" for="usuario_crm_portabilidad">Usuario CRM Portabilidad <span style="color:red">*</span></label>
                                                     <div class="form-group">
                                                         <div class="input-group ">

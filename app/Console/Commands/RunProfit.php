@@ -253,13 +253,16 @@ class RunProfit extends Command {
         }
         
         $nomina->save();
-
-        if (PersonalModel::where('cedula_empleado', $data[0])->wherenull('cod_profit')->exists()) {
-            $pers = PersonalModel::where('cedula_empleado', $data[0])->first();
-            $pers->cod_profit = $data[1];
-            $pers->save();
+        if($data[1] !== null){
+            if (PersonalModel::where('cedula_empleado', $data[0])->exists()) {
+                $pers = PersonalModel::where('cedula_empleado', $data[0])->first();
+                if($pers->cod_profit != $data[1] || $pers->cod_profit == null){
+                    $pers->cod_profit = $data[1];
+                    $pers->save();
+                }
+            }
         }
-        
+                
         DB::setDefaultConnection(env($execute));
         DB::reconnect();
         return $nomina;

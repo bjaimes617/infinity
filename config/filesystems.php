@@ -44,39 +44,39 @@ return [
     'disks' => [
         'local' => [
             'driver' => 'local',
-            'root' => storage_path('app'),            
+            'root' => storage_path('app'),
         ],
 
         'public' => [
             'driver' => 'local',
             'root' => storage_path('storage'),
-            'url' => env('APP_URL').'public/storage',
+            'url' => env('APP_URL') . 'public/storage',
             'visibility' => 'public',
         ],
-        
+
         'comisiones' => [
             'driver' => 'local',
             'root' => storage_path('comisiones'),
-            'url' => env('APP_URL').'storage/comisiones',
-            'visibility' => 'private',            
-        ],      
+            'url' => env('APP_URL') . 'storage/comisiones',
+            'visibility' => 'private',
+        ],
         'reclutamiento' => [
             'driver' => 'local',
             'root' => storage_path('reclutamiento'),
-            'url' => env('APP_URL').'storage/reclutamiento',
-            'visibility' => 'public',            
+            'url' => env('APP_URL') . 'storage/reclutamiento',
+            'visibility' => 'public',
         ],
         'personal' => [
             'driver' => 'local',
             'root' => storage_path('A_dir_personal'),
-            'url' => env('APP_URL').'storage/A_dir_personal',
-            'visibility' => 'public',            
+            'url' => env('APP_URL') . 'storage/A_dir_personal',
+            'visibility' => 'public',
         ],
         'replicalp' => [
             'driver' => 'local',
             'root' => storage_path('replicalp'),
-            'url' => env('APP_URL').'storage/replicalp',
-            'visibility' => 'private',            
+            'url' => env('APP_URL') . 'storage/replicalp',
+            'visibility' => 'private',
         ],
         's3' => [
             'driver' => 's3',

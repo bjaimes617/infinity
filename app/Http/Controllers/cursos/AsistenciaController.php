@@ -3,19 +3,26 @@
 namespace App\Http\Controllers\cursos;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+
 use App\Models\cursos\CursosModel;
 use App\Models\personal\PersonalModel;
 use App\Models\cursos\ParticipantesModel;
-use App\Models\User;
 use App\Models\cursos\AsistenciaModel;
 use App\Models\asistencia\AsistenciaOperativaModel;
 use App\Models\cursos\ObservacionesModels;
+use App\Models\User;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\HeadingRowImport;
+use App\Imports\cursos\AsistenciaImport;
 
-class AsistenciaController extends Controller {
+class AsistenciaController extends Controller
+{
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->itemsasitencia = [
             "A" => "Asistente",
             "I" => "Inasistente",
@@ -25,16 +32,17 @@ class AsistenciaController extends Controller {
         ];
     }
 
-    public function index() {
+    public function index()
+    {
         $initPersonal = PersonalModel::where('cedula_empleado', \Auth::user()->cedula)->first();
 
         $today = Carbon::today();
 
         if ($initPersonal) {
             $cursos = CursosModel::where('personal_id', $initPersonal->id)
-                            ->whereDate('inicio', '<=', $today)
-                            //->whereDate('finaliza', '>=', $today)
-                            ->where('active', 1)->get();
+                ->whereDate('inicio', '<=', $today)
+                //->whereDate('finaliza', '>=', $today)
+                ->where('active', 1)->get();
         } else {
             $cursos = array();
         }
@@ -42,7 +50,8 @@ class AsistenciaController extends Controller {
         return view('cursos.asistencia.index')->with(["cursos" => $cursos]);
     }
 
-    public function create() {
+    public function create()
+    {
 
         $initPersonal = PersonalModel::where('cedula_empleado', \Auth::user()->cedula)->first();
         if ($initPersonal) {
@@ -54,12 +63,13 @@ class AsistenciaController extends Controller {
         return view('cursos.asistencia.list')->with(["cursos" => $cursos]);
     }
 
-    public function ShowCursosAsistencia(Request $request) {
+    public function ShowCursosAsistencia(Request $request)
+    {
         try {
             $arrayBegin = carbon::createfromformat('d/m/Y', $request->fecha)->startofday();
 
             $participantes = AsistenciaModel::where('rec_cursos_id', $request->cursoasistencia)
-                            ->Wheredate('created_at', 'like', $arrayBegin->copy()->format('Y-m-d') . '%')->get();
+                ->Wheredate('created_at', 'like', $arrayBegin->copy()->format('Y-m-d') . '%')->get();
 
             $row = array();
             $data = array();
@@ -91,8 +101,9 @@ class AsistenciaController extends Controller {
         }
     }
 
-    public function store(Request $request) {
-//dd($request->all());
+    public function store(Request $request)
+    {
+
         $today = Carbon::today();
         try {
             $begin = $request->fechaasistencia;
@@ -137,12 +148,12 @@ class AsistenciaController extends Controller {
                             $objPersonal->estatus_id = 1;
                             $objPersonal->save();
                         }
-                        Break;
+                        break;
                 }
                 if ($part->cambiocampana == "SI") {
                     $personal = PersonalModel::where('cedula_empleado', $part->cedula_empleado)->first();
                     if (!AsistenciaOperativaModel::where('personal_id', $personal->id)
-                                    ->where('created_at', 'like', $begin . '%')->exists()) {
+                        ->where('created_at', 'like', $begin . '%')->exists()) {
                         $sistenciaop = new AsistenciaOperativaModel();
                         $sistenciaop->tipo_asistencia = "CC";
                         $sistenciaop->gerente_id = $personal->gerente_area_id;
@@ -153,9 +164,11 @@ class AsistenciaController extends Controller {
                         $sistenciaop->cartera_id = $personal->cartera_id;
                         $sistenciaop->skill_id = $personal->skill_id;
                         switch ($request->input('listado' . $operador)) {
-                            case "A": $val = "CCA";
+                            case "A":
+                                $val = "CCA";
                                 break;
-                            case "I": $val = "CCI";
+                            case "I":
+                                $val = "CCI";
                                 break;
                             default:
                                 $val = "CC" . $request->input('listado' . $operador);
@@ -170,8 +183,6 @@ class AsistenciaController extends Controller {
                         $sistenciaop->save();
                     }
                 }
-
-
                 $sistencia->block = 1;
                 $sistencia->dia = $dia;
                 $sistencia->observacion = $request->input('observaciones' . $operador);
@@ -192,20 +203,21 @@ class AsistenciaController extends Controller {
             \Session::flash('success', 'La asistencia de los participanes ha sido procesada exitosamente.');
             return redirect()->back();
         } catch (\Exception $e) {
-          
+
             \Session::flash('error', 'Ocurrio un problema. ' . $e->getMessage());
             return back();
         }
     }
 
-    public function show(Request $request, $id) {
+    public function show(Request $request, $id)
+    {
 
         $curso = CursosModel::find($id);
 
         $arrayBegin = carbon::createfromformat('d/m/Y', $request->fecha)->startofday();
 
         $asistenciatomada = AsistenciaModel::WhereDate('created_at', 'like', $arrayBegin->copy()->format('Y-m-d') . '%')
-                        ->where('rec_cursos_id', $id)->pluck('rec_cparticipantes_id');
+            ->where('rec_cursos_id', $id)->pluck('rec_cparticipantes_id');
 
         $participantes = ParticipantesModel::whereNotIn('id', $asistenciatomada)->where('rec_cursos_id', $id)->where('estatus_id', 12)->get();
 
@@ -215,32 +227,37 @@ class AsistenciaController extends Controller {
         $abandonos = ObservacionesModels::where('estatus_id', 13)->get();
 
         if (!$participantes->IsEmpty()) {
-            $data = view('cursos.asistencia.select', ["personalacargo" => $participantes,
+            $data = view('cursos.asistencia.select', [
+                "personalacargo" => $participantes,
                 "egresos" => json_encode($egresos),
                 "abandonos" => json_encode($abandonos),
                 "curso" => $curso,
                 "fechas" => $arrayBegin->copy()->format('Y-m-d'),
-                "items" => $this->itemsasitencia])->render();
+                "items" => $this->itemsasitencia
+            ])->render();
 
             return response($data, 200);
         } else {
-            return response()->json('Ya ha sido tomada la asistencia de los participantes ese dia.', 500);
+            return response()->json("Ya ha sido tomada la asistencia de los participantes ese dia.", 500);
         }
     }
 
-    public function edit($id) {
-        
+    public function edit($id)
+    {
+
         $asistencia = AsistenciaModel::find($id);
         ///desincorporado - son egresos
         $egresos = ObservacionesModels::where('estatus_id', 15)->get();
         /// abanono  - abandono
         $abandonos = ObservacionesModels::where('estatus_id', 13)->get();
-        
-        return view('cursos.asistencia.edit')->with(["asistencia" => $asistencia, 
-                "itemsasistencia"=>$this->itemsasitencia,
-                "egresos" => json_encode($egresos),
-                "abandonos" => json_encode($abandonos),]);
-        
+
+        return view('cursos.asistencia.edit')->with([
+            "asistencia" => $asistencia,
+            "itemsasistencia" => $this->itemsasitencia,
+            "egresos" => json_encode($egresos),
+            "abandonos" => json_encode($abandonos),
+        ]);
+
         /* $fecha1 = Carbon::today();
           $fecha2 = Carbon::parse($asistencia->created_at);
 
@@ -252,7 +269,8 @@ class AsistenciaController extends Controller {
           } */
     }
 
-    public function update(Request $request, $id) {
+    public function update(Request $request, $id)
+    {
         try {
             $asistencia = AsistenciaModel::find($id);
             $asistencia->observacion = $request->observaciones;
@@ -269,7 +287,7 @@ class AsistenciaController extends Controller {
                     $part->estatus_id = 13;
                     $part->rec_observacion_id = $request->input('motivo' . $id);
 
-                    Break;
+                    break;
                 case "NA":
                     $part->estatus_id = 17;
                     $part->rec_observacion_id = 14;
@@ -279,7 +297,7 @@ class AsistenciaController extends Controller {
                 case "I":
                     $part->estatus_id = 12;
                     $part->rec_observacion_id = 6;
-                    Break;
+                    break;
             }
             $asistencia->save();
             $part->save();
@@ -289,5 +307,90 @@ class AsistenciaController extends Controller {
         } catch (\Throwable $e) {
             return back()->withErrors($e->getMessage());
         }
+    }
+
+    public function IndexUpload()
+    {
+        $initPersonal = PersonalModel::where('cedula_empleado', \Auth::user()->cedula)->first();
+
+        $today = Carbon::today();
+
+        if ($initPersonal) {
+            $cursos = CursosModel::where('personal_id', $initPersonal->id)
+                ->whereDate('inicio', '<=', $today)
+                //->whereDate('finaliza', '>=', $today)
+                ->where('active', 1)->get();
+        } else {
+            $cursos = array();
+        }
+
+        ///desincorporado - son egresos
+        $egresos = ObservacionesModels::where('estatus_id', 15)->get();
+        /// abanono  - abandono
+        $abandonos = ObservacionesModels::where('estatus_id', 13)->get();
+
+        return view("cursos.asistencia.upload.index")->with([
+            "cursos" => $cursos,
+            "egresos" => $egresos,
+            "abandonos" => $abandonos,
+        ]);
+    }
+
+    public function GenerateUpload(Request $request)
+    {
+        $arrayBegin = carbon::createfromformat('d/m/Y', $request->fecha)->startofday();
+
+        $asistenciatomada = AsistenciaModel::WhereDate('created_at', 'like', $arrayBegin->copy()->format('Y-m-d') . '%')
+            ->where('rec_cursos_id', $request->cursoasistencia)->pluck('rec_cparticipantes_id');
+
+        $participantes = ParticipantesModel::whereNotIn('id', $asistenciatomada)->where('rec_cursos_id', $request->cursoasistencia)->where('estatus_id', 12)->get();
+
+        if (!$participantes->IsEmpty()) {
+
+            $disk = Storage::build([
+                'driver' => 'local',
+                'root' => storage_path('app/cursos'),
+                'url' => env('APP_URL') . '/storage/cursos',
+                'visibility' => 'private', // O 'private' si prefieres                
+            ]);
+
+            $nombre = "curso_DGC_" . $request->cursoasistencia . '_participantes.csv';
+            $cabeceras = "cedula;nombre;apellido;" . $arrayBegin->copy()->format('Y-m-d') . ";observaciones";
+            $disk->put($nombre, $cabeceras);
+
+            foreach ($participantes as $participante) {
+                $disk->append($nombre, $participante->cedula_empleado . ';' . $participante->primer_nombre  . ';' . $participante->primer_apellido);
+            }
+            return response()->download(storage_path('app/cursos/' . $nombre), $nombre)->deleteFileAfterSend(true);
+        } else {
+            return back()->with('error', 'Ya ha sido tomada la asistencia de los participantes ese dia.');
+        }
+    }
+
+    public function UploadFilesAsistencia(request $request)
+    {
+
+        //try {
+        $files = $request->file('archivo');
+        $headings = (new HeadingRowImport)->toArray(request()->file('archivo'));
+        $primerasCabeceras = $headings[0][0];
+
+        if (empty($request->cursoasistencia)) {
+            $textnamefile = explode("_", $request->archivo->getClientOriginalName());
+            $idcurso = $textnamefile[2];
+        } else {
+            $idcurso = $request->cursoasistencia;
+        }
+
+        if (empty($idcurso) || $idcurso == "") {
+            return back()->with('error', 'No se pudo identificar el curso, renombre el Archivo o vuelva a Generar el Archivo de Carga');
+        }
+
+        Excel::import(new AsistenciaImport($idcurso, $primerasCabeceras), $files);
+
+        return back()->with('success', 'Asistencia cargada exitosamente.');
+        /**    } catch (\Throwable $e) {
+            return back()->with('error', 'Ocurrio un problema. ' . $e->getMessage());
+        }*/
     }
 }

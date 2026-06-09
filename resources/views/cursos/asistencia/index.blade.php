@@ -1,5 +1,5 @@
 @extends('layouts.main')
-@section('title', 'Cursos|Asistencia')
+@section('title', 'Cursos|Asistencia Manual')
 @section('gestion_personal','menu-is-opening menu-open')
 @section('gestion_personal_active','active')
 @section('cursosmenu','menu-is-opening menu-open')
@@ -27,8 +27,9 @@
         <div class="container-fluid">      
             <div class="card">
                 <div class="card-header">                            
-                    <h3 class="card-title">Asistencia de Participantes <small>La toma de asistencia solo se podrá realizar una vez el curso este activo y dentro de su rango</small></h3>                            
-                    <p class="float-right"> </p>
+                    <h3 class="card-title">Registro de Asistencia - Modalidad Manual <br> <small>La toma de asistencia solo se podrá realizar una vez el curso este activo y dentro de su rango</small> </h3>                            
+                    
+                    <div class="float-right"> <a href="{{ route('cursos.asistencia.upload') }}" class="btn btn-primary"><i class="fa fa-upload"></i> Asistencia Masiva</a></div>
                 </div>
                 <div class="card-body">
                     <div class="row">
