@@ -781,6 +781,7 @@ class ComposerStaticInit9c13571c76eed724741ef7efd1d37ab9
         'App\\Imports\\comisiones\\ComisionesQuincenalesImport' => __DIR__ . '/../..' . '/app/Imports/comisiones/ComisionesQuincenalesImport.php',
         'App\\Imports\\comisiones\\ComisionesSemanalesImport' => __DIR__ . '/../..' . '/app/Imports/comisiones/ComisionesSemanalesImport.php',
         'App\\Imports\\comisiones\\ObservacionesImport' => __DIR__ . '/../..' . '/app/Imports/comisiones/ObservacionesImport.php',
+        'App\\Imports\\cursos\\AsistenciaImport' => __DIR__ . '/../..' . '/app/Imports/cursos/AsistenciaImport.php',
         'App\\Imports\\cursos\\Participantesimport' => __DIR__ . '/../..' . '/app/Imports/cursos/Participantesimport.php',
         'App\\Imports\\evaluaciones\\EvaluacionesImport' => __DIR__ . '/../..' . '/app/Imports/evaluaciones/EvaluacionesImport.php',
         'App\\Imports\\inventario\\EquiposUpload' => __DIR__ . '/../..' . '/app/Imports/inventario/EquiposUpload.php',

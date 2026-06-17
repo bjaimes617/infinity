@@ -31,38 +31,45 @@ use App\Http\Controllers\PoliceEstructure;
 use App\Exports\Habilidades\ReporteExport;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Facades\Excel;
+use Throwable;
 
-class HabilidadController extends Controller {
+class HabilidadController extends Controller
+{
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->cargo_evaluadores = CargoModel::where('nombre_cargo', 'like', 'Ejecutivo%')
-                ->orwhere('nombre_cargo', 'like', 'Team%')
-                ->orwhere('nombre_cargo', 'like', 'Validador%')
-                ->orwhere('nombre_cargo', 'like', 'Back%')
-                ->orwhere('nombre_cargo', 'like', 'Agente%')
-                ->orwhere('nombre_cargo', 'like', 'Coordinador%')
-                ->orwhere('nombre_cargo', 'like', 'Senior%')
-                ->orwhere('nombre_cargo', 'like', 'Supervisor%')
-                ->orwhere('nombre_cargo', 'like', 'Analista%')
-                ->orwhere('nombre_cargo', 'like', 'Gerente%')
-                ->orderBy('nombre_cargo', 'asc')
-                ->get();
+            ->orwhere('nombre_cargo', 'like', 'Team%')
+            ->orwhere('nombre_cargo', 'like', 'Validador%')
+            ->orwhere('nombre_cargo', 'like', 'Back%')
+            ->orwhere('nombre_cargo', 'like', 'Agente%')
+            ->orwhere('nombre_cargo', 'like', 'Coordinador%')
+            ->orwhere('nombre_cargo', 'like', 'Senior%')
+            ->orwhere('nombre_cargo', 'like', 'Supervisor%')
+            ->orwhere('nombre_cargo', 'like', 'Analista%')
+            ->orwhere('nombre_cargo', 'like', 'Gerente%')
+            ->orderBy('nombre_cargo', 'asc')
+            ->get();
 
         $this->cargo_evaluados = [1 => "1er Jefe Inmediato", 2 => "2do Jefe Inmediato", 3 => "Gerente de Area"];
     }
 
-    public function createEvaluacion() {
+    public function createEvaluacion()
+    {
 
         //MANDAMOS TODAS LAS GERENCIAS A LA VISTA, LAS CAMPAÑAS, SKILLS Y CARGOS SERAN LLAMADOS POR AJAX
         $gerencias = AreatrabajoModel::where('estatus_id', 1)->get();
 
         //MANDAMOS A LA VISTA EL 1ER, 2DO JEFE INMEDIATO Y EL GERENTE PARA EL OTRO SELECTOR        
-        return view('habilidades.evaluacion.create')->with(["gerencias" => $gerencias,
-                    "cargo_evaluadores" => $this->cargo_evaluadores,
-                    "cargo_evaluados" => $this->cargo_evaluados])->render();
+        return view('habilidades.evaluacion.create')->with([
+            "gerencias" => $gerencias,
+            "cargo_evaluadores" => $this->cargo_evaluadores,
+            "cargo_evaluados" => $this->cargo_evaluados
+        ])->render();
     }
 
-    public function storeEvaluacion(Request $request) {
+    public function storeEvaluacion(Request $request)
+    {
         try {
             //SEPARAMOS EL RANGO DE FECHAS Y FORMATEAMOS 
             $rango_eval = $request->input('rango_eval');
@@ -214,12 +221,14 @@ class HabilidadController extends Controller {
     }
 
     //GENERA LA VISTA DEL LISTADO DE EVALUACIONES CREADAS
-    public function editEvaluacion() {
+    public function editEvaluacion()
+    {
         $evaluaciones = EvaluacionModel::all();
         return view('habilidades.evaluacion.edit', compact('evaluaciones'));
     }
 
-    public function habEdit($id) {
+    public function habEdit($id)
+    {
 
         $resultado = ResultadosModel::where('evaluacion_id', $id)->count();
         $evaluacion = EvaluacionModel::find($id);
@@ -246,235 +255,241 @@ class HabilidadController extends Controller {
         $rangos_eval = RangoModel::where('evaluacion_id', $id)->get();
 
         return view('habilidades.evaluacion.editevaluacion')->with([
-                    "evaluacion" => $evaluacion,
-                    "cargo_evaluadores" => $this->cargo_evaluadores,
-                    "evaluadores_seleccion" => $evaluadores,
-                    "cargo_evaluados" => $this->cargo_evaluados,
-                    "gerencias" => $gerencias,
-                    "gerencias_seleccionadas" => $gerencias_eval,
-                    "carteras" => $carteras,
-                    "skills" => $skill,
-                    "rango_evaluacion" => $rango,
-                    "categorias" => $categorias,
-                    "parametros" => $parametros,
-                    "rangos" => $rangos_eval,
-                    "resultados" => $resultado
-                ])->render();
+            "evaluacion" => $evaluacion,
+            "cargo_evaluadores" => $this->cargo_evaluadores,
+            "evaluadores_seleccion" => $evaluadores,
+            "cargo_evaluados" => $this->cargo_evaluados,
+            "gerencias" => $gerencias,
+            "gerencias_seleccionadas" => $gerencias_eval,
+            "carteras" => $carteras,
+            "skills" => $skill,
+            "rango_evaluacion" => $rango,
+            "categorias" => $categorias,
+            "parametros" => $parametros,
+            "rangos" => $rangos_eval,
+            "resultados" => $resultado
+        ])->render();
     }
 
     //PERMITE EDITAR LA EVALUACION JUNTO CON SUS CATEGORIAS, PARAMETROS Y RANGOS
-    public function updateEvaluacion(Request $request, $id) {
+    public function updateEvaluacion(Request $request, $id)
+    {
+        try {
+            //  dd($request->all());
+            //SEPARAMOS EL RANGO DE FECHAS Y FORMATEAMOS 
+            $rango_eval = $request->input('rango_eval');
+            $fechas = explode(" - ", $rango_eval);
+            $startDate = $fechas[0];
+            $endDate = $fechas[1];
 
-        //dd($request->all());
-        //SEPARAMOS EL RANGO DE FECHAS Y FORMATEAMOS 
-        $rango_eval = $request->input('rango_eval');
-        $fechas = explode(" - ", $rango_eval);
-        $startDate = $fechas[0];
-        $endDate = $fechas[1];
+            // Convertir las fechas al formato Y-m-d
+            $startDateFormatted = Carbon::createFromFormat('d/m/Y', trim($startDate))->format('Y-m-d');
+            $endDateFormatted = Carbon::createFromFormat('d/m/Y', trim($endDate))->format('Y-m-d');
 
-        // Convertir las fechas al formato Y-m-d
-        $startDateFormatted = Carbon::createFromFormat('d/m/Y', trim($startDate))->format('Y-m-d');
-        $endDateFormatted = Carbon::createFromFormat('d/m/Y', trim($endDate))->format('Y-m-d');
+            //ESTAS VALIDACIONES SOLO APLICAN PARA DISTRIBUCION MANUAL
 
-        //ESTAS VALIDACIONES SOLO APLICAN PARA DISTRIBUCION MANUAL
+            switch ($request->distribucion) {
+                case 2:
+                    $total_sum = $request->total_sum;
+                    if (floatval($total_sum) > floatval($request->valor_max)) {
+                        \Session::flash('error', 'El valor ' . $total_sum . ' sobrepasa el valor maximo ' . $request->valor_max . ' de la evaluación');
+                        return redirect()->route('hab.edit', ['id' => $id]);
+                    }
 
-        switch ($request->distribucion) {
-            case 2:
-                $total_sum = $request->total_sum;
-                if (floatval($total_sum) > floatval($request->valor_max)) {
-                    \Session::flash('error', 'El valor ' . $total_sum . ' sobrepasa el valor maximo ' . $request->valor_max . ' de la evaluación');
-                    return redirect()->route('hab.edit', ['id' => $id]);
-                }
+                    if (floatval($total_sum) < floatval($request->valor_max)) {
+                        $puntos_faltantes = floatval($request->valor_max) - floatval($total_sum);
+                        \Session::flash('info', 'Faltan ' . $puntos_faltantes . ' puntos para completar el valor maximo ' . $request->valor_max . ' de la evaluación');
+                        return redirect()->route('hab.edit', ['id' => $id]);
+                    }
+                    break;
+            }
 
-                if (floatval($total_sum) < floatval($request->valor_max)) {
-                    $puntos_faltantes = floatval($request->valor_max) - floatval($total_sum);
-                    \Session::flash('info', 'Faltan ' . $puntos_faltantes . ' puntos para completar el valor maximo ' . $request->valor_max . ' de la evaluación');
-                    return redirect()->route('hab.edit', ['id' => $id]);
-                }
-                break;
-        }
+            //ACTUALIZAMOS LOS DATOS DE LA EVALUACION
+            $evaluacion = EvaluacionModel::find($id);
+            $evaluacion->nombre_evaluacion = $request->nombre_evaluacion;
+            $evaluacion->desde = $startDateFormatted;
+            $evaluacion->hasta = $endDateFormatted;
+            $evaluacion->valor_max = $request->valor_max;
+            $evaluacion->distribucion = $request->distribucion;
+            $evaluacion->estatus = $request->estatus; //activa o inactiva
+            $evaluacion->evaluados = json_encode($request->cargo_evaluar);
+            $evaluacion->save();
 
-        //ACTUALIZAMOS LOS DATOS DE LA EVALUACION
-        $evaluacion = EvaluacionModel::find($id);
-        $evaluacion->nombre_evaluacion = $request->nombre_evaluacion;
-        $evaluacion->desde = $startDateFormatted;
-        $evaluacion->hasta = $endDateFormatted;
-        $evaluacion->valor_max = $request->valor_max;
-        $evaluacion->distribucion = $request->distribucion;
-        $evaluacion->estatus = $request->estatus; //activa o inactiva
-        $evaluacion->evaluados = json_encode($request->cargo_evaluar);
-        $evaluacion->save();
+            //BORRAREMOS LAS CATEGORIAS QUE HAN SIDO ELIMINADAS
+            //BORRA TODO LO QUE NO ESTE EN EL IN
+            if (!empty($request->id_categoria)) {
+                $ids_cat = $request->id_categoria;
+                RespuestaModel::whereNotIn('categoria_id', $ids_cat)->delete();
+                PreguntaModel::whereNotIn('categoria_id', $ids_cat)->delete();
+                CategoriaModel::whereNotIn('id', $ids_cat)->delete();
+            }
 
-        //BORRAREMOS LAS CATEGORIAS QUE HAN SIDO ELIMINADAS
-        //BORRA TODO LO QUE NO ESTE EN EL IN
-        if (!empty($request->id_categoria)) {
-            $ids_cat = $request->id_categoria;
-            RespuestaModel::whereNotIn('categoria_id', $ids_cat)->delete();
-            PreguntaModel::whereNotIn('categoria_id', $ids_cat)->delete();
-            CategoriaModel::whereNotIn('id', $ids_cat)->delete();
-        }
-
-        //GUARDAMOS LAS CATEGORIAS DE LA EVALACION REGISTRADA JUNTO CON SU ID
-        $evaluacion_id = $evaluacion->id;
-        for ($i = 1; $i <= $request->totalcategorias; $i++) {
-            //SI SE CONSIGUE UNA CATEGORIA QUE YA TENGA ASIGNADO UN CODIGO ACTUALIZAMOS LA MISMA EN CASO DE ALGUN CAMBIO
-            if ($request->input('id_categoria' . $i) !== null) {
-                $categoria = CategoriaModel::find($request->input('id_categoria' . $i));
-                $categoria->nombre_categoria = $request->input('nombre_categoria' . $i);
-                $categoria->descripcion = $request->input('descripcion' . $i);
-                $categoria->valor_max = $request->input('valor_categoria' . $i);
-                $categoria->save();
-            } else {
-                //INSERTANDO NUEVA CATEGORIA
-                if ($request->input('nombre_categoria' . $i) !== null) {
-                    $categoria = new CategoriaModel();
+            //GUARDAMOS LAS CATEGORIAS DE LA EVALACION REGISTRADA JUNTO CON SU ID
+            $evaluacion_id = $evaluacion->id;
+            for ($i = 1; $i <= $request->totalcategorias; $i++) {
+                //SI SE CONSIGUE UNA CATEGORIA QUE YA TENGA ASIGNADO UN CODIGO ACTUALIZAMOS LA MISMA EN CASO DE ALGUN CAMBIO
+                if ($request->input('id_categoria' . $i) !== null) {
+                    $categoria = CategoriaModel::find($request->input('id_categoria' . $i));
                     $categoria->nombre_categoria = $request->input('nombre_categoria' . $i);
-                    $categoria->valor_max = $request->input('valor_categoria' . $i);
-                    //DISTRIBUCION ES NULA YA QUE SE ACTUALIZA EN EL AÑADIDO DE PREGUNTAS
-                    $categoria->distribucion = null;
-                    $categoria->evaluacion_id = $evaluacion_id;
                     $categoria->descripcion = $request->input('descripcion' . $i);
+                    $categoria->valor_max = $request->input('valor_categoria' . $i);
                     $categoria->save();
-                    //EL COD DE LA CATEGORIA SE CONFORMARA POR LAS DOS PRIMERAS LETRAS DE LA EVALUACION Y EL ID DE LA CATEGORIA
-                    $categoria_id = $categoria->id;
-                    $categoria->cod_categoria = strtoupper(substr($request->nombre_evaluacion, 0, 2) . $categoria_id);
-                    $categoria->save();
+                } else {
+                    //INSERTANDO NUEVA CATEGORIA
+                    if ($request->input('nombre_categoria' . $i) !== null) {
+                        $categoria = new CategoriaModel();
+                        $categoria->nombre_categoria = $request->input('nombre_categoria' . $i);
+                        $categoria->valor_max = $request->input('valor_categoria' . $i);
+                        //DISTRIBUCION ES NULA YA QUE SE ACTUALIZA EN EL AÑADIDO DE PREGUNTAS
+                        $categoria->distribucion = null;
+                        $categoria->evaluacion_id = $evaluacion_id;
+                        $categoria->descripcion = $request->input('descripcion' . $i);
+                        $categoria->save();
+                        //EL COD DE LA CATEGORIA SE CONFORMARA POR LAS DOS PRIMERAS LETRAS DE LA EVALUACION Y EL ID DE LA CATEGORIA
+                        $categoria_id = $categoria->id;
+                        $categoria->cod_categoria = strtoupper(substr($request->nombre_evaluacion, 0, 2) . $categoria_id);
+                        $categoria->save();
+                    }
                 }
             }
-        }
 
-        //GUARDAMOS LA EVALUACION CORRESPONDIENTE A SU GERENCIA , CAMPAÑA Y SKILL
-        // Obtener las selecciones
-        $gerencias = $request->input('gerencia');
-        $campanas = $request->input('carteras');
-        $skills = $request->input('skills');
+            //GUARDAMOS LA EVALUACION CORRESPONDIENTE A SU GERENCIA , CAMPAÑA Y SKILL
+            // Obtener las selecciones
+            $gerencias = $request->input('gerencia');
+            $campanas = $request->input('cartera');
+            $skills = $request->input('skill');
 
-        //dd($gerencia_ids,$campana_ids,$skill_ids);
-        //ELIMINAMOS LOS REGISTROS DE LA TABLA PIVOTE ANTES DE VOLVER A INSERTAR
+            //dd($gerencia_ids,$campana_ids,$skill_ids);
+            //ELIMINAMOS LOS REGISTROS DE LA TABLA PIVOTE ANTES DE VOLVER A INSERTAR
 
-        EvaluacionSkillModel::where('evaluacion_id', $id)->delete();
+            EvaluacionSkillModel::where('evaluacion_id', $id)->delete();
 
-        $evaluadores = $request->input('cargo_evaluador');
-        $evaluados = $request->input('cargo_evaluar');
+            $evaluadores = $request->input('cargo_evaluador');
+            $evaluados = $request->input('cargo_evaluar');
 
-        // Guardar los registros en la tabla pivote hab_evaluacion_skill
-        foreach ($gerencias as $gerencia_id) {
-            foreach ($campanas as $campana_id) {
-                foreach ($skills as $skill_id) {
-                    foreach ($evaluadores as $evaluador) {
-                        foreach ($evaluados as $eval) {
+            // Guardar los registros en la tabla pivote hab_evaluacion_skill
+            foreach ($gerencias as $gerencia_id) {
+                foreach ($campanas as $campana_id) {
+                    foreach ($skills as $skill_id) {
+                        foreach ($evaluadores as $evaluador) {
+                            foreach ($evaluados as $eval) {
 
-                            // Verificar que el skill pertenece a la campaña
-                            if (SkillModels::where('id', $skill_id)->where('cartera_id', $campana_id)->exists()) {
-                                //Verificar que la campaña pertenece a la gerencia
-                                if (CarteraModel::where('id', $campana_id)->where('area_trabajo_id', $gerencia_id)->exists()) {
-                                    $evaluacion_skill = new EvaluacionSkillModel();
-                                    $evaluacion_skill->evaluacion_id = $evaluacion_id;
-                                    $evaluacion_skill->gerencia_id = $gerencia_id;
-                                    $evaluacion_skill->campana_id = $campana_id;
-                                    $evaluacion_skill->skill_id = $skill_id;
-                                    $evaluacion_skill->cargo_evaluador_id = $evaluador;
-                                    $evaluacion_skill->evaluado = $eval;
-                                    $evaluacion_skill->save();
+                                // Verificar que el skill pertenece a la campaña
+                                if (SkillModels::where('id', $skill_id)->where('cartera_id', $campana_id)->exists()) {
+                                    //Verificar que la campaña pertenece a la gerencia
+                                    if (CarteraModel::where('id', $campana_id)->where('area_trabajo_id', $gerencia_id)->exists()) {
+                                        $evaluacion_skill = new EvaluacionSkillModel();
+                                        $evaluacion_skill->evaluacion_id = $evaluacion_id;
+                                        $evaluacion_skill->gerencia_id = $gerencia_id;
+                                        $evaluacion_skill->campana_id = $campana_id;
+                                        $evaluacion_skill->skill_id = $skill_id;
+                                        $evaluacion_skill->cargo_evaluador_id = $evaluador;
+                                        $evaluacion_skill->evaluado = $eval;
+                                        $evaluacion_skill->save();
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
-        }
 
-        //GUARDAMOS QUIENES EVALUAN Y QUIENES SERAN EVALUADOS
-        $evaluadores = $request->input('cargo_evaluador');
-        $evaluados = $request->input('cargo_evaluar');
-        //ELIMINAMOS LOS REGISTROS ACTUALES DE LOS EVALUADORES ANTES DE VOLVER A INSERTAR
+            //GUARDAMOS QUIENES EVALUAN Y QUIENES SERAN EVALUADOS
+            $evaluadores = $request->input('cargo_evaluador');
+            $evaluados = $request->input('cargo_evaluar');
+            //ELIMINAMOS LOS REGISTROS ACTUALES DE LOS EVALUADORES ANTES DE VOLVER A INSERTAR
 
-        EvaluadosModel::where('evaluacion_id', $id)->delete();
-        foreach ($evaluadores as $evaluador) {
-            foreach ($evaluados as $eval) {
-                $cargos = new EvaluadosModel();
-                $cargos->evaluacion_id = $evaluacion_id;
-                $cargos->cargo_evaluador_id = $evaluador;
-                $cargos->evaluado = $eval;
-                $cargos->save();
+            EvaluadosModel::where('evaluacion_id', $id)->delete();
+            foreach ($evaluadores as $evaluador) {
+                foreach ($evaluados as $eval) {
+                    $cargos = new EvaluadosModel();
+                    $cargos->evaluacion_id = $evaluacion_id;
+                    $cargos->cargo_evaluador_id = $evaluador;
+                    $cargos->evaluado = $eval;
+                    $cargos->save();
+                }
             }
-        }
 
-        //SI VIENEN VALORES EN EL ARREGLO DE PARAMETROS PROCEDEMOS A ELIMINAR
-        if (!empty($request->id_parametro)) {
-            ParametroModel::whereIn('id', $request->id_parametro)->delete();
-        }
-        //GUARDAMOS LOS PARAMETROS DE LA EVALUACION ESPECIFICADOS
-        for ($j = 1; $j <= $request->totalparametros; $j++) {
-            //SI SE CONSIGUE UN PARAMETRO QUE YA TIENE ID ASIGNADO LO ACTUALIZAMOS
-            if ($request->input('id_parametro' . $j !== null)) {
-                $param = ParametroModel::find($request->input('id_parametro' . $j));
-                $param->nombre_parametro = $request->input('nombre_parametro' . $j);
-                $param->parametro1 = $request->input('desde' . $j);
-                $param->parametro2 = $request->input('hasta' . $j);
-                $param->hex = $request->input('hex' . $j);
-                $param->save();
-            } else {
-                //SE GUARDA EL NUEVO PARAMETRO
-                if ($request->input('nombre_parametro' . $j) !== null) {
-                    $param = new ParametroModel();
+            //SI VIENEN VALORES EN EL ARREGLO DE PARAMETROS PROCEDEMOS A ELIMINAR
+            if (!empty($request->id_parametro)) {
+                ParametroModel::whereNotIn('id', $request->id_parametro)->delete();
+            }
+            //GUARDAMOS LOS PARAMETROS DE LA EVALUACION ESPECIFICADOS
+            for ($j = 1; $j <= $request->totalparametros; $j++) {
+                //SI SE CONSIGUE UN PARAMETRO QUE YA TIENE ID ASIGNADO LO ACTUALIZAMOS
+                if ($request->input('id_parametro' . $j) !== null) {
+                    $param = ParametroModel::find($request->input('id_parametro' . $j));
                     $param->nombre_parametro = $request->input('nombre_parametro' . $j);
                     $param->parametro1 = $request->input('desde' . $j);
                     $param->parametro2 = $request->input('hasta' . $j);
-                    $param->evaluacion_id = $evaluacion_id;
                     $param->hex = $request->input('hex' . $j);
                     $param->save();
+                } else {
+                    //SE GUARDA EL NUEVO PARAMETRO
+                    if ($request->input('nombre_parametro' . $j) !== null) {
+                        $param = new ParametroModel();
+                        $param->nombre_parametro = $request->input('nombre_parametro' . $j);
+                        $param->parametro1 = $request->input('desde' . $j);
+                        $param->parametro2 = $request->input('hasta' . $j);
+                        $param->evaluacion_id = $evaluacion_id;
+                        $param->hex = $request->input('hex' . $j);
+                        $param->save();
+                    }
                 }
             }
-        }
 
-        if (!empty($request->id_rangos)) {
-            RangoModel::whereNotIn('id', $request->id_rangos)->delete();
-        }
+            if (!empty($request->id_rangos)) {
+                RangoModel::whereNotIn('id', $request->id_rangos)->delete();
+            }
+            //GUARDAMOS LOS RANGOS DE LA EVALUACION ESPECIFICADA     
 
-        //GUARDAMOS LOS RANGOS DE LA EVALUACION ESPECIFICADA
-        for ($k = 1; $k <= $request->totalrangos; $k++) {
-            //SI SE CONSIGUE UN RANGO QUE YA TENGA ASIGNADO UN ID ACTUALIZAMOS
-            if ($request->input('id_rango' . $k) !== null) {
-                $range = RangoModel::find($request->input('id_rango' . $k));
-                $range->descripcion_rango = $request->input('descripcion_rango' . $k);
-                $range->rango_desde = $request->input('rango_desde' . $k);
-                $range->rango_hasta = $request->input('rango_hasta' . $k);
-                $range->save();
-            } else {
-                //INSERTANDO NUEVO RANGO
-                if ($request->input('descripcion_rango' . $k) !== null) {
-                    $range = new RangoModel();
+            for ($k = 1; $k <= $request->totalrangos; $k++) {
+                //SI SE CONSIGUE UN RANGO QUE YA TENGA ASIGNADO UN ID ACTUALIZAMOS
+                if ($request->input('id_rangos' . $k) !== null) {
+                    $range = RangoModel::find($request->input('id_rangos' . $k));
                     $range->descripcion_rango = $request->input('descripcion_rango' . $k);
                     $range->rango_desde = $request->input('rango_desde' . $k);
                     $range->rango_hasta = $request->input('rango_hasta' . $k);
-                    $range->evaluacion_id = $evaluacion_id;
                     $range->save();
+                } else {
+                    //INSERTANDO NUEVO RANGO       
+                    if ($request->input('descripcion_rango' . $k) !== null) {
+                        $range = new RangoModel();
+                        $range->descripcion_rango = $request->input('descripcion_rango' . $k);
+                        $range->rango_desde = $request->input('rango_desde' . $k);
+                        $range->rango_hasta = $request->input('rango_hasta' . $k);
+                        $range->evaluacion_id = $evaluacion_id;
+                        $range->save();
+                    }
                 }
             }
-        }
 
-        ////UNA VEZ ACTUALIZADA LA CATEGORIA, SE PROCEDE A RECALCULAR EL VALOR DE LAS PREGUNTAS
-        for ($i = 1; $i <= $request->totalcategorias; $i++) {
-            //PRIMERO VALIDAMOS QUE LA CATEGORIA TENGA PREGUNTAS
-            if (PreguntaModel::where('categoria_id', $request->input('id_categoria' . $i))->exists()) {
-                //AVERIGUAMOS LA CANTIDAD DE PREGUNTAS QUE TIENE LA CATEGORIA
-                $preguntas_count = PreguntaModel::where('categoria_id', $request->input('id_categoria' . $i))->count();
-                //DIVIDIMOS EL VALOR DE LA CATEGORIA ENTRE LA CANTIDAD DE PREGUNTAS
-                $question_value = (float) $request->input('valor_categoria' . $i) / intval($preguntas_count);
-                $question_format = number_format($question_value, 3);
-                //ACTUALIZAMOS EL VALOR DE LAS PREGUNTAS DE LA CATEGORIA
-                PreguntaModel::where('categoria_id', $request->input('id_categoria' . $i))
+            ////UNA VEZ ACTUALIZADA LA CATEGORIA, SE PROCEDE A RECALCULAR EL VALOR DE LAS PREGUNTAS
+            for ($i = 1; $i <= $request->totalcategorias; $i++) {
+                //PRIMERO VALIDAMOS QUE LA CATEGORIA TENGA PREGUNTAS
+                if (PreguntaModel::where('categoria_id', $request->input('id_categoria' . $i))->exists()) {
+                    //AVERIGUAMOS LA CANTIDAD DE PREGUNTAS QUE TIENE LA CATEGORIA
+                    $preguntas_count = PreguntaModel::where('categoria_id', $request->input('id_categoria' . $i))->count();
+                    //DIVIDIMOS EL VALOR DE LA CATEGORIA ENTRE LA CANTIDAD DE PREGUNTAS
+                    $question_value = (float) $request->input('valor_categoria' . $i) / intval($preguntas_count);
+                    $question_format = number_format($question_value, 3);
+                    //ACTUALIZAMOS EL VALOR DE LAS PREGUNTAS DE LA CATEGORIA
+                    PreguntaModel::where('categoria_id', $request->input('id_categoria' . $i))
                         ->update(['valor_pregunta' => $question_format]);
+                }
             }
-        }
 
-        \Session::flash('success', 'Evaluacion modificada con exito');
-        return redirect()->route('hab.edit', ['id' => $id]);
+            \Session::flash('success', 'Evaluacion modificada con exito');
+            return redirect()->route('hab.edit', ['id' => $id]);
+        } catch (Throwable $e) {
+            \Session::flash('error', 'Ocurrio un error ' . $e->getMessage());
+            return redirect()->route('hab.edit', ['id' => $id]);
+        }
     }
 
     //FUNCION QUE PERMITE ELIMINAR UNA EVALUACION COMPLETA SI NO TIENE REGISTROS
-    public function destroyEvaluacion($id) {
+    public function destroyEvaluacion($id)
+    {
 
         try {
             //COMPROBAMOS QUE HAYA RESPUESTAS REGISTRADAS EN LA EVALUACION
@@ -506,7 +521,8 @@ class HabilidadController extends Controller {
     }
 
     //ACTIVA O DESACTIVA UNA EVALUACION DE HAB. BLANDAS
-    public function ActiveUpdate(Request $request, $id) {
+    public function ActiveUpdate(Request $request, $id)
+    {
         $evaluacion = EvaluacionModel::find($id);
         $evaluacion->estatus = $request->estatus;
         $evaluacion->save();
@@ -518,7 +534,8 @@ class HabilidadController extends Controller {
     }
 
     //INDEX DE CREACIÓN O EDICION DE PREGUNTAS
-    public function createPreguntas() {
+    public function createPreguntas()
+    {
         //MANDAMOS A LA VISTA LAS EVALUACIONES CREADAS , LAS CATEGORIAS VIENEN POR AJAX
         $evaluaciones = EvaluacionModel::all();
         return view('habilidades.preguntas.index')->with(["evaluaciones" => $evaluaciones])->render();
@@ -526,7 +543,8 @@ class HabilidadController extends Controller {
 
     //FUNCION QUE TRAE LAS CATEGORIAS DE UNA EVALUACION y las lanza a la tabla
 
-    public function getCategoria(Request $request) {
+    public function getCategoria(Request $request)
+    {
 
         $categories = CategoriaModel::where('evaluacion_id', $request->evaluacion)->get();
 
@@ -537,27 +555,31 @@ class HabilidadController extends Controller {
             $row["cod"] = $cate->cod_categoria;
             $row["categoria"] = $cate->nombre_categoria;
             $row["acciones"] = '<a href="' . route('check.pregunta.list', [$cate->evaluacion_id, $cate->id]) . '" class="btn btn-sm btn-primary" '
-                    . 'target="_blank" id="editcategoria' . $cate->id . '"  data-toggle="tooltip" data-placement="top"'
-                    . ' title="Editar"><i class=" fa fa-edit"></i></a>';
+                . 'target="_blank" id="editcategoria' . $cate->id . '"  data-toggle="tooltip" data-placement="top"'
+                . ' title="Editar"><i class=" fa fa-edit"></i></a>';
             $data[] = $row;
         }
         return json_encode($data);
     }
 
     //PERMITE GENERAR EL LISTADO DE LAS PREGUNTAS DESPUES DE ENVIAR EL FORM
-    public function getPreguntasList($evaluacion_id, $categoria_id) {
+    public function getPreguntasList($evaluacion_id, $categoria_id)
+    {
 
         $questions = PreguntaModel::where('categoria_id', $categoria_id)->get();
         $evaluacion = EvaluacionModel::find($evaluacion_id);
         $categorias = CategoriaModel::find($categoria_id);
 
-        return view('habilidades.preguntas.preguntas_list')->with(['questions' => $questions,
-                    "evaluacion" => $evaluacion,
-                    "categoria" => $categorias])->render();
+        return view('habilidades.preguntas.preguntas_list')->with([
+            'questions' => $questions,
+            "evaluacion" => $evaluacion,
+            "categoria" => $categorias
+        ])->render();
     }
 
     //PERMITE GUARDAR, ACTUALIZAR O ELIMINAR LAS PREGUNTAS EN LA BASE DE DATOS
-    public function storePreguntas(Request $request) {
+    public function storePreguntas(Request $request)
+    {
 
         $evaluacion_id = $request->evaluacion_id;
         $categoria_id = $request->categoria_id;
@@ -651,13 +673,15 @@ class HabilidadController extends Controller {
     }
 
     //FUNCIONES PARA ADMINISTRAR LAS RESPUESTAS
-    public function createRespuestas() {
+    public function createRespuestas()
+    {
         //MANDAMOS A LA VISTA LAS EVALUACIONES CREADAS , LAS CATEGORIAS Y PREGUNTAS VIENEN POR AJAX
         $evaluaciones = EvaluacionModel::all();
         return view('habilidades.respuestas.index')->with(["evaluaciones" => $evaluaciones]);
     }
 
-    public function SearchCategoriaforRespuestas(Request $request) {
+    public function SearchCategoriaforRespuestas(Request $request)
+    {
 
         $categories = CategoriaModel::where('evaluacion_id', $request->evaluacion)->get();
         return json_encode($categories);
@@ -665,7 +689,8 @@ class HabilidadController extends Controller {
 
     //FUNCION QUE TRAE LAS PREGUNTAS DE UNA CATEGORIA
 
-    public function consultPreguntas(Request $request) {
+    public function consultPreguntas(Request $request)
+    {
 
         $preguntas = PreguntaModel::where('evaluacion_id', $request->evaluacion)->where('categoria_id', $request->categoria)->get();
         $row = array();
@@ -675,19 +700,20 @@ class HabilidadController extends Controller {
             $row["cod"] = $cate->cod_pregunta;
             $row["pregunta"] = $cate->nombre_pregunta;
             $row["acciones"] = '<a href="' . route('check.respuesta.list', [$cate->evaluacion_id, $cate->categoria_id, $cate->id]) . '" class="btn btn-sm btn-primary" '
-                    . 'target="_blank" id="editpregunta' . $cate->id . '"  data-toggle="tooltip" data-placement="top"'
-                    . ' title="Editar"><i class=" fa fa-edit"></i></a>';
+                . 'target="_blank" id="editpregunta' . $cate->id . '"  data-toggle="tooltip" data-placement="top"'
+                . ' title="Editar"><i class=" fa fa-edit"></i></a>';
             $data[] = $row;
         }
         return json_encode($data);
     }
 
     //VISTA PARA MOSTRAR LAS RESPUESTAS DE LA PREGUNTA
-    public function getRespuestasList($evaluacion_id, $categoria_id, $pregunta_id) {
+    public function getRespuestasList($evaluacion_id, $categoria_id, $pregunta_id)
+    {
 
         $answers = RespuestaModel::where('evaluacion_id', $evaluacion_id)
-                        ->where('categoria_id', $categoria_id)
-                        ->where('pregunta_id', $pregunta_id)->get();
+            ->where('categoria_id', $categoria_id)
+            ->where('pregunta_id', $pregunta_id)->get();
 
         $categoria = CategoriaModel::where('id', $categoria_id)->first();
         $pregunta = PreguntaModel::where('id', $pregunta_id)->first();
@@ -696,7 +722,8 @@ class HabilidadController extends Controller {
     }
 
     //PERMITE ALMACENAR LA RESPUESTAS, EDITARLAS O ELIMINARLAS
-    public function storeRespuestas(Request $request) {
+    public function storeRespuestas(Request $request)
+    {
 
         $evaluacion_id = $request->evaluacion_id;
         $categoria_id = $request->categoria_id;
@@ -764,12 +791,13 @@ class HabilidadController extends Controller {
 
     //PERMITE GENERAR EL LISTADO DE LAS RESPUESTAS DESPUES DE ENVIAR EL FORM
 
-    public function indexReportes() {
+    public function indexReportes()
+    {
 
         //LOS SELECTORES FUNCIONAN MEDIANTE PERMISOS EN LA CARTERA
         $user = ENV('DEV_USER_CHANGE', false) ?
-                \Auth::loginUsingId(ENV('OTHER_USER_ID'), true) :
-                \Auth::user();
+            \Auth::loginUsingId(ENV('OTHER_USER_ID'), true) :
+            \Auth::user();
 
         $nivel = PoliceEstructure::VerifiedNivelPermissions($user);
 
@@ -784,7 +812,8 @@ class HabilidadController extends Controller {
         return view('habilidades.reportes')->with(["gerencias" => $areas, "evaluaciones" => $evaluaciones]);
     }
 
-    public function getPersonal(Request $request) {
+    public function getPersonal(Request $request)
+    {
 
         $sql = ResultadosModel::select('personal_id')->where('evaluacion_id', $request->evaluacion);
         if (count($request->skill) > 1) {
@@ -795,17 +824,18 @@ class HabilidadController extends Controller {
 
 
         $personal = PersonalModel::leftJoin('hab_resultados', 'dir_personal.id', '=', 'hab_resultados.personal_id')
-                        ->select('dir_personal.id as id_personal', 'dir_personal.primer_nombre', 'dir_personal.primer_apellido')
-                        ->whereIn('dir_personal.id', $personal_ids)->distinct()->get();
+            ->select('dir_personal.id as id_personal', 'dir_personal.primer_nombre', 'dir_personal.primer_apellido')
+            ->whereIn('dir_personal.id', $personal_ids)->distinct()->get();
 
         return json_encode($personal);
     }
 
     //FUNCION PARA TRAER EL HISTORICO DE CARGOS DE LA PERSONA
-    public function getCargo(Request $request) {
+    public function getCargo(Request $request)
+    {
 
         $historico = ResultadosModel::select('nombre_cargo')->whereIn('skill_campana', $request->skill)
-                        ->where('evaluacion_id', $request->evaluacion)->where('personal_id', $request->personal_id)->distinct()->get();
+            ->where('evaluacion_id', $request->evaluacion)->where('personal_id', $request->personal_id)->distinct()->get();
 
         //TAMBIEN DEBEMOS TRAERNOS LA SEDE DE LA PERSONA QUE SE EVALUO
         $sede_act = PersonalModel::select('sede_laboral')->where('id', $request->personal_id)->first();
@@ -815,9 +845,10 @@ class HabilidadController extends Controller {
 
         return response()->json(['historico' => $historico, 'sede' => $sede, 'rango_fecha' => $rango_fecha]);
     }
-   
+
     //FUNCION QUE GENERA LOS DISTINTOS TIPOS DE REPORTES
-    public function getReporte(Request $request) {
+    public function getReporte(Request $request)
+    {
 
         $date = $request->rango_eval;
         $arrayDate = explode("-", $date);
@@ -844,25 +875,30 @@ class HabilidadController extends Controller {
         //OBTENEMOS LOS DATOS DE LA EVALUACION Y EL PERSONAL EVALUADO
 
         $datos = ResultadosModel::where('evaluacion_id', $request->evaluacion)->where('personal_id', $request->personal_cargo)
-                        ->whereIn('skill_campana', $request->skill)->where('nombre_cargo', $request->position_name)->whereBetween('fecha_evaluacion', array("$begin", "$end"))->get();
+            ->whereIn('skill_campana', $request->skill)->where('nombre_cargo', $request->position_name)->whereBetween('fecha_evaluacion', array("$begin", "$end"))->get();
 
         $datos_array = ResultadosModel::where('evaluacion_id', $request->evaluacion)->where('personal_id', $request->personal_cargo)
-                        ->whereIn('skill_campana', $request->skill)->where('nombre_cargo', $request->position_name)->whereBetween('fecha_evaluacion', array("$begin", "$end"))->get()->toArray();
+            ->whereIn('skill_campana', $request->skill)->where('nombre_cargo', $request->position_name)->whereBetween('fecha_evaluacion', array("$begin", "$end"))->get()->toArray();
 
         //GENERAMOS UN ARRAY DE LAS EVALUACIONES REALIZADAS SOBRE EL PERSONAL Y SUS RESPUESTAS
         $reportData = [];
         $reportData_num = [];
 
         $evaluaciones = ResultadosRespuestasModel::leftJoin('hab_resultados', 'hab_resultados_respuestas.resultado_id', '=', 'hab_resultados.id')
-                ->select('hab_resultados_respuestas.resultado_id', 'hab_resultados_respuestas.pregunta_id', 'hab_resultados_respuestas.respuesta_id',
-                        'hab_resultados.personal_id', 'hab_resultados.skill_campana')
-                ->where('hab_resultados.evaluacion_id', $request->evaluacion)
-                ->where('hab_resultados.personal_id', $request->personal_cargo)
-                ->whereIn('hab_resultados.skill_campana', $request->skill)
-                ->where('hab_resultados.nombre_cargo', $request->position_name)
-                ->whereBetween('hab_resultados.fecha_evaluacion', array("$begin", "$end"))
-                ->orderBy('hab_resultados_respuestas.resultado_id')
-                ->get();
+            ->select(
+                'hab_resultados_respuestas.resultado_id',
+                'hab_resultados_respuestas.pregunta_id',
+                'hab_resultados_respuestas.respuesta_id',
+                'hab_resultados.personal_id',
+                'hab_resultados.skill_campana'
+            )
+            ->where('hab_resultados.evaluacion_id', $request->evaluacion)
+            ->where('hab_resultados.personal_id', $request->personal_cargo)
+            ->whereIn('hab_resultados.skill_campana', $request->skill)
+            ->where('hab_resultados.nombre_cargo', $request->position_name)
+            ->whereBetween('hab_resultados.fecha_evaluacion', array("$begin", "$end"))
+            ->orderBy('hab_resultados_respuestas.resultado_id')
+            ->get();
 
         //dd($evaluaciones);
 
@@ -1072,8 +1108,8 @@ class HabilidadController extends Controller {
         //dd($datas);
         //ESTA CONSULTA CONTIENE LAS PREGUNTAS Y LA CATEGORIA PARA LA CABECERA DEL REPORTE RF
         $preguntas_eval_rf = PreguntaModel::with('relationCategoria')
-                ->where('evaluacion_id', $request->evaluacion)
-                ->get();
+            ->where('evaluacion_id', $request->evaluacion)
+            ->get();
         //AQUI SACAMOS EL TOTAL GENERAL POR EVALUACION
         foreach ($datas as &$evaluacionl) {
             $total = 0;
@@ -1255,7 +1291,7 @@ class HabilidadController extends Controller {
         $position_name = $position->nombre_cargo;
         //CREAREMOS UN ARREGLO QUE ALMACENE LAS CATEGORIAS DE LA EVALUACION
         $categories = CategoriaModel::select('id', 'nombre_categoria', 'descripcion')->where('evaluacion_id', $request->evaluacion)
-                        ->get()->toArray();
+            ->get()->toArray();
         //USAMOS EL ARRAY RESULT QUE CONTIENE LA SUMATORIA TOTAL POR CATEGORIA PARA COLOCAR EL PUNTAJE EN CADA CATEGORIA
 
         $totales = $result;
@@ -1389,13 +1425,33 @@ class HabilidadController extends Controller {
 
         $rango_evaluacion = $resultadof;
         //MANDAMOS LOS DATOS AL EXPORT EXCEL
-        return Excel::download(new ReporteExport($preguntas_eval, $form, $datas, $preguntas_eval_rf, $result, $cantidad,
-                                $resultadoPromedio, $test_name, $rango_evaluacion, $nombre_completo, $sede, $position_name, $cates, $nota_final, $headers_param, $data_com, $ex),
-                        '' . $nombre_evaluado . '.xlsx');
+        return Excel::download(
+            new ReporteExport(
+                $preguntas_eval,
+                $form,
+                $datas,
+                $preguntas_eval_rf,
+                $result,
+                $cantidad,
+                $resultadoPromedio,
+                $test_name,
+                $rango_evaluacion,
+                $nombre_completo,
+                $sede,
+                $position_name,
+                $cates,
+                $nota_final,
+                $headers_param,
+                $data_com,
+                $ex
+            ),
+            '' . $nombre_evaluado . '.xlsx'
+        );
     }
 
     //FUNCION QUE PERMITE MOSTRAR EL GRAFICO O LAS ESTADISTICAS DEL REPORTE
-    public function getGrafico(Request $request) {
+    public function getGrafico(Request $request)
+    {
 
         //OBTENEMOS LAS CATEGORIAS DE LA EVALUACION PARA COLOCARLAS EN EL EJE X
         $categories = CategoriaModel::select('nombre_categoria')->where('evaluacion_id', $request->evaluacion)->get()->toArray();
@@ -1424,12 +1480,12 @@ class HabilidadController extends Controller {
         //OBTENEMOS LOS DATOS DE LA EVALUACION Y EL PERSONAL EVALUADO
 
         $datos = ResultadosModel::where('evaluacion_id', $request->evaluacion)->where('personal_id', $request->personal_id)
-                        ->whereIn('skill_campana', $request->skill)->where('nombre_cargo', $request->position_name)
-                        ->whereBetween('fecha_evaluacion', array("$begin", "$end"))->get();
+            ->whereIn('skill_campana', $request->skill)->where('nombre_cargo', $request->position_name)
+            ->whereBetween('fecha_evaluacion', array("$begin", "$end"))->get();
 
         $datos_array = ResultadosModel::where('evaluacion_id', $request->evaluacion)->where('personal_id', $request->personal_id)
-                        ->whereIn('skill_campana', $request->skill)->where('nombre_cargo', $request->position_name)
-                        ->whereBetween('fecha_evaluacion', array("$begin", "$end"))->get()->toArray();
+            ->whereIn('skill_campana', $request->skill)->where('nombre_cargo', $request->position_name)
+            ->whereBetween('fecha_evaluacion', array("$begin", "$end"))->get()->toArray();
 
         //GENERAMOS UN ARRAY DE LAS EVALUACIONES REALIZADAS SOBRE EL PERSONAL Y SUS RESPUESTAS
 
@@ -1437,15 +1493,20 @@ class HabilidadController extends Controller {
         $reportData_num = [];
 
         $evaluaciones = ResultadosRespuestasModel::leftJoin('hab_resultados', 'hab_resultados_respuestas.resultado_id', '=', 'hab_resultados.id')
-                ->select('hab_resultados_respuestas.resultado_id', 'hab_resultados_respuestas.pregunta_id', 'hab_resultados_respuestas.respuesta_id',
-                        'hab_resultados.personal_id', 'hab_resultados.skill_campana')
-                ->where('hab_resultados.evaluacion_id', $request->evaluacion)
-                ->where('hab_resultados.personal_id', $request->personal_id)
-                ->whereIn('hab_resultados.skill_campana', $request->skill)
-                ->where('hab_resultados.nombre_cargo', $request->position_name)
-                ->whereBetween('hab_resultados.fecha_evaluacion', array("$begin", "$end"))
-                ->orderBy('hab_resultados_respuestas.resultado_id')
-                ->get();
+            ->select(
+                'hab_resultados_respuestas.resultado_id',
+                'hab_resultados_respuestas.pregunta_id',
+                'hab_resultados_respuestas.respuesta_id',
+                'hab_resultados.personal_id',
+                'hab_resultados.skill_campana'
+            )
+            ->where('hab_resultados.evaluacion_id', $request->evaluacion)
+            ->where('hab_resultados.personal_id', $request->personal_id)
+            ->whereIn('hab_resultados.skill_campana', $request->skill)
+            ->where('hab_resultados.nombre_cargo', $request->position_name)
+            ->whereBetween('hab_resultados.fecha_evaluacion', array("$begin", "$end"))
+            ->orderBy('hab_resultados_respuestas.resultado_id')
+            ->get();
 
         foreach ($evaluaciones as $evaluacion) {
             $resultadoId = $evaluacion->resultado_id;
@@ -1850,23 +1911,24 @@ class HabilidadController extends Controller {
 
 
             return response()->json([
-                        'titulo' => $nombreEvaluacion,
-                        'labels' => $nombresCategorias,
-                        'datos' => $valoresFinales,
-                        'datosGrafico' => $datosGrafico
+                'titulo' => $nombreEvaluacion,
+                'labels' => $nombresCategorias,
+                'datos' => $valoresFinales,
+                'datosGrafico' => $datosGrafico
             ]);
         } else {
 
             return response()->json([
-                        'titulo' => '',
-                        'labels' => '',
-                        'datos' => '',
-                        'datosGrafico' => ''
+                'titulo' => '',
+                'labels' => '',
+                'datos' => '',
+                'datosGrafico' => ''
             ]);
         }
     }
 
-    private function obtenerColorParametro($valor, $parametros) {
+    private function obtenerColorParametro($valor, $parametros)
+    {
         foreach ($parametros as $parametro) {
             if ($valor >= $parametro->parametro1 && $valor <= $parametro->parametro2) {
                 return array($parametro->hex, $parametro->nombre_parametro);

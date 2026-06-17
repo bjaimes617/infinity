@@ -393,10 +393,10 @@
                                         </div>
                                         <!---- pega contenido al agregar parametros --->
                                         <div id="pastecontent_range" class="col-md-12"> 
-                                            @foreach($rangos as $rang => $rango)                                                                                     
+                                            @foreach($rangos as $rang => $rango)                   
                                             <div class="row range" id="range-{{$rang+1}}">
                                                 <input type="hidden" name="id_rangos[]" id="id_rangos" value="{{$rango->id}}">
-                                                <input type="hidden" name="id_rangos{{$rang+1}}" id="id_rangos{{$rang+1}}" value="{{$categoria->id}}">  
+                                                <input type="hidden" name="id_rangos{{$rang+1}}" id="id_rangos{{$rang+1}}" value="{{$rango->id}}">  
                                                 <div class="col-md-5">
                                                     <div class="form-group">
                                                         <label for="label6" class="col-form-label">Descripción <span class="required" style="color:red;"> * </span></label> 
@@ -414,7 +414,9 @@
                                                             <div class="input-group-prepend">
                                                                 <span class="input-group-text"><i class="fa fa-percent"></i></span>
                                                             </div>                                          
-                                                            <input type="number" step="0.01" min="0.00" placeholder="0.00" value="{{$rango->rango_desde}}" required class="form-control valor-rango1" id="rango_desde{{$rang+1}}" name="rango_desde{{$rang+1}}">                                           
+                                                            <input type="number" step="0.01" min="0.00" placeholder="0.00" 
+                                                            value="{{$rango->rango_desde}}" required class="form-control valor-rango1" 
+                                                            d="rango_desde{{$rang+1}}" name="rango_desde{{$rang+1}}">                                           
                                                         </div>
                                                     </div> 
                                                 </div>
@@ -426,7 +428,8 @@
                                                                 <span class="input-group-text"><i class="fa fa-percent"></i></span>
                                                             </div>                                          
                                                             <input type="number" step="0.01" min="0.00" placeholder="0.00" required
-                                                                   class="form-control valor-rango2"  value="{{$rango->rango_hasta}}" id="rango_hasta{{$rang+1}}" name="rango_hasta{{$rang+1}}">                                           
+                                                                   class="form-control valor-rango2"  value="{{$rango->rango_hasta}}" 
+                                                                   id="rango_hasta{{$rang+1}}" name="rango_hasta{{$rang+1}}">                                           
                                                         </div>
                                                     </div> 
                                                 </div>

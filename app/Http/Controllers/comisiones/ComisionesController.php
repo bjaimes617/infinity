@@ -43,33 +43,41 @@ use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Carbon\Carbon;
 
-class ComisionesController extends Controller {
+class ComisionesController extends Controller
+{
 
     //*incidencia 3 -> auditado
     //incidencia 2 -> no procesado
     //incidencia 1 -> incidencia de pago
     //incidencia 0 -> no problemas*//
-    Public Function __construct() {
+    public function __construct()
+    {
         $this->esquema = ["Quincenal" => "Quincenal", "Semanal" => "Semanal"];
 
-        $this->statusAuditoria = ["NO PROCESADO" => "No Procesado",
-            "AUDITADO" => "Auditado", "PAGADO" => "Pagado"];
+        $this->statusAuditoria = [
+            "NO PROCESADO" => "No Procesado",
+            "AUDITADO" => "Auditado",
+            "PAGADO" => "Pagado"
+        ];
         //,"PAGADO CON INCIDENCIAS"=>"Pagado con Incidencias"];
-        
-        $this->estatusbancarios = ["todos"=>"[TODOS]","EN PROCESO" => "En Proceso",
-        "PAGADO" => "Pagado", "PAGADO CON INCIDENCIAS"=>"Pagado con Incidencias"];
+
+        $this->estatusbancarios = [
+            "todos" => "[TODOS]",
+            "EN PROCESO" => "En Proceso",
+            "PAGADO" => "Pagado",
+            "PAGADO CON INCIDENCIAS" => "Pagado con Incidencias"
+        ];
 
         $this->Numero_meses_anteriores_permitido    = 6;
         $this->Numero_meses_anteriores_no_permitido = 1;
-
     }
 
-    public function index() {
-
+    public function index()
+    {
 
         $user = ENV('DEV_USER_CHANGE', false) ?
-                \Auth::loginUsingId(ENV('OTHER_USER_ID'), true) :
-                \Auth::user();
+            \Auth::loginUsingId(ENV('OTHER_USER_ID'), true) :
+            \Auth::user();
 
         $nivel = PoliceEstructure::VerifiedNivelPermissions($user);
 
@@ -80,42 +88,45 @@ class ComisionesController extends Controller {
         }
 
         $mes        = $user->hasPermission('comisiones.cargar.demoradas') == true ?  $this->Numero_meses_anteriores_permitido : $this->Numero_meses_anteriores_no_permitido;
-          
+
         $permiso    = $user->hasPermission('comisiones.cargar.demoradas') == true  ? "true" : "false";
 
         return view('comisiones.index')->with(["areas" => $areas, "esquema" => $this->esquema, "timeMes" => $mes, "permiso" => $permiso]);
     }
 
     ///funcion para Devolver el esquema de pagos ----> quincenal, mensual o mixto
-    public function getTipoPago(Request $request) {
+    public function getTipoPago(Request $request)
+    {
 
-         $user = ENV('DEV_USER_CHANGE', false) ?
-                \Auth::loginUsingId(ENV('OTHER_USER_ID'), true) :
-                \Auth::user();
-                
+        $user = ENV('DEV_USER_CHANGE', false) ?
+            \Auth::loginUsingId(ENV('OTHER_USER_ID'), true) :
+            \Auth::user();
+
         if (SkillModels::select('tipo_periodo')->where('id', $request->skill)->exists()) {
-            $tipo_periodo_sql = SkillModels::select('tipo_periodo')->where('id', $request->skill)->first();
+            $tipo_periodo_sql = SkillModels::select('tipo_periodo', 'type_format_uploads')->where('id', $request->skill)->first();
             $tipo_periodo = $tipo_periodo_sql->tipo_periodo;
+            $tipo_formatos = json_decode($tipo_periodo_sql->type_format_uploads);
         } else {
             $tipo_periodo = "";
+            $tipo_formatos = "";
         }
         ///Basados en la Fecha en curso se mostrara las primeras opciones
         $fechaActual = Carbon::now();
         //validacion de permisos para cargas demoradas se mostrara 1 si no tiene permisos, y 6 si los tiene
         $intMeses = $user->hasPermission('comisiones.cargar.demoradas') == true ?  $this->Numero_meses_anteriores_permitido : $this->Numero_meses_anteriores_no_permitido;
-       
+
         switch ($tipo_periodo) {
-            case "Semanal" : 
+            case "Semanal":
                 //DETERMINAMOS EN QUE SEMANA ESTAMOS DEL MES EN CURSO
                 $semanaencurso = $fechaActual->copy()->weekOfMonth;
-                
-                Switch ($semanaencurso) {
+
+                switch ($semanaencurso) {
                     case 1:
                         $minDate = $fechaActual->copy()->subMonth($intMeses)->format('m/Y');
                         $maxDate = $fechaActual->copy()->format('m/Y');
                         $type_semana = 1;
                         break;
-                    default :
+                    default:
                         $minDate = $fechaActual->copy()->subMonth($intMeses)->format('m/Y');
                         $maxDate = $fechaActual->copy()->format('m/Y');
                         $type_semana = 2;
@@ -155,36 +166,35 @@ class ComisionesController extends Controller {
                 break;
             case "Quincenal": //SI EL TIPO DE PERIODO QUE VIENE ES QUINCENAL
 
-                $rangos = SkillRangoQuincenal::where('skill_id', $request->skill)->first();                           
+                $rangos = SkillRangoQuincenal::where('skill_id', $request->skill)->first();
                 $diaDelMes = $fechaActual->day; // Obtiene el día del mes  
 
-                if($rangos->desde1 == $rangos->desde2 && $rangos->hasta1 === $rangos->hasta2){
+                if ($rangos->desde1 == $rangos->desde2 && $rangos->hasta1 === $rangos->hasta2) {
                     //mostrara ambos cortes
                     $quicena_en_curso = 3; // Primera quincena
                     $minDate = $fechaActual->copy()->subMonth($intMeses)->format('m/Y');
                     $maxDate = $fechaActual->copy()->format('m/Y');
-                   
-                    $opcion_corte_show =[ "1"=> "1ra. Quincena","2"=> "2da. Quincena"];
 
-                } else if ($diaDelMes >= $rangos->desde2 && $diaDelMes < $rangos->hasta2) {                   
-                    
+                    $opcion_corte_show = ["1" => "1ra. Quincena", "2" => "2da. Quincena"];
+                } else if ($diaDelMes >= $rangos->desde2 && $diaDelMes < $rangos->hasta2) {
+
                     $quicena_en_curso = 1; // Primera quincena
                     $minDate = $fechaActual->copy()->subMonth($intMeses)->format('m/Y');
                     $maxDate = $fechaActual->copy()->format('m/Y');
 
                     //MOSTRAMOS SOLO LA SEGUNDA QUINCENA DEL MES ANTERIOR                   
-                    $opcion_corte_show =["2"=> "2da. Quincena"];
+                    $opcion_corte_show = ["2" => "2da. Quincena"];
                 } else {
-                   
+
                     $quicena_en_curso = 2; // Segunda quincena
                     //DE LO CONTRARIO MOSTRAMOS SOLO EL MES ACTUAL
                     $minDate = $fechaActual->copy()->subMonth($intMeses)->format('m/Y');
                     $maxDate = Carbon::now()->format('m/Y');
                     //MOSTRAMOS PRIMERA QUINCENA EN EL SELECTOR DE CORTES                   
-                    $opcion_corte_show =[ "1"=> "1ra. Quincena" ];
+                    $opcion_corte_show = ["1" => "1ra. Quincena"];
                 }
                 break;
-            case "Mixto" :
+            case "Mixto":
                 $maxDate = $fechaActual->copy()->format('m/Y');
                 break;
             default:
@@ -194,7 +204,8 @@ class ComisionesController extends Controller {
 
 
         return json_encode([
-            'tipo_periodo'      => $tipo_periodo,            
+            'tipo_periodo'      => $tipo_periodo,
+            'tipo_formatos'     => $tipo_formatos,
             'quincena_en_curso' => $quicena_en_curso ?? null,
             'minDate'           => $minDate  ?? null,
             'maxDate'           => $maxDate  ?? null,
@@ -205,30 +216,31 @@ class ComisionesController extends Controller {
     }
 
     ///funcion para Devolver el esquema de pagos ----> cuando el esquema es mixto
-    public function getPreviousAndCurrentWeek(Request $request) {
+    public function getPreviousAndCurrentWeek(Request $request)
+    {
 
-         $tipo_periodo = $request->tipo_periodo;
+        $tipo_periodo = $request->tipo_periodo;
 
-           $user = ENV('DEV_USER_CHANGE', false) ?
-                \Auth::loginUsingId(ENV('OTHER_USER_ID'), true) :
-                \Auth::user();
+        $user = ENV('DEV_USER_CHANGE', false) ?
+            \Auth::loginUsingId(ENV('OTHER_USER_ID'), true) :
+            \Auth::user();
 
-                 $fechaActual = Carbon::now();
+        $fechaActual = Carbon::now();
         //validacion de permisos para cargas demoradas se mostrara 1 si no tiene permisos, y 6 si los tiene
         $intMeses = $user->hasPermission('comisiones.cargar.demoradas') == true ?  $this->Numero_meses_anteriores_permitido : $this->Numero_meses_anteriores_no_permitido;
-       
+
         switch ($tipo_periodo) {
-            case "Semanal" : 
+            case "Semanal":
                 //DETERMINAMOS EN QUE SEMANA ESTAMOS DEL MES EN CURSO
                 $semanaencurso = $fechaActual->copy()->weekOfMonth;
-                
-                Switch ($semanaencurso) {
+
+                switch ($semanaencurso) {
                     case 1:
                         $minDate = $fechaActual->copy()->subMonth($intMeses)->format('m/Y');
                         $maxDate = $fechaActual->copy()->format('m/Y');
                         $type_semana = 1;
                         break;
-                    default :
+                    default:
                         $minDate = $fechaActual->copy()->subMonth($intMeses)->format('m/Y');
                         $maxDate = $fechaActual->copy()->format('m/Y');
                         $type_semana = 2;
@@ -268,42 +280,41 @@ class ComisionesController extends Controller {
                 break;
             case "Quincenal": //SI EL TIPO DE PERIODO QUE VIENE ES QUINCENAL
 
-                $rangos = SkillRangoQuincenal::where('skill_id', $request->skill)->first();                           
+                $rangos = SkillRangoQuincenal::where('skill_id', $request->skill)->first();
                 $diaDelMes = $fechaActual->day; // Obtiene el día del mes  
 
-                if($rangos->desde1 == $rangos->desde2 && $rangos->hasta1 === $rangos->hasta2){
+                if ($rangos->desde1 == $rangos->desde2 && $rangos->hasta1 === $rangos->hasta2) {
                     //mostrara ambos cortes
                     $quicena_en_curso = 3; // Primera quincena
                     $minDate = $fechaActual->copy()->subMonth($intMeses)->format('m/Y');
                     $maxDate = $fechaActual->copy()->format('m/Y');
-                   
-                    $opcion_corte_show =[ "1"=> "1ra. Quincena","2"=> "2da. Quincena"];
 
-                } else if ($diaDelMes >= $rangos->desde2 && $diaDelMes < $rangos->hasta2) {                   
-                    
+                    $opcion_corte_show = ["1" => "1ra. Quincena", "2" => "2da. Quincena"];
+                } else if ($diaDelMes >= $rangos->desde2 && $diaDelMes < $rangos->hasta2) {
+
                     $quicena_en_curso = 1; // Primera quincena
                     $minDate = $fechaActual->copy()->subMonth($intMeses)->format('m/Y');
                     $maxDate = $fechaActual->copy()->format('m/Y');
 
                     //MOSTRAMOS SOLO LA SEGUNDA QUINCENA DEL MES ANTERIOR                   
-                    $opcion_corte_show =["2"=> "2da. Quincena"];
+                    $opcion_corte_show = ["2" => "2da. Quincena"];
                 } else {
-                   
+
                     $quicena_en_curso = 2; // Segunda quincena
                     //DE LO CONTRARIO MOSTRAMOS SOLO EL MES ACTUAL
                     $minDate = $fechaActual->copy()->subMonth($intMeses)->format('m/Y');
                     $maxDate = Carbon::now()->format('m/Y');
                     //MOSTRAMOS PRIMERA QUINCENA EN EL SELECTOR DE CORTES                   
-                    $opcion_corte_show =[ "1"=> "1ra. Quincena" ];
+                    $opcion_corte_show = ["1" => "1ra. Quincena"];
                 }
-                break;          
+                break;
             default:
                 return json_encode(abort(500, "El Skill seleccionado No cuenta con el esquema de pago."));
                 break;
         }
 
-         return json_encode([
-            'tipo_periodo'      => $tipo_periodo,            
+        return json_encode([
+            'tipo_periodo'      => $tipo_periodo,
             'quincena_en_curso' => $quicena_en_curso ?? null,
             'minDate'           => $minDate  ?? null,
             'maxDate'           => $maxDate  ?? null,
@@ -314,32 +325,33 @@ class ComisionesController extends Controller {
     }
 
     ////recarga los tipos de cortes si el mes cambia
-    public function getCorte(Request $request) {
-      
+    public function getCorte(Request $request)
+    {
+
         $fecharecibida = Carbon::createfromFormat('m/Y', $request->mes);
         $fechaActual = Carbon::now();
 
         $tipo_periodo = isset($request->tipo_periodo) ? $request->tipo_periodo : SkillModels::find($request->skill)->tipo_periodo;
 
-        
+
         $user = ENV('DEV_USER_CHANGE', false) ?
             \Auth::loginUsingId(ENV('OTHER_USER_ID'), true) :
             \Auth::user();
 
         //validacion de permisos para cargas demoradas se mostrara 1 si no tiene permisos, y 6 si los tiene
         $intMeses = $user->hasPermission('comisiones.cargar.demoradas') == true ?  $this->Numero_meses_anteriores_permitido : $this->Numero_meses_anteriores_no_permitido;
-       
+
         switch ($tipo_periodo) {
-            case "Semanal" : 
+            case "Semanal":
                 //DETERMINAMOS EN QUE SEMANA ESTAMOS DEL MES EN CURSO
-                $semanaencurso = $fecharecibida->copy()->weekOfMonth;                
-                Switch ($semanaencurso) {
+                $semanaencurso = $fecharecibida->copy()->weekOfMonth;
+                switch ($semanaencurso) {
                     case 1:
                         $minDate = $fecharecibida->copy()->subMonth($intMeses)->format('m/Y');
                         $maxDate = $fecharecibida->copy()->format('m/Y');
                         $type_semana = 1;
                         break;
-                    default :
+                    default:
                         $minDate = $fecharecibida->copy()->subMonth($intMeses)->format('m/Y');
                         $maxDate = $fecharecibida->copy()->format('m/Y');
                         $type_semana = 2;
@@ -379,65 +391,63 @@ class ComisionesController extends Controller {
                 break;
             case "Quincenal": //SI EL TIPO DE PERIODO QUE VIENE ES QUINCENAL
 
-                $rangos = SkillRangoQuincenal::where('skill_id', $request->skill)->first();                           
+                $rangos = SkillRangoQuincenal::where('skill_id', $request->skill)->first();
                 $diaDelMes = $fechaActual->day; // Obtiene el día del mes  
 
                 ///validamos si el mes recibido es igual al a fecha actual, en caso de ser diferentes se mostraran ambas quincenas
-                if(!$fechaActual->isSameMonth($fecharecibida)){     
-                    $opcion=1;              
+                if (!$fechaActual->isSameMonth($fecharecibida)) {
+                    $opcion = 1;
                     $quicena_en_curso = 3; // todas las quincenas
                     $minDate = $fechaActual->copy()->subMonth($intMeses)->format('m/Y');
-                    $maxDate = $fechaActual->copy()->format('m/Y');                   
-                    $opcion_corte_show =[ "1"=> "1ra. Quincena","2"=> "2da. Quincena"];
+                    $maxDate = $fechaActual->copy()->format('m/Y');
+                    $opcion_corte_show = ["1" => "1ra. Quincena", "2" => "2da. Quincena"];
                     ///si no se cumple la condicion se valida si los rangos del skill son iguales y se mantiene le maxDate
                     ///basados en la fecha en curso
-                }else if($rangos->desde1 == $rangos->desde2 && $rangos->hasta1 === $rangos->hasta2){
-                     $opcion=2;   
+                } else if ($rangos->desde1 == $rangos->desde2 && $rangos->hasta1 === $rangos->hasta2) {
+                    $opcion = 2;
                     //mostrara ambos cortes
                     $quicena_en_curso = 3; // todas las quincenas
                     $minDate = $fechaActual->copy()->subMonth($intMeses)->format('m/Y');
                     $maxDate = $fechaActual->copy()->format('m/Y');
-                   
-                    $opcion_corte_show =[ "1"=> "1ra. Quincena","2"=> "2da. Quincena"];
 
-                } else if ($diaDelMes >= $rangos->desde2 && $diaDelMes < $rangos->hasta2) {                   
-                    $opcion=3;  
+                    $opcion_corte_show = ["1" => "1ra. Quincena", "2" => "2da. Quincena"];
+                } else if ($diaDelMes >= $rangos->desde2 && $diaDelMes < $rangos->hasta2) {
+                    $opcion = 3;
                     $quicena_en_curso = 1; // Primera quincena
                     $minDate = $fechaActual->copy()->subMonth($intMeses)->format('m/Y');
                     $maxDate = $fechaActual->copy()->format('m/Y');
 
                     //MOSTRAMOS SOLO LA SEGUNDA QUINCENA DEL MES ANTERIOR                   
-                    $opcion_corte_show =["2"=> "2da. Quincena"];
+                    $opcion_corte_show = ["2" => "2da. Quincena"];
                 } else {
-                    $opcion=4;  
+                    $opcion = 4;
                     $quicena_en_curso = 2; // Segunda quincena
                     //DE LO CONTRARIO MOSTRAMOS SOLO EL MES ACTUAL
                     $minDate = $fechaActual->copy()->subMonth($intMeses)->format('m/Y');
                     $maxDate = $fechaActual->copy()->format('m/Y');
                     //MOSTRAMOS PRIMERA QUINCENA EN EL SELECTOR DE CORTES                   
-                    $opcion_corte_show =[ "1"=> "1ra. Quincena"];
+                    $opcion_corte_show = ["1" => "1ra. Quincena"];
                 }
-                break;          
+                break;
             default:
                 return json_encode(abort(500, "El Skill seleccionado No cuenta con el esquema de pago."));
                 break;
         }
 
         return json_encode([
-            'tipo_periodo'      => $tipo_periodo,            
+            'tipo_periodo'      => $tipo_periodo,
             'quincena_en_curso' => $quicena_en_curso ?? null,
             'minDate'           => $minDate  ?? null,
             'maxDate'           => $maxDate  ?? null,
             'opcion_corte_show' => $opcion_corte_show ?? null,
             'arreglo_semanal'   => $semanasArray ?? null,
-            'semana_en_curso'   => null           
+            'semana_en_curso'   => null
         ]);
-
     }
 
     ///procesamiento de los XLS
-    public function store(Request $request) {
-
+    public function store(Request $request)
+    {
         // Cargar el archivo Excel      
         $spreadsheet = IOFactory::load($request->file('archivo')->getRealPath());
         // Obtener la primera hoja de cálculo
@@ -446,16 +456,26 @@ class ComisionesController extends Controller {
         $totalRows = $worksheet->getHighestRow(); // Esto devuelve el número total de filas
 
         $headings = (new HeadingRowImport)->toArray($request->file('archivo'));
+        if (in_array("comision_usd", $headings[0][0])) {
+            $typeImport = "A";
+        } else {
+            $typeImport = "B";
+        }
 
         $file = $request->file('archivo');
         $nombreArchivo = $file->getClientOriginalName();
 
         $fechaCarbon = Carbon::createFromFormat('m/Y', $request->mes)->startOfMonth();
         $mes = $fechaCarbon->copy()->format('F');
-      
+
         $anio = $fechaCarbon->copy()->format('Y'); // Año seleccionado
-        //GUARDAMOS EL NUEVO LOTE
+
         $habilidad = SkillModels::where('id', $request->skill)->first();
+        $formato_autorizado = json_decode($habilidad->type_format_uploads, true);
+        if (!in_array($typeImport, $formato_autorizado)) {
+            return back()->with('error', "El formato del archivo no es el correcto para este Skill.");
+        }
+
         $nombre_habilidad = $habilidad->nombre_skill;
 
         $tipoperiodo = $habilidad->tipo_periodo;
@@ -522,7 +542,7 @@ class ComisionesController extends Controller {
                 }
                 break;
         }
-  
+        //GUARDAMOS EL NUEVO LOTE
         $lote = new LoteModel();
         $lote->nombre_lote = null;
         $lote->gerencia_id = $request->area_trabajo;
@@ -534,15 +554,8 @@ class ComisionesController extends Controller {
         $lote->mes  = $mes;
         $lote->estatus = "NO PROCESADO";
         $lote->lotebanco_id = null;
+        $lote->formato = $typeImport;
 
-        //  SI EL FORMATO ES QUINCENAL
-        if ($headings[0][0][1] == "comision_usd") {
-            $typeImport = "A";
-            $lote->formato = "A";
-        } else {
-            $typeImport = "B";
-            $lote->formato = "B";
-        }
         //COLOCAMOS UN IDENTIFICADOR AL ARCHIVO Y LUEGO LO ALMACENAMOS EN EL SERVIDOR 
         $gerencia = AreatrabajoModel::select('nombre_campana', 'abrev')->where('id', $request->area_trabajo)->first();
         $nombre_gerencia = $gerencia->nombre_campana;
@@ -554,7 +567,7 @@ class ComisionesController extends Controller {
         $mes_anio = $fechaCarbon->copy()->format('m_Y');
 
         $nombre_archivo = date('d_m_Y H_i_s') . '_' . $nombre_gerencia . '_' . $nombre_campana . '_' . $nombre_habilidad . '_' . $tipoperiodo . '_' . $periodo . '_' . $mes_anio . '_' . $file->getClientOriginalName();
-        $nombre_archivo_bd = strtoupper($abrev . $nombre_campana . $nombre_habilidad . " " . $periodo . " " . $mes_anio . "_" . $totalRows);
+        $nombre_archivo_bd = strtoupper($abrev . $nombre_campana . " " . $nombre_habilidad . " " . $periodo . " " . $mes_anio . "_" . $totalRows);
         $fileName = str_replace(' ', '_', $nombre_archivo);
         $lote->nombre_lote = $nombre_archivo_bd;
         $lote->save();
@@ -562,7 +575,8 @@ class ComisionesController extends Controller {
         $path = Storage::disk('comisiones')->put($fileName, file_get_contents($file->getRealPath()));
         $valores = array();
         //SACAMOS EL ID DEL ULTIMO LOTE Y LO MANDAMOS AL IMPORT CON LOS DEMAS DATOS
-        $valores = [$request->area_trabajo,
+        $valores = [
+            $request->area_trabajo,
             $request->carteras,
             $request->skill,
             $tipoperiodo,
@@ -570,54 +584,15 @@ class ComisionesController extends Controller {
             $fechaCarbon->copy()->format('m'),
             $fechaCarbon->copy()->format('Y'),
             $lote->id,
-            $fileName];
+            $fileName
+        ];
 
         //SI ES PORTABILIDAD CONCENTRA COMPROBAMOS LOS HEADINGS DEL ARCHIVO SELECCIONADO
-      
         try {
-            switch ($request->carteras) {
-                case "20"://porta
-                case "89":
-                case "90"://CLARO COSTA RICA
-                case "91"://UPSASEL
-                    if ($typeImport == "A") { //quincenal
-                        Excel::import(new ComisionesQuincenalesImport($valores), request()->file('archivo'));
-                    } else { //semanal                       
-                        Excel::import(new ComisionesSemanalesImport($valores), request()->file('archivo'));
-                    }
-                    break;               
-                case "61"://bait
-                case "14"://chile
-                    if ($typeImport == "B") {
-                        LoteModel::where('id', $lote->id)->first()->delete();
-                        \Session::flash('error', 'El formato cargado no es el correcto');
-                        return back();
-                    } else {
-                        Excel::import(new ComisionesQuincenalesImport($valores), request()->file('archivo'));
-                    }
-                    break;
-                default:
-                    ///por defecto, si no son las carteras anteriores se verifica el tipo de periodo    
-                 
-                    if ($habilidad->tipo_periodo == "Mixto") {
-                        //si es mixto se valida la cabecera dle archivo a cargar
-                        if ($headings[0][0][1] == "comision_usd") {
-                            //si el archivo es quincenal entra
-                            Excel::import(new ComisionesQuincenalesImport($valores), request()->file('archivo'));
-                        } else {
-                            Excel::import(new ComisionesSemanalesImport($valores), request()->file('archivo'));
-                        }
-                    } else if ($tipoperiodo == "Quincenal") {
-                        Excel::import(new ComisionesQuincenalesImport($valores), request()->file('archivo'));
-                    } else if ($tipoperiodo == "Semanal") {
-                        Excel::import(new ComisionesSemanalesImport($valores), request()->file('archivo'));
-                    } else if ($habilidad) {
-                        
-                    }
-
-
-
-                    break;
+            if ($typeImport == "A") { //quincenal
+                Excel::import(new ComisionesQuincenalesImport($valores), request()->file('archivo'));
+            } else { //semanal                       
+                Excel::import(new ComisionesSemanalesImport($valores), request()->file('archivo'));
             }
             return back();
         } catch (\Maatwebsite\Excel\Validators\ValidationException $e) { //retorno de las reglas de validacion
@@ -645,21 +620,23 @@ class ComisionesController extends Controller {
     }
 
     //// proceso de auditoria, ver, eliminar o revertir estatus.
-    public function auditoria() {
-        return view('comisiones.auditoria')->with(["auditorias" => $this->statusAuditoria,"tipo_periodo"=>$this->esquema]);
+    public function auditoria()
+    {
+        return view('comisiones.auditoria')->with(["auditorias" => $this->statusAuditoria, "tipo_periodo" => $this->esquema]);
     }
 
-    public function auditoriaList(Request $request) {
+    public function auditoriaList(Request $request)
+    {
 
         $lotes = array();
-        
+
         $fechaCarbon = Carbon::createFromFormat('m/Y', $request->auditmes)->startOfMonth();
         $anio = $fechaCarbon->copy()->format('Y'); // Año seleccionado
         $mes = $fechaCarbon->copy()->format('F');
-   
+
         //MANDAMOS LOS LOTES CON EL ESTATUS SELECCIONADO A LA VISTA
         $sql = LoteModel::where('anio', $anio)->where('mes', $mes)->where('estatus', $request->estatus);
-            
+
         if (!empty($request->tipoperiodo)) {
             $lotes = $sql->where('tipo_periodo', $request->tipoperiodo)->get();
         } else {
@@ -717,18 +694,19 @@ class ComisionesController extends Controller {
         return json_encode([$display, $data]);
     }
 
-    public function auditoriaView($lote) {
+    public function auditoriaView($lote)
+    {
 
         $lote_id = $lote;
         $formato_sql = LoteModel::where('id', $lote_id)->first();
         $auditoria = OperacionesComisiones::where('lote_id', $lote_id)->get();
 
         $nombre_auditoria = $formato_sql->relationGerencia->nombre_campana .
-                " " . $formato_sql->relationCampana->nombre_cartera .
-                " " . $formato_sql->relationSkill->nombre_skill .
-                " " . $formato_sql->tipo_periodo .
-                " " . trans('meses.' . $formato_sql->mes) .
-                " " . $formato_sql->anio;
+            " " . $formato_sql->relationCampana->nombre_cartera .
+            " " . $formato_sql->relationSkill->nombre_skill .
+            " " . $formato_sql->tipo_periodo .
+            " " . trans('meses.' . $formato_sql->mes) .
+            " " . $formato_sql->anio;
 
         $formato = $formato_sql->formato;
         //SI NO ES BAIT COMPROBAMOS EL FORMATO PROCESADO
@@ -744,7 +722,8 @@ class ComisionesController extends Controller {
         }
     }
 
-    public function loteDestroy($id) {
+    public function loteDestroy($id)
+    {
 
         OperacionesComisiones::where('lote_id', $id)->delete();
         LoteModel::where('id', $id)->delete();
@@ -752,7 +731,8 @@ class ComisionesController extends Controller {
         return json_encode("Lote de datos eliminado exitosamente.");
     }
 
-    public function loteReverse($id) {
+    public function loteReverse($id)
+    {
 
         OperacionesComisiones::where('lote_id', $id)->update(['incidencia' => 2]);
         LoteModel::where('id', $id)->update(['estatus' => 'NO PROCESADO']);
@@ -761,7 +741,8 @@ class ComisionesController extends Controller {
     }
 
     ///aprobar los archivos cargados para consolidar
-    public function auditoriaProcess(Request $request) {
+    public function auditoriaProcess(Request $request)
+    {
 
         try {
             //RECORREMOS TODOS LOS LOTES SELECCIONADOS POR ID
@@ -783,11 +764,13 @@ class ComisionesController extends Controller {
     }
 
     ////procesar pagos, se arma el consolidado Bancario
-    public function payment() {
+    public function payment()
+    {
         return view('comisiones.payment')->with(["tipo_periodo" => $this->esquema]);
     }
 
-    public function paymentList(Request $request) {
+    public function paymentList(Request $request)
+    {
 
 
         $fechaCarbon = Carbon::createFromFormat('m/Y', $request->paymentmes)->startOfMonth();
@@ -796,7 +779,7 @@ class ComisionesController extends Controller {
 
         //MANDAMOS LOS LOTES CON EL ESTATUS SELECCIONADO A LA VISTA
         $lotes = LoteModel::where('anio', $anio)->where('mes', $mes)
-                        ->where('tipo_periodo', $request->tipoperiodo)->where('estatus', $request->estatus)->get();
+            ->where('tipo_periodo', $request->tipoperiodo)->where('estatus', $request->estatus)->get();
 
         ///bloqueamos el restaurar solo habilitarlos si esta auditado
         $display = empty($lotes) ? true : false;
@@ -821,7 +804,8 @@ class ComisionesController extends Controller {
         return json_encode([$display, $data]);
     }
 
-    public function paymentProcess(Request $request) {
+    public function paymentProcess(Request $request)
+    {
         //DECLARAMOS ARREGLO MULTIDIMENSIONAL VACIO PARA METER LOS DATOS DE LOS TRABAJADORES
         $trabajadorNuevo = [];
         $bs_tasa = $request->bs_tasa;
@@ -837,7 +821,7 @@ class ComisionesController extends Controller {
         $com_lote_banco->save();
 
         $id_loteb = $com_lote_banco->id;
-                
+
         try {
             //RECORREMOS TODOS LOS LOTES SELECCIONADOS POR ID
             foreach ($request->comisiones as $id) {
@@ -877,7 +861,7 @@ class ComisionesController extends Controller {
                             'total_pagar' => $totales,
                             'lotebanco_id' => $id_loteb
                         ];
-        //dd($trabajadorNuevo);
+                        //dd($trabajadorNuevo);
                     }
                 }
 
@@ -890,8 +874,8 @@ class ComisionesController extends Controller {
 
             //GUARDAMOS  EL MES Y EL ANIO DEL LOTE BANCO
 
-            $mes_anio_lote = LoteModel::select('anio','mes')->where('lotebanco_id', $id_loteb)->first();
-          
+            $mes_anio_lote = LoteModel::select('anio', 'mes')->where('lotebanco_id', $id_loteb)->first();
+
             $com_lote_banco->mes = $mes_anio_lote->mes;
             $com_lote_banco->anio = $mes_anio_lote->anio;
             $com_lote_banco->save();
@@ -925,14 +909,16 @@ class ComisionesController extends Controller {
         }
     }
 
-    
-    public function bank() {
+
+    public function bank()
+    {
         $bancos = BancosModels::whereIn('id', [9, 19])->get();
         $estatus = $this->estatusbancarios;
-        return view('comisiones.bancos.index')->with(["bancos" => $bancos,"estatusbancarios"=>$estatus])->render();
+        return view('comisiones.bancos.index')->with(["bancos" => $bancos, "estatusbancarios" => $estatus])->render();
     }
     ////pestaña pagar
-    public function bankShowList(Request $request) {
+    public function bankShowList(Request $request)
+    {
 
         $fechaCarbon = Carbon::createFromFormat('m/Y', $request->periodo)->startOfMonth();
 
@@ -972,15 +958,17 @@ class ComisionesController extends Controller {
 
         return json_encode([$display, $data]);
     }
-    public function bankExport($id) {
-        
+    public function bankExport($id)
+    {
+
         //SACAMOS EL NOMBRE DEL LOTE PARA IDENTIFICAR EL ARCHIVO
         $lote = LoteBancoModel::find($id);
         $nombre_lote = $lote->lote_banco;
         $bancos = BancoModel::where('lotebanco_id', $lote->id)->get();
         return Excel::download(new BancoExport($bancos), $nombre_lote . '' . '.xlsx');
     }
-    public function lotebancoDestroy($id) {
+    public function lotebancoDestroy($id)
+    {
 
         BancoModel::where('lotebanco_id', $id)->delete();
         LoteModel::where('lotebanco_id', $id)->update(['estatus' => 'AUDITADO', 'lotebanco_id' => null]);
@@ -988,7 +976,8 @@ class ComisionesController extends Controller {
         LoteBancoModel::where('id', $id)->delete();
         return json_encode("El lote banco fue eliminado exitosamente.");
     }
-    public function changingConsolidadoPay(Request $request) {
+    public function changingConsolidadoPay(Request $request)
+    {
 
         try {
             //RECORREMOS TODOS LOS LOTES EN PROCESO DE PAGO SELECCIONADOS POR ID
@@ -997,7 +986,7 @@ class ComisionesController extends Controller {
                 $estatus_lote_banco = LoteBancoModel::where('id', $id)->first();
                 $estatus_lote_banco->estatus    = "PAGADO";
                 $estatus_lote_banco->banco      = json_encode($request->banco);
-                $estatus_lote_banco->fecha_pago = carbon::createFromFormat('d/m/Y',$request->fechapago)->format('d/m/Y');
+                $estatus_lote_banco->fecha_pago = carbon::createFromFormat('d/m/Y', $request->fechapago)->format('d/m/Y');
                 $estatus_lote_banco->save();
 
                 LoteModel::where('lotebanco_id', $id)->update([
@@ -1023,22 +1012,23 @@ class ComisionesController extends Controller {
     }
 
     ////pestaña incidencias
-    public function bankConsultIncidencias(Request $request) {
+    public function bankConsultIncidencias(Request $request)
+    {
 
         $fechaCarbon = Carbon::createFromFormat('m/Y', $request->fechacarga)->startOfMonth();
         $mes    = $fechaCarbon->copy()->format('F');
         $anio   = $fechaCarbon->copy()->format('Y');
-       
+
         //MANDAMOS LOS LOTE BANCO PARA CARGAR LAS OBSERVACIONES
-        $lotes       = LoteBancoModel::where('mes', $mes)->where('anio', $anio)->get();        
+        $lotes       = LoteBancoModel::where('mes', $mes)->where('anio', $anio)->get();
         $count_lots = $lotes->count();
-        
+
         $row = array();
         $data = array();
         $display = empty($lotes) ? true : false;
-        
+
         foreach ($lotes as $lots) {
-           
+
             $row["id"] = $lots->id;
             $row["check"] = '<div class="custom-control custom-checkbox">
             <input class="custom-control-input check" name="comisiones[]" type="checkbox" id="comisiones' . $lots->id . '" value="' . $lots->id . '">
@@ -1047,27 +1037,27 @@ class ComisionesController extends Controller {
             $row["banco"] = $lots->banco != null ? json_decode($lots->banco) : "-";
             $row["estatus"] = $lots->estatus;
             $row["fecha"] = trans('meses.' . $lots->mes) . " " . $lots->anio;
-            $row["fechapago"]= $lots->fecha_pago != null ? $lots->fecha_pago : "-";
-            
+            $row["fechapago"] = $lots->fecha_pago != null ? $lots->fecha_pago : "-";
+
             $btnview = '<a type="button" id="view' . $lots->id . '" href="' . route('comisiones.bank.observaciones', $lots->id) . '"                      
                 class="btn btn-info btn-sm" data-toggle="tooltip" data-placement="top" title="Descargar Lote">
                 <i class="fa fa-download"></i></a>';
-           
+
 
             $acciontext = "'discardbank'";
             $btnrestore = '<button type="button" id="restore' . $lots->id . '" data-href="' . route('lote.banco.discard', $lots->id) . '" onclick="AccionesAudit(' . $acciontext . ',' . $lots->id . ');" 
                         class="btn btn-warning btn-sm" data-toggle="tooltip" data-placement="top" title="Revertir estatus del Lote">
                        <i class="fa fa-undo"></i>
                     </button>';
-            
-            $btnList = '<a class="btn btn-primary btn-sm" href="'.route('personal.incidencia',$lots->id).'" data-toggle="tooltip" '
-                    . 'data-placement="top" target="_blank" title="Ver Incidencias del Lote"><i class="fa fa-list"></i></a>';
-            
+
+            $btnList = '<a class="btn btn-primary btn-sm" href="' . route('personal.incidencia', $lots->id) . '" data-toggle="tooltip" '
+                . 'data-placement="top" target="_blank" title="Ver Incidencias del Lote"><i class="fa fa-list"></i></a>';
+
             if ($display) {
                 /// true para ocultar todos los botones cuando esta pagado
                 $btngroup = '<div class="btn-group">' . $btnview . '</div>';
             } else {
-                $btngroup = '<div class="btn-group">' . $btnview . $btnrestore . $btnList.'</div>';
+                $btngroup = '<div class="btn-group">' . $btnview . $btnrestore . $btnList . '</div>';
             }
 
 
@@ -1076,9 +1066,10 @@ class ComisionesController extends Controller {
             $data[] = $row;
         }
         return json_encode([$display, $data]);
-    }        
+    }
     ///ver Archivo de incidencias
-    public function observacionesExport($id) {
+    public function observacionesExport($id)
+    {
 
         //SACAMOS EL NOMBRE DEL LOTE PARA IDENTIFICAR EL ARCHIVO
         $lote = LoteBancoModel::select('lote_banco')->where('id', $id)->first();
@@ -1088,8 +1079,9 @@ class ComisionesController extends Controller {
         return Excel::download(new ObservacionesExport($bancos), 'Incidencias Bancarias' . ' ' . $nombre_lote . '.xlsx');
     }
     ///revertir el consolidado pagado a en proceso.
-    public function loteBankIncidenciasDiscard($id) {
-     
+    public function loteBankIncidenciasDiscard($id)
+    {
+
         //REALIZAMOS PRIMERO EL PROCESO INVERSO DE EN PROCESO A PAGADO, ES DECIR DE PAGADO A EN PROCESO
         //actualizamos el estatus del lote banco seleccionado a EN PROCESO
 
@@ -1126,31 +1118,33 @@ class ComisionesController extends Controller {
         return json_encode("Estatus del lote banco actualizado exitosamente");
     }
     ////tabla que despliega las incidencias por lote  consolidado de pagos -> cargar incidencias
-    public function personalIncidencia($id) {
+    public function personalIncidencia($id)
+    {
         $lote_name = LoteBancoModel::select('lote_banco')->where('id', $id)->first();
         $nombre_lote = $lote_name->lote_banco;
         //BUSCAMOS EL PERSONAL QUE TENGA ESTATUS DE INCIDENCIA EN LA TABLA COM_BANCO
         $incidencias = BancoModel::where('lotebanco_id', $id)->whereIn('estatus', ['INCIDENCIA', 'PAGADO'])->where('observaciones', '!=', null)->get();
         return view('comisiones.bancos.incidenciaslist', compact('incidencias', 'nombre_lote', 'id'));
     }
-    public function changeIncidencia(Request $request) {
-        
+    public function changeIncidencia(Request $request)
+    {
+
         //REALIZAMOS EL PROCESO INVERSO DE PAGADO A INCIDENCIA, SE PASARAN LOS LOTES DE INCIDENCIA A PAGADO
         if (isset($request->incidencias)) {
-            
+
             //CAMBIAMOS EL ESTATOS DEL ID BANCO A PAGADO
             BancoModel::where('lotebanco_id', $request->lotebanco)->update(['estatus' => 'PAGADO']);
-            
+
             $id_lotes = LoteModel::select('id')->where('lotebanco_id', $request->lotebanco)->get()->pluck('id');
-                        
-            foreach ($request->incidencias as $id) { 
-                
-                $cedulapersonal = BancoModel::find($id)->cedula;   
-                
+
+            foreach ($request->incidencias as $id) {
+
+                $cedulapersonal = BancoModel::find($id)->cedula;
+
                 OperacionesComisiones::whereIn('lote_id', $id_lotes)
-               ->where('cedula', $cedulapersonal)->update(['incidencia' => 0]);
+                    ->where('cedula', $cedulapersonal)->update(['incidencia' => 0]);
             }
-            
+
             \Session::flash('success', 'Cambio de Estadus realizado exitosamente');
             return back();
         } else {
@@ -1158,7 +1152,8 @@ class ComisionesController extends Controller {
             return back();
         }
     }
-    public function bankProcessIncidencias(Request $request) {
+    public function bankProcessIncidencias(Request $request)
+    {
 
         try {
             Excel::import(new ObservacionesImport($request->all()), request()->file('incidencias'));
@@ -1175,40 +1170,41 @@ class ComisionesController extends Controller {
         }
     }
     ///pestaña reporte de bancos
-    public function bankReport(Request $request) {
+    public function bankReport(Request $request)
+    {
         try {
-        $fechaCarbon = Carbon::createFromFormat('m/Y',$request->fechadescarga)->startOfMonth();
-        $mes    = $fechaCarbon->copy()->format('F');
-        $anio   = $fechaCarbon->copy()->format('Y');
-        $estattus = null;
-        switch ($request->estatus){
-            case "todos":
-                $bancos = LoteBancoModel::where('mes', $mes)
-                    ->where('anio', $anio)->get();
-                $estattus = '';
-                break;          
-            default:
-            $bancos = LoteBancoModel::where('mes', $fechaCarbon->copy()->format('F'))
-                    ->where('anio', $fechaCarbon->copy()->format('Y'))
-                    ->where('estatus', $request->estatus)->get();
-            $estattus = $request->estatus;
-                break;
-            
-        }
-        
-        return Excel::download(new LoteBancoExport($bancos), 'Lotes Bancarios ' . trans('meses.' . $mes) . ' ' . $anio .' '.$estattus. '.xlsx');       
-        } catch (\Exception $e){
-                \Session::flash('error', 'Ocurrio un problema la Descargar el archivo '.$e->getMessage());
+            $fechaCarbon = Carbon::createFromFormat('m/Y', $request->fechadescarga)->startOfMonth();
+            $mes    = $fechaCarbon->copy()->format('F');
+            $anio   = $fechaCarbon->copy()->format('Y');
+            $estattus = null;
+            switch ($request->estatus) {
+                case "todos":
+                    $bancos = LoteBancoModel::where('mes', $mes)
+                        ->where('anio', $anio)->get();
+                    $estattus = '';
+                    break;
+                default:
+                    $bancos = LoteBancoModel::where('mes', $fechaCarbon->copy()->format('F'))
+                        ->where('anio', $fechaCarbon->copy()->format('Y'))
+                        ->where('estatus', $request->estatus)->get();
+                    $estattus = $request->estatus;
+                    break;
+            }
+
+            return Excel::download(new LoteBancoExport($bancos), 'Lotes Bancarios ' . trans('meses.' . $mes) . ' ' . $anio . ' ' . $estattus . '.xlsx');
+        } catch (\Exception $e) {
+            \Session::flash('error', 'Ocurrio un problema la Descargar el archivo ' . $e->getMessage());
             return Back();
         }
     }
-      
+
     ///reportes de comisiones
-    public function ReportesExport() {
-     
+    public function ReportesExport()
+    {
+
         $user = ENV('DEV_USER_CHANGE', false) ?
-                \Auth::loginUsingId(ENV('OTHER_USER_ID'), true) :
-                \Auth::user();
+            \Auth::loginUsingId(ENV('OTHER_USER_ID'), true) :
+            \Auth::user();
 
         $nivel = PoliceEstructure::VerifiedNivelPermissions($user);
 
@@ -1217,39 +1213,40 @@ class ComisionesController extends Controller {
         } else {
             return abort(403, "No cuenta con los Nivel necesario para acceder a estos recursos.");
         }
-        
+
         /// le envio 4 meses de descarga para que el selector al cambiar el skill no se actualice.
-        $mes        =  $this->Numero_meses_anteriores_permitido;          
+        $mes        =  $this->Numero_meses_anteriores_permitido;
         $permiso    = "true";
-        
-        return view('comisiones.reportes.index')->with(["areas"=>$areas, "esquema" => $this->esquema, "timeMes" => $mes, "permiso" => $permiso]);
-    }        
-    public function GetSemanas(Request $request) {
+
+        return view('comisiones.reportes.index')->with(["areas" => $areas, "esquema" => $this->esquema, "timeMes" => $mes, "permiso" => $permiso]);
+    }
+    public function GetSemanas(Request $request)
+    {
 
         $fecharecibida = Carbon::createfromFormat('m/Y', $request->mes);
         $fechaActual = Carbon::now();
 
         $tipo_periodo = isset($request->tipo_periodo) ? $request->tipo_periodo : SkillModels::find($request->skill)->tipo_periodo;
 
-        
+
         $user = ENV('DEV_USER_CHANGE', false) ?
             \Auth::loginUsingId(ENV('OTHER_USER_ID'), true) :
             \Auth::user();
 
         //validacion de permisos para cargas demoradas se mostrara 1 si no tiene permisos, y 6 si los tiene
         $intMeses = $user->hasPermission('comisiones.cargar.demoradas') == true ?  $this->Numero_meses_anteriores_permitido : $this->Numero_meses_anteriores_no_permitido;
-       
+
         switch ($tipo_periodo) {
-            case "Semanal" : 
+            case "Semanal":
                 //DETERMINAMOS EN QUE SEMANA ESTAMOS DEL MES EN CURSO
-                $semanaencurso = $fecharecibida->copy()->weekOfMonth;                
-                Switch ($semanaencurso) {
+                $semanaencurso = $fecharecibida->copy()->weekOfMonth;
+                switch ($semanaencurso) {
                     case 1:
                         $minDate = $fecharecibida->copy()->subMonth($intMeses)->format('m/Y');
                         $maxDate = $fecharecibida->copy()->format('m/Y');
                         $type_semana = 1;
                         break;
-                    default :
+                    default:
                         $minDate = $fecharecibida->copy()->subMonth($intMeses)->format('m/Y');
                         $maxDate = $fecharecibida->copy()->format('m/Y');
                         $type_semana = 2;
@@ -1290,25 +1287,26 @@ class ComisionesController extends Controller {
             case "Quincenal": //SI EL TIPO DE PERIODO QUE VIENE ES QUINCENAL
                 $quicena_en_curso = 3;
                 ///validamos si el mes recibido es igual al a fecha actual, en caso de ser diferentes se mostraran ambas quincenas
-                $opcion_corte_show =[ "1"=> "1ra. Quincena","2"=> "2da. Quincena"];
-                break;          
+                $opcion_corte_show = ["1" => "1ra. Quincena", "2" => "2da. Quincena"];
+                break;
             default:
                 return json_encode(abort(500, "El Skill seleccionado No cuenta con el esquema de pago."));
                 break;
         }
 
         return json_encode([
-            'tipo_periodo'      => $tipo_periodo,            
+            'tipo_periodo'      => $tipo_periodo,
             'quincena_en_curso' => $quicena_en_curso ?? null,
             'minDate'           => $minDate  ?? null,
             'maxDate'           => $maxDate  ?? null,
             'opcion_corte_show' => $opcion_corte_show ?? null,
             'arreglo_semanal'   => $semanasArray ?? null,
-            'semana_en_curso'   => null,            
+            'semana_en_curso'   => null,
         ]);
     }
     ////funcion que cambia elcorte si input mes_report cambia
-    public function selectorPeriodos(Request $request) {
+    public function selectorPeriodos(Request $request)
+    {
 
         //FUNCION QUE CALCULA LA CANTIDAD DE SEMANAS EN UN MES
 
@@ -1324,27 +1322,28 @@ class ComisionesController extends Controller {
 
         return json_encode($weeks_in_month);
     }
-    
-    public function exportProcess(Request $request) {
- 
+
+    public function exportProcess(Request $request)
+    {
+
         $user = ENV('DEV_USER_CHANGE', false) ?
-                \Auth::loginUsingId(ENV('OTHER_USER_ID'), true) :
-                \Auth::user();
-        
-        $nivel  = PoliceEstructure::VerifiedNivelPermissions($user);        
-         
-        $fecha  = carbon::createfromformat('m/Y',$request->mes_report)->startofmonth();
+            \Auth::loginUsingId(ENV('OTHER_USER_ID'), true) :
+            \Auth::user();
+
+        $nivel  = PoliceEstructure::VerifiedNivelPermissions($user);
+
+        $fecha  = carbon::createfromformat('m/Y', $request->mes_report)->startofmonth();
         $anio   = $fecha->copy()->format('Y');
         $mes    = $fecha->copy()->format('F');
-        
+
         $fechareporte   = $fecha->copy()->format('m-Y');
         $nombre_archivo = "";
-                
-        $data   = null;        
-        $sql = OperacionesComisiones::where('tipo_periodo',$request->tipo_periodo_report)
-                ->where('mes', $mes)
-                ->where('anio', $anio);
-        
+
+        $data   = null;
+        $sql = OperacionesComisiones::where('tipo_periodo', $request->tipo_periodo_report)
+            ->where('mes', $mes)
+            ->where('anio', $anio);
+
         switch ($nivel) {
             case 4:
                 ///Ubicamos los Id de todo el personal que tiene asignado
@@ -1352,32 +1351,32 @@ class ComisionesController extends Controller {
                 /// extraemos los skills que estan activos en la plataforma
                 $carteraPermisada = $user->RelationPermisos()->groupby('cartera_id')->pluck('cartera_id');
                 $skillPermisado = $user->RelationPermisos()->groupby('skill_id')->pluck('skill_id');
-                
+
                 if ($request->area_trabajo_report == "0" && $request->carteras_report == "0") {
                     $nombre_archivo = "Comisiones Generales " . $request->tipo_periodo_report . " " . $fechareporte;
-                    
-                        $sql = $sql->whereIn('skill_id',$skillPermisado)->wherein('personal_id',$idPersonals);
+
+                    $sql = $sql->whereIn('skill_id', $skillPermisado)->wherein('personal_id', $idPersonals);
                     ///SI VIENE EL TIPO DE CORTE CON DATOS
                     if ($request->corte_report !== "0") {
                         $sql = $sql->where('periodo', $request->corte_report);
                     }
                 }
-                
-                if($request->area_trabajo_report != "0" && $request->carteras_report == "0"){   
-                                 
-                $cartera = AreatrabajoModel::find($request->area_trabajo_report);
-                $gerencia = $cartera->nombre_campana;                       
-                
-                $nombre_archivo = "Comisiones Generales de".$gerencia." ".$request->tipo_periodo_report. " del ".$fechareporte;  
-                
-                $sql = $sql->where('gerencia_id', $request->area_trabajo_report)
-                        ->whereIn('skill_id',$skillPermisado)
-                        ->wherein('personal_id',$idPersonals);               
-                      
-                ///SI VIENE EL TIPO DE CORTE CON DATOS  
-                    if($request->corte_report !== "0"){                       
-                        $sql = $sql->where('periodo',$request->corte_report);
-                    }  
+
+                if ($request->area_trabajo_report != "0" && $request->carteras_report == "0") {
+
+                    $cartera = AreatrabajoModel::find($request->area_trabajo_report);
+                    $gerencia = $cartera->nombre_campana;
+
+                    $nombre_archivo = "Comisiones Generales de" . $gerencia . " " . $request->tipo_periodo_report . " del " . $fechareporte;
+
+                    $sql = $sql->where('gerencia_id', $request->area_trabajo_report)
+                        ->whereIn('skill_id', $skillPermisado)
+                        ->wherein('personal_id', $idPersonals);
+
+                    ///SI VIENE EL TIPO DE CORTE CON DATOS  
+                    if ($request->corte_report !== "0") {
+                        $sql = $sql->where('periodo', $request->corte_report);
+                    }
                 }
                 ///SI GERENCIA Y CARTERA TIENEN DATOS
                 if ($request->area_trabajo_report != "0" && $request->carteras_report != "0") {
@@ -1390,8 +1389,8 @@ class ComisionesController extends Controller {
 
                     $sql = $sql->where('gerencia_id', $request->area_trabajo_report)
                         ->where('campana_id', $request->carteras_report)
-                        ->whereIn('skill_id',$skillPermisado)
-                        ->wherein('personal_id',$idPersonals);
+                        ->whereIn('skill_id', $skillPermisado)
+                        ->wherein('personal_id', $idPersonals);
 
                     ///SI VIENE EL TIPO DE CORTE CON DATOS  
                     if ($request->corte_report !== "0") {
@@ -1400,36 +1399,36 @@ class ComisionesController extends Controller {
                 }
 
                 $data = $sql->get();
-                
-                break;//por skill asignado y personal asignado
+
+                break; //por skill asignado y personal asignado
             case 3:
                 $carterasautorize = $user->RelationPermisos()->groupby('cartera_id')->pluck('cartera_id');
                 $skillsautorize = $user->RelationPermisos()->groupby('skill_id')->pluck('skill_id');
-                
+
                 ///SELECTORES EN TODOS
                 if ($request->area_trabajo_report == "0" && $request->carteras_report == "0") {
                     $nombre_archivo = "Comisiones Generales " . $request->tipo_periodo_report . " " . $fechareporte;
-                    
-                        $sql = $sql->whereIn('skill_id',$skillsautorize);
+
+                    $sql = $sql->whereIn('skill_id', $skillsautorize);
                     ///SI VIENE EL TIPO DE CORTE CON DATOS
                     if ($request->corte_report !== "0") {
                         $sql = $sql->where('periodo', $request->corte_report);
                     }
                 }
-                
-                if($request->area_trabajo_report != "0" && $request->carteras_report == "0"){   
-                                 
-                $cartera = AreatrabajoModel::find($request->area_trabajo_report);
-                $gerencia = $cartera->nombre_campana;                       
-                
-                $nombre_archivo = "Comisiones Generales de".$gerencia." ".$request->tipo_periodo_report. " del ".$fechareporte;  
-                
-                $sql = $sql->where('gerencia_id', $request->area_trabajo_report)->whereIn('skill_id',$skillsautorize);               
-                      
-                ///SI VIENE EL TIPO DE CORTE CON DATOS  
-                    if($request->corte_report !== "0"){                       
-                        $sql = $sql->where('periodo',$request->corte_report);
-                    }  
+
+                if ($request->area_trabajo_report != "0" && $request->carteras_report == "0") {
+
+                    $cartera = AreatrabajoModel::find($request->area_trabajo_report);
+                    $gerencia = $cartera->nombre_campana;
+
+                    $nombre_archivo = "Comisiones Generales de" . $gerencia . " " . $request->tipo_periodo_report . " del " . $fechareporte;
+
+                    $sql = $sql->where('gerencia_id', $request->area_trabajo_report)->whereIn('skill_id', $skillsautorize);
+
+                    ///SI VIENE EL TIPO DE CORTE CON DATOS  
+                    if ($request->corte_report !== "0") {
+                        $sql = $sql->where('periodo', $request->corte_report);
+                    }
                 }
                 ///SI GERENCIA Y CARTERA TIENEN DATOS
                 if ($request->area_trabajo_report != "0" && $request->carteras_report != "0") {
@@ -1442,7 +1441,7 @@ class ComisionesController extends Controller {
 
                     $sql = $sql->where('gerencia_id', $request->area_trabajo_report)
                         ->where('campana_id', $request->carteras_report)
-                        ->whereIn('skill_id',$skillsautorize);
+                        ->whereIn('skill_id', $skillsautorize);
 
                     ///SI VIENE EL TIPO DE CORTE CON DATOS  
                     if ($request->corte_report !== "0") {
@@ -1451,38 +1450,38 @@ class ComisionesController extends Controller {
                 }
 
                 $data = $sql->get();
-                break;//por skill asignado
-            case 2:/// personal asignado
+                break; //por skill asignado
+            case 2: /// personal asignado
 
                 $carterasPersonal = PoliceEstructure::PersonalForEstructure($user);
                 /// area 0 | cartera 1 | skill 2 | personal asignado 3
                 $skills = $carterasPersonal[2];
                 $personal = $carterasPersonal[3];
-                
+
                 if ($request->area_trabajo_report == "0" && $request->carteras_report == "0") {
                     $nombre_archivo = "Comisiones Generales " . $request->tipo_periodo_report . " " . $fechareporte;
                     ///SI VIENE EL TIPO DE CORTE CON DATOS
-                    
-                        $sql = $sql->whereIn('personal_id',$personal);
-                        
+
+                    $sql = $sql->whereIn('personal_id', $personal);
+
                     if ($request->corte_report !== "0") {
                         $sql = $sql->where('periodo', $request->corte_report);
                     }
                 }
-                
-                if($request->area_trabajo_report != "0" && $request->carteras_report == "0"){   
-                                 
-                $cartera = AreatrabajoModel::find($request->area_trabajo_report);
-                $gerencia = $cartera->nombre_campana;                       
-                
-                $nombre_archivo = "Comisiones Generales de".$gerencia." ".$request->tipo_periodo_report. " del ".$fechareporte;  
-                
-                $sql = $sql->where('gerencia_id', $request->area_trabajo_report)->whereIn('personal_id',$personal);               
-                      
-                ///SI VIENE EL TIPO DE CORTE CON DATOS  
-                    if($request->corte_report !== "0"){                       
-                        $sql = $sql->where('periodo',$request->corte_report);
-                    }  
+
+                if ($request->area_trabajo_report != "0" && $request->carteras_report == "0") {
+
+                    $cartera = AreatrabajoModel::find($request->area_trabajo_report);
+                    $gerencia = $cartera->nombre_campana;
+
+                    $nombre_archivo = "Comisiones Generales de" . $gerencia . " " . $request->tipo_periodo_report . " del " . $fechareporte;
+
+                    $sql = $sql->where('gerencia_id', $request->area_trabajo_report)->whereIn('personal_id', $personal);
+
+                    ///SI VIENE EL TIPO DE CORTE CON DATOS  
+                    if ($request->corte_report !== "0") {
+                        $sql = $sql->where('periodo', $request->corte_report);
+                    }
                 }
                 ///SI GERENCIA Y CARTERA TIENEN DATOS
                 if ($request->area_trabajo_report != "0" && $request->carteras_report != "0") {
@@ -1495,7 +1494,7 @@ class ComisionesController extends Controller {
 
                     $sql = $sql->where('gerencia_id', $request->area_trabajo_report)
                         ->where('campana_id', $request->carteras_report)
-                        ->whereIn('personal_id',$personal);
+                        ->whereIn('personal_id', $personal);
 
                     ///SI VIENE EL TIPO DE CORTE CON DATOS  
                     if ($request->corte_report !== "0") {
@@ -1506,50 +1505,50 @@ class ComisionesController extends Controller {
                 $data = $sql->get();
 
                 break;
-            case 1:    
-             
+            case 1:
+
                 ////4 SELECTORES EN TODOS | PERIODO_REPORT = SEMENAL O QUINCENAL | CORTE_REPORT = 1 AL 5 SEMANAL, 1 AL 2 QUINCENAL, 0 TODO
-                if($request->area_trabajo_report == "0" && $request->carteras_report == "0"){        
-              
-                    $nombre_archivo = "Comisiones Generales ".$request->tipo_periodo_report. " ".$fechareporte;
+                if ($request->area_trabajo_report == "0" && $request->carteras_report == "0") {
+
+                    $nombre_archivo = "Comisiones Generales " . $request->tipo_periodo_report . " " . $fechareporte;
                     ///SI VIENE EL TIPO DE CORTE CON DATOS
-                    if($request->corte_report !== "0"){                       
-                        $sql = $sql->where('periodo',$request->corte_report);
-                    } 
+                    if ($request->corte_report !== "0") {
+                        $sql = $sql->where('periodo', $request->corte_report);
+                    }
                 }
                 ///SI GERENCIA Y CARTERA TIENEN DATOS
-                if($request->area_trabajo_report != "0" && $request->carteras_report == "0"){   
-                                 
-                $cartera = AreatrabajoModel::find($request->area_trabajo_report);
-                $gerencia = $cartera->nombre_campana;                       
-                
-                $nombre_archivo = "Comisiones Generales de".$gerencia." ".$request->tipo_periodo_report. " del ".$fechareporte;                
-                $sql = $sql->where('gerencia_id', $request->area_trabajo_report);               
-                      
-                ///SI VIENE EL TIPO DE CORTE CON DATOS  
-                    if($request->corte_report !== "0"){                       
-                        $sql = $sql->where('periodo',$request->corte_report);
-                    }  
+                if ($request->area_trabajo_report != "0" && $request->carteras_report == "0") {
+
+                    $cartera = AreatrabajoModel::find($request->area_trabajo_report);
+                    $gerencia = $cartera->nombre_campana;
+
+                    $nombre_archivo = "Comisiones Generales de" . $gerencia . " " . $request->tipo_periodo_report . " del " . $fechareporte;
+                    $sql = $sql->where('gerencia_id', $request->area_trabajo_report);
+
+                    ///SI VIENE EL TIPO DE CORTE CON DATOS  
+                    if ($request->corte_report !== "0") {
+                        $sql = $sql->where('periodo', $request->corte_report);
+                    }
                 }
-                
-                if($request->area_trabajo_report != "0" && $request->carteras_report != "0"){                      
-                $cartera =  CarteraModel::find($request->carteras_report);
-                $nombre_cartera = $cartera->nombre_cartera;        
-                $gerencia = $cartera->RelationGerencias->nombre_campana;        
-                
-                $nombre_archivo = "Comisiones Generales de".$gerencia." ".$nombre_cartera." ".$request->tipo_periodo_report. " del ".$fechareporte;
-                
+
+                if ($request->area_trabajo_report != "0" && $request->carteras_report != "0") {
+                    $cartera =  CarteraModel::find($request->carteras_report);
+                    $nombre_cartera = $cartera->nombre_cartera;
+                    $gerencia = $cartera->RelationGerencias->nombre_campana;
+
+                    $nombre_archivo = "Comisiones Generales de" . $gerencia . " " . $nombre_cartera . " " . $request->tipo_periodo_report . " del " . $fechareporte;
+
                     $sql = $sql->where('gerencia_id', $request->area_trabajo_report)
-                    ->where('campana_id', $request->carteras_report);               
-                      
-                ///SI VIENE EL TIPO DE CORTE CON DATOS  
-                    if($request->corte_report !== "0"){                       
-                        $sql = $sql->where('periodo',$request->corte_report);
-                    }  
+                        ->where('campana_id', $request->carteras_report);
+
+                    ///SI VIENE EL TIPO DE CORTE CON DATOS  
+                    if ($request->corte_report !== "0") {
+                        $sql = $sql->where('periodo', $request->corte_report);
+                    }
                 }
-               
+
                 $data = $sql->get();
-                
+
                 break;
             default:
                 ///retorna el array vacio, no posee permisos.
@@ -1557,51 +1556,53 @@ class ComisionesController extends Controller {
                 return back();
                 break;
         }
-           
-         return Excel::download(new ComisionesGeneralExport($data), $nombre_archivo . '.xlsx');
-        }
-    
+
+        return Excel::download(new ComisionesGeneralExport($data), $nombre_archivo . '.xlsx');
+    }
+
     ///REPORTE DE INCIDENCIAS BANCARIAS
-    public function Incidencias() {
-        
+    public function Incidencias()
+    {
+
         return view('comisiones.reportes.incidencias');
-    }        
-    public function IncidenciasShow(Request $request) {
+    }
+    public function IncidenciasShow(Request $request)
+    {
 
 
         $fechaCarbon = Carbon::createFromFormat('m/Y', $request->periodo)->startOfMonth();
-      
+
         $mes    = $fechaCarbon->copy()->format('F');
         $anio   = $fechaCarbon->copy()->format('Y');
-       
+
         $lots = LoteBancoModel::where('mes', $mes)->where('anio', $anio)
-                ->where('estatus', 'PAGADO CON INCIDENCIAS')->get();
-  
+            ->where('estatus', 'PAGADO CON INCIDENCIAS')->get();
+
         $row = array();
         $data = array();
-        $lista_bancos= array();
-        
-        foreach($lots as $incidencias){
-            $row["id"]= $incidencias->id;
+        $lista_bancos = array();
+
+        foreach ($lots as $incidencias) {
+            $row["id"] = $incidencias->id;
             $row["nombrelote"] = $incidencias->lote_banco;
-            $row["periodo"]= $request->periodo;
-    
-            $lista_bancos = json_decode($incidencias->banco);            
-            $row["banco"]=  !empty($lista_bancos) ? implode('|', $lista_bancos) : "-";
-            
-            $row["fechapago"]   = $incidencias->fecha_pago != null ? carbon::createfromFormat('d/m/Y',$incidencias->fecha_pago)->format('d/m/Y') : "-";
+            $row["periodo"] = $request->periodo;
+
+            $lista_bancos = json_decode($incidencias->banco);
+            $row["banco"] =  !empty($lista_bancos) ? implode('|', $lista_bancos) : "-";
+
+            $row["fechapago"]   = $incidencias->fecha_pago != null ? carbon::createfromFormat('d/m/Y', $incidencias->fecha_pago)->format('d/m/Y') : "-";
             $row["estatus"]     = $incidencias->estatus;
-            
+
             $btnview = '<a type="button" id="view' . $incidencias->id . '" href="' . route('comisiones.bank.observaciones', $incidencias->id) . '"                      
                 class="btn btn-info btn-sm" data-toggle="tooltip" data-placement="top" title="Ver Lote">
                 <i class="fa fa-download"></i></a>';
 
-            $btngroup = '<div class="btn-group">' . $btnview .'</div>';
+            $btngroup = '<div class="btn-group">' . $btnview . '</div>';
             $row["acciones"]    = $btngroup;
-                    
+
             $data[] = $row;
         }
-       
-       return json_encode($data);
+
+        return json_encode($data);
     }
 }

@@ -128,6 +128,7 @@ return array(
     'App\\Imports\\comisiones\\ComisionesQuincenalesImport' => $baseDir . '/app/Imports/comisiones/ComisionesQuincenalesImport.php',
     'App\\Imports\\comisiones\\ComisionesSemanalesImport' => $baseDir . '/app/Imports/comisiones/ComisionesSemanalesImport.php',
     'App\\Imports\\comisiones\\ObservacionesImport' => $baseDir . '/app/Imports/comisiones/ObservacionesImport.php',
+    'App\\Imports\\cursos\\AsistenciaImport' => $baseDir . '/app/Imports/cursos/AsistenciaImport.php',
     'App\\Imports\\cursos\\Participantesimport' => $baseDir . '/app/Imports/cursos/Participantesimport.php',
     'App\\Imports\\evaluaciones\\EvaluacionesImport' => $baseDir . '/app/Imports/evaluaciones/EvaluacionesImport.php',
     'App\\Imports\\inventario\\EquiposUpload' => $baseDir . '/app/Imports/inventario/EquiposUpload.php',

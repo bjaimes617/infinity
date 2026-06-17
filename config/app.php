@@ -4,14 +4,14 @@ return [
     ///recursos para el reinicio de ocntraseña automatica
     'daysrestore'   => env('DAYS_RESTORE', 60),
     'lastpassword'  => env('LAST_PASSWORD', 3),
-    
-///recursos para el calculo de tiempos de contrato y recontratacion
-    'contrato1'  => '90',       
+
+    ///recursos para el calculo de tiempos de contrato y recontratacion
+    'contrato1'  => '90',
     'diaspararecontratar'   => '90',
-    
+
     'diasCargarComisionesEgresados' => 50,
     ///cortes para los recibos de pago
-    'cortes'    => ["1"=>"1ra. Quincena","2"=>"2da. Quincena","3"=>"Todo el Mes","4"=>"Pago Unico"],
+    'cortes'    => ["1" => "1ra. Quincena", "2" => "2da. Quincena", "3" => "Todo el Mes", "4" => "Pago Unico"],
     /*
     |--------------------------------------------------------------------------
     | Application Name
@@ -29,39 +29,57 @@ return [
         '3' => 'Julio - Septiembre',
         '4' => 'Octubre - Diciembre'
     ],
-    
+
     //// recursos para los modulos personal y cursos generales.
-       
-    'horariolaboral'=> ['1' => '7:00 AM a 1:00 PM', '2' => '8:00 AM a 2:00 PM', '3' => '8:00 AM a 5:00 PM', '4' => '9:00 AM a 3:00 PM', '9' => '9:00 AM a 6:00 PM', '5' => '10:00 AM a 4:00 PM', '6' => '1:00 PM a 7:00 PM', '7' => '2:00 PM a 8:00 PM', '8' => '3:00 PM a 9:00 PM', '10' => '8:00 AM a 4:00 PM','11'=>'9:00 AM a 5:00 PM', '16'=>"10:00 AM a 6:00 PM",'12' => '11:00 AM a 7:00 PM', '13' => '11:00 AM a 9:00 PM', '14' => '11:00 AM a 8:00 PM','15'=>"12:00 PM a 8:00 PM"],
+    //ultimo valor 17
+    'horariolaboral' => [
+        '1'     => '7:00 AM a 1:00 PM',
+        '2'     => '8:00 AM a 2:00 PM',
+        '10'    => '8:00 AM a 4:00 PM',
+        '3'     => '8:00 AM a 5:00 PM',
+        '17'    => '8:30 AM a 05:30 PM',
+        '4'     => '9:00 AM a 3:00 PM',
+        '9'     => '9:00 AM a 6:00 PM',
+        '11'    => '9:00 AM a 5:00 PM',
+        '5'     => '10:00 AM a 4:00 PM',
+        '16'    => "10:00 AM a 6:00 PM",
+        '12'    => '11:00 AM a 7:00 PM',
+        '13'    => '11:00 AM a 9:00 PM',
+        '14'    => '11:00 AM a 8:00 PM',
+        '15'    => "12:00 PM a 8:00 PM",
+        '6'     => '1:00 PM a 7:00 PM',
+        '7'     => '2:00 PM a 8:00 PM',
+        '8'     => '3:00 PM a 9:00 PM'
+    ],
     'especialidad'  => ['1' => 'BACHILLER', '2' => 'T.S.U', '3' => 'LIC', '4' => 'ING.', '6' => 'TECNICO MEDIO', '7' => 'MAGISTER', '5' => 'OTRO', '8' => 'ESTUDIANTE'],
-    'contractual'   => ['1' => 'Contratado', '2' => 'Fijo', '3' => 'Freelance', '4' => 'Honorarios', '5' => 'Finalizado', '7' => 'Pendiente Por Contrato','9'=>'Pendiente Por Documentacion'],
-    'jornada'       => ["1" => "8 Horas", "2" => "6 Horas"],    
-    'tiemposContrato' => ["30"=>"30","60"=>"60","90"=>"90","120"=>"120","150"=>"150","180"=>"180","210"=>"210","240"=>"240","270"=>"270"],        
+    'contractual'   => ['1' => 'Contratado', '2' => 'Fijo', '3' => 'Freelance', '4' => 'Honorarios', '5' => 'Finalizado', '7' => 'Pendiente Por Contrato', '9' => 'Pendiente Por Documentacion'],
+    'jornada'       => ["1" => "8 Horas", "2" => "6 Horas"],
+    'tiemposContrato' => ["30" => "30", "60" => "60", "90" => "90", "120" => "120", "150" => "150", "180" => "180", "210" => "210", "240" => "240", "270" => "270"],
 
-    'nacionalidad'      =>['' => '-','V' => 'V','E' => 'E','P' => 'P'],
-    'hijos'             =>['' => '[Seleccione]','0'=>'0','1' => '1','2' => '2','3' => '3','4' => '4','5'=>'5','6'=>'6','7'=>'7'],
-    'horarioTransporte' =>["1"=>"AM","2"=>"PM","3"=>"Ambos"],
-    'tipoContrato'      =>["1"=>"Periodo de Prueba","2"=>"Encargado","3"=>"Titular"],
+    'nacionalidad'      => ['' => '-', 'V' => 'V', 'E' => 'E', 'P' => 'P'],
+    'hijos'             => ['' => '[Seleccione]', '0' => '0', '1' => '1', '2' => '2', '3' => '3', '4' => '4', '5' => '5', '6' => '6', '7' => '7'],
+    'horarioTransporte' => ["1" => "AM", "2" => "PM", "3" => "Ambos"],
+    'tipoContrato'      => ["1" => "Periodo de Prueba", "2" => "Encargado", "3" => "Titular"],
     ///cursos
-    'horariocursos'     =>['1'=> '08:00AM - 04:00PM','2'=>'09:00AM - 04:00PM','3'=>'10:00AM - 03:00PM', '4'=>'10:00AM - 05:00PM','5'=>'11:00AM - 05:00PM'],
-    'convocadocursos'   =>['1'=>'Reclutamiento','2'=>"Operaciones"],
-    'EstatusCursos'     =>['0'=>'Cerrado','1'=>"Abierto",'2'=>"Inactivo"],
+    'horariocursos'     => ['1' => '08:00AM - 04:00PM', '2' => '09:00AM - 04:00PM', '3' => '10:00AM - 03:00PM', '4' => '10:00AM - 05:00PM', '5' => '11:00AM - 05:00PM'],
+    'convocadocursos'   => ['1' => 'Reclutamiento', '2' => "Operaciones"],
+    'EstatusCursos'     => ['0' => 'Cerrado', '1' => "Abierto", '2' => "Inactivo"],
     ///recursos para el modulo de inventario.
-    'EstatusDisks'          =>['1'=>'OPERATIVO', '2'=>'CRITICO', '3'=>'NO OPERATIVO'],
-    'tipoposicion'          =>['1'=>'Administrativa','2'=>'Operativa'],
-    'EstatusEtiqueta'       =>['1'=>'No Impreso','2'=>'Impresa','3'=>'Dañada'],
-    'TipoEquipo'            =>["1"=>"LAPTOP","2"=>"PC","3"=>"SRV","4"=>"AllOne"],
-    'Perifericos'           =>["1" => "TECLADO", "2" => "MOUSE", "3" => "HEATSET", "4" => "T_VIDEO", "5" => "T_INALAMBRICA", "6" => "CORNETAS","7"=>"ADAPTADORES"],
+    'EstatusDisks'          => ['1' => 'OPERATIVO', '2' => 'CRITICO', '3' => 'NO OPERATIVO'],
+    'tipoposicion'          => ['1' => 'Administrativa', '2' => 'Operativa'],
+    'EstatusEtiqueta'       => ['1' => 'No Impreso', '2' => 'Impresa', '3' => 'Dañada'],
+    'TipoEquipo'            => ["1" => "LAPTOP", "2" => "PC", "3" => "SRV", "4" => "AllOne"],
+    'Perifericos'           => ["1" => "TECLADO", "2" => "MOUSE", "3" => "HEATSET", "4" => "T_VIDEO", "5" => "T_INALAMBRICA", "6" => "CORNETAS", "7" => "ADAPTADORES"],
     ///Si se añade algo nuevo en perifericos, incluir en el array del reporte
-    'ReportePerifericos'    =>["Posición","TECLADO" ,"Cantidad", "MOUSE","Cantidad","HEATSET","Cantidad","T._VIDEO","Cantidad","T._INALAMBRICA","Cantidad","CORNETAS","Cantidad","ADAPTADORES","Cantidad"],
-    
-    'ConexionPerifericos'       =>["1"=>"USB - (Universal Serial Bus)","2"=>"PS/2 - (Personal System/2)","3"=>"JACK 3.5mm","4"=>"PCI Express","5"=>"AGP - (Puerto de Graficos Acelerado)","6"=>"Entrada/Salida"],
-    'TipoCable'                 =>["1"=>"CABLE DIRECTO","2"=>"ADAPTADOR"],    
-    'TipoReportesInventarios'   =>["1"=>"Contab. Componentes, Equipos, Monitores y Perifericos","2"=>"Detalles por Posiciones","3"=>"Inventario General todas las Sedes (Se omite el Stock)"],
-    'TipoUploadsInventarios'    =>["1"=>"Stock de Monitores","2" =>"Stock de Equipos","3"=>"Registro de Posiciones"] ,
+    'ReportePerifericos'    => ["Posición", "TECLADO", "Cantidad", "MOUSE", "Cantidad", "HEATSET", "Cantidad", "T._VIDEO", "Cantidad", "T._INALAMBRICA", "Cantidad", "CORNETAS", "Cantidad", "ADAPTADORES", "Cantidad"],
 
-    
-    
+    'ConexionPerifericos'       => ["1" => "USB - (Universal Serial Bus)", "2" => "PS/2 - (Personal System/2)", "3" => "JACK 3.5mm", "4" => "PCI Express", "5" => "AGP - (Puerto de Graficos Acelerado)", "6" => "Entrada/Salida"],
+    'TipoCable'                 => ["1" => "CABLE DIRECTO", "2" => "ADAPTADOR"],
+    'TipoReportesInventarios'   => ["1" => "Contab. Componentes, Equipos, Monitores y Perifericos", "2" => "Detalles por Posiciones", "3" => "Inventario General todas las Sedes (Se omite el Stock)"],
+    'TipoUploadsInventarios'    => ["1" => "Stock de Monitores", "2" => "Stock de Equipos", "3" => "Registro de Posiciones"],
+
+
+
     'name' => env('APP_NAME', 'Laravel'),
 
     /*
@@ -214,7 +232,7 @@ return [
         /*
          * Package Service Providers...
          */
-        Webwizo\Shortcodes\ShortcodesServiceProvider::class,     
+        Webwizo\Shortcodes\ShortcodesServiceProvider::class,
         /*
          * 
          * Application Service Providers...
@@ -225,8 +243,8 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         Barryvdh\DomPDF\ServiceProvider::class,
-        
-        Laraveles\Spanish\SpanishServiceProvider::class,        
+
+        Laraveles\Spanish\SpanishServiceProvider::class,
         jeremykenedy\LaravelRoles\RolesServiceProvider::class,
     ],
 

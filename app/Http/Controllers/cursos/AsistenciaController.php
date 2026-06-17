@@ -214,6 +214,10 @@ class AsistenciaController extends Controller
 
         $curso = CursosModel::find($id);
 
+        if ($curso->RelationParticipantes->count() == 0) {
+            return response()->json("El curso no tiene cuenta con participantes asignados", 500);
+        }
+
         $arrayBegin = carbon::createfromformat('d/m/Y', $request->fecha)->startofday();
 
         $asistenciatomada = AsistenciaModel::WhereDate('created_at', 'like', $arrayBegin->copy()->format('Y-m-d') . '%')
@@ -315,7 +319,12 @@ class AsistenciaController extends Controller
 
         $today = Carbon::today();
 
-        if ($initPersonal) {
+        if (\auth::user()->hasrole('admin')) {
+
+            $cursos = CursosModel::whereDate('inicio', '<=', $today)
+                ->whereDate('finaliza', '>=', $today)
+                ->where('active', 1)->get();
+        } else if ($initPersonal) {
             $cursos = CursosModel::where('personal_id', $initPersonal->id)
                 ->whereDate('inicio', '<=', $today)
                 //->whereDate('finaliza', '>=', $today)
@@ -355,7 +364,7 @@ class AsistenciaController extends Controller
             ]);
 
             $nombre = "curso_DGC_" . $request->cursoasistencia . '_participantes.csv';
-            $cabeceras = "cedula;nombre;apellido;" . $arrayBegin->copy()->format('Y-m-d') . ";observaciones";
+            $cabeceras = "cedula;nombre;apellido;'" . $arrayBegin->copy()->format('Y-m-d') . ";observaciones";
             $disk->put($nombre, $cabeceras);
 
             foreach ($participantes as $participante) {
@@ -370,27 +379,27 @@ class AsistenciaController extends Controller
     public function UploadFilesAsistencia(request $request)
     {
 
-        //try {
-        $files = $request->file('archivo');
-        $headings = (new HeadingRowImport)->toArray(request()->file('archivo'));
-        $primerasCabeceras = $headings[0][0];
+        try {
+            $files = $request->file('archivo');
+            $headings = (new HeadingRowImport)->toArray(request()->file('archivo'));
+            $primerasCabeceras = $headings[0][0];
 
-        if (empty($request->cursoasistencia)) {
-            $textnamefile = explode("_", $request->archivo->getClientOriginalName());
-            $idcurso = $textnamefile[2];
-        } else {
-            $idcurso = $request->cursoasistencia;
-        }
+            if (empty($request->cursoasistencia)) {
+                $textnamefile = explode("_", $request->archivo->getClientOriginalName());
+                $idcurso = $textnamefile[2];
+            } else {
+                $idcurso = $request->cursoasistencia;
+            }
 
-        if (empty($idcurso) || $idcurso == "") {
-            return back()->with('error', 'No se pudo identificar el curso, renombre el Archivo o vuelva a Generar el Archivo de Carga');
-        }
+            if (empty($idcurso) || $idcurso == "") {
+                return back()->with('error', 'No se pudo identificar el curso, renombre el Archivo o vuelva a Generar el Archivo de Carga');
+            }
 
-        Excel::import(new AsistenciaImport($idcurso, $primerasCabeceras), $files);
+            Excel::import(new AsistenciaImport($idcurso, $primerasCabeceras), $files);
 
-        return back()->with('success', 'Asistencia cargada exitosamente.');
-        /**    } catch (\Throwable $e) {
+            return back()->with('success', 'Asistencia cargada exitosamente.');
+        } catch (\Throwable $e) {
             return back()->with('error', 'Ocurrio un problema. ' . $e->getMessage());
-        }*/
+        }
     }
 }

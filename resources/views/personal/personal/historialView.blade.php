@@ -869,8 +869,25 @@
                                                         @if(isset($cambios->skill_id))
                                                         <span class="cambios">Nuevo valor: {{$skill_lp}}</span>
                                                         @endif 
-                                                    </div>
-                                                </div>                                                                             
+                                                    </div>                                                    
+                                                </div>    
+                                                <div class="col-md-12" id="usuario_crm_porta_display" @if(in_array($personal->cartera_id,[20,89])) style="" @else style="display:none;" @endif>
+                                                        <label class="col-form-label" for="usuario_crm_portabilidad">Usuario CRM Portabilidad <span style="color:red">*</span></label>
+                                                        <div class="form-group">
+                                                            <div class="input-group ">
+                                                                <input type="text"
+                                                                        class="form-control"
+                                                                        autocomplete="off"
+                                                                            name="usuario_crm_portabilidad"
+                                                                            id="usuario_crm_portabilidad"
+                                                                            value="{{old('usuario_crm_portabilidad', $personal->usuario_crm_portabilidad)}}"
+                                                                            >
+                                                            </div>
+                                                            @if(isset($cambios->usuario_crm_portabilidad))
+                                                                <span class="cambios">Nuevo valor: {{$cambios->usuario_crm_portabilidad}}</span>
+                                                            @endif
+                                                        </div>
+                                                    </div>                                                                         
                                                 <div class='col-md-12'>                                                                                                     
                                                     <p><small><i class="fas fa-users"></i> Asignación de Gerente, Lideres/Jefes Inmediatos</Small></p>
                                                 </div>
@@ -1119,6 +1136,20 @@
                                                                 </fieldset>                                                                                                      
                                                             </div>
                                                         </div>   
+                                                        <div class="col-md-12"> 
+                                                            <label class="col-form-label" for="observaciones_egreso">Observaciones sobre el Egreso <span style="color:red">*</span></label>  
+                                                            <div class="form-group"> 
+                                                                <div class="input-group">
+                                                                    <div class="input-group-prepend">
+                                                                        <span class="input-group-text" data-toggle="tooltip" data-placement="top" title="Ingrese observaciones detalladas sobre el egreso..."><i class="fas fa-question-circle"></i></span>
+                                                                    </div> 
+                                                                    <textarea class="form-control" id="observaciones_egreso" name="observaciones_egreso" rows="2" placeholder="Ingrese observaciones detalladas sobre el egreso...">{{ old('observaciones_egreso', $personal->observaciones_egreso) }}</textarea>
+                                                                </div>
+                                                                 @if(isset($cambios->observaciones_egreso))
+                                                                <span class="cambios">Nuevo valor: {{$cambios->observaciones_egreso}}</span>
+                                                                @endif 
+                                                            </div>                                                     
+                                                        </div>  
                                                         <div class="col-md-12" id="norecontratardisplay" {!!$style!!}>
                                                             <label class="col-form-label" for="norecontratar">Indique los Motivos por lo que no se debe re contratar a esta persona <span style="color:red">*</span></label>                                                                                                                                                                                                      
                                                             <div class="form-group">

@@ -26,17 +26,32 @@ use Luecano\NumeroALetras\NumeroALetras;
 use App\Http\Controllers\PoliceEstructure;
 use Carbon\Carbon;
 
-class PersonalApiController extends Controller {
+class PersonalApiController extends Controller
+{
 
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function ValidatePersonal(Request $request) {
+    public function ValidatePersonal(Request $request)
+    {
 
-        $array = ["nacionalidad", "primer_nombre", "primer_apellido", "email", "fecha_nacimiento", "telefono_movil", "hijos", "fecha_ingreso", "nomina_id",
-            "bancos_id", "cuenta_bancaria", "horario_entrada", "sede_laboral"];
+        $array = [
+            "nacionalidad",
+            "primer_nombre",
+            "primer_apellido",
+            "email",
+            "fecha_nacimiento",
+            "telefono_movil",
+            "hijos",
+            "fecha_ingreso",
+            "nomina_id",
+            "bancos_id",
+            "cuenta_bancaria",
+            "horario_entrada",
+            "sede_laboral"
+        ];
 
         $banco = BancosModels::where('estatus_id', 1)->orderby('bancos', 'ASC')->pluck('bancos', 'id');
 
@@ -62,7 +77,8 @@ class PersonalApiController extends Controller {
      *
      * @return \Illuminate\Http\Response
      */
-    public function create() {
+    public function create()
+    {
         //
     }
 
@@ -72,15 +88,16 @@ class PersonalApiController extends Controller {
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function CheckPersonalAutoservice(Request $request) {
+    public function CheckPersonalAutoservice(Request $request)
+    {
         if (PersonalModel::where('cedula_empleado', $request->cedula)->whereNotIn('estatus_id', [2, 3, 5, 6])->exists()) {
             $autorizado = 200;
-            $row = "Autorizado";
+            $row = PersonalModel::where('cedula_empleado', $request->cedula)->whereNotIn('estatus_id', [2, 3, 5, 6])->first()->situacion_contractual;
         } else {
             $autorizado = 204;
-            $row = "No Autorizado";
+            $row = false;
         }
-        return response()->json($autorizado);
+        return response()->json([$autorizado, $row]);
     }
 
     /**
@@ -89,7 +106,8 @@ class PersonalApiController extends Controller {
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show(Request $request, $cedula) {
+    public function show(Request $request, $cedula)
+    {
 
         $row = array();
         try {
@@ -117,16 +135,17 @@ class PersonalApiController extends Controller {
 
                 ///Buscamos si existe en la tabla temporal 
             } else if (ParticipantesModel::join('rec_cursos', 'rec_cparticipantes.rec_cursos_id', 'rec_cursos.id')
-            ->where('cedula_empleado', $cedula)
-            ->whereRaw('CURDATE() <= DATE_ADD(rec_cursos.finaliza, INTERVAL 5 DAY)')->exists()) {
-                
+                ->where('cedula_empleado', $cedula)
+                ->whereRaw('CURDATE() <= DATE_ADD(rec_cursos.finaliza, INTERVAL 5 DAY)')->exists()
+            ) {
+
                 $check = ParticipantesModel::where('cedula_empleado', $cedula)->first();
 
                 if (in_array($check->estatus_id, [12])) {
                     $row["cedula"] = $check->cedula_empleado;
                     $row["nombre"] = $check->primer_nombre . ' ' . $check->primer_apellido;
                     $row["gerencia"] = $check->RelationCurso->Relationskill->nombre_skill;
-                    $row["cargo"]   = "Fecha Limite de Acceso como participante: ".carbon::create($check->RelationCurso->finaliza)->addDays(5)->format('d/m/Y');
+                    $row["cargo"]   = "Fecha Limite de Acceso como participante: " . carbon::create($check->RelationCurso->finaliza)->addDays(5)->format('d/m/Y');
                     $row["estatus"] = "ACTIVO";
                     $row["clasebg"] = "bg-info";
                     $row["autorizado"] = "<p>PARTICIPANTE A CURSO</p><p><i class='fas fa-check-circle'></i></p>";
@@ -178,7 +197,8 @@ class PersonalApiController extends Controller {
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id) {
+    public function edit($id)
+    {
         //
     }
 
@@ -189,7 +209,8 @@ class PersonalApiController extends Controller {
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function ResourcePayments(Request $request) {
+    public function ResourcePayments(Request $request)
+    {
 
         $cedula = PersonalModel::select('id', 'primer_nombre', 'primer_apellido', 'segundo_nombre', 'segundo_apellido', 'cedula_empleado', 'cargo_id', 'nomina_id')
             ->where('cedula_empleado', $request->cedula)->first();
@@ -199,11 +220,12 @@ class PersonalApiController extends Controller {
         $directivo = $dataCargo->directivo;
 
         $tipoPago = ContNominaModels::where('codigo', $request->tprecibo)->where('nomina_id', $cedula->nomina_id)->first();
-        
+
         if ($tipoPago === null) {
-            Return response()->json([
-                        "active" => false,
-                        "message" => "Tipo de Recibo no disponible."]);
+            return response()->json([
+                "active" => false,
+                "message" => "Tipo de Recibo no disponible."
+            ]);
         }
 
         switch ($tipoPago->type) {
@@ -253,9 +275,9 @@ class PersonalApiController extends Controller {
                         $rn->load('RelationAsignaDeducs');
 
                         $asig = $rn->RelationAsignaDeducs()->select('coditem', 'descripcion', DB::raw("sum(monto) as monto"), 'tipo', 'auxi_num', 'auxi_char')
-                                        ->join('rp_items', 'rp_asignaciones_deducciones.rp_items_id', 'rp_items.id')
-                                        ->groupby('rp_items_id')->orderBy('tipo', 'asc')
-                                        ->orderBy('coditem', 'ASC')->get();
+                            ->join('rp_items', 'rp_asignaciones_deducciones.rp_items_id', 'rp_items.id')
+                            ->groupby('rp_items_id')->orderBy('tipo', 'asc')
+                            ->orderBy('coditem', 'ASC')->get();
 
                         $fechacorte = $this->fechacorte;
                         $fechainicio = $this->fechainicio;
@@ -263,42 +285,47 @@ class PersonalApiController extends Controller {
                         $tipocorte = $sql->corte;
 
                         if ($sql->active === 1) {
-                            return response()->json(["active" => true,
-                                        "cedula" => $cedula,
-                                        "periodo" => $sql,
-                                        "fechainicio" => $fechainicio,
-                                        "fechacorte" => $fechacorte,
-                                        "nomina" => $rn,
-                                        "asig" => $asig,
-                                        "cargo" => $cargo,
-                                        "directivo" => $directivo,
-                                        "tipocorte" => $tipocorte,
-                                        "activesummonto" => $activesummonto]);
+                            return response()->json([
+                                "active" => true,
+                                "cedula" => $cedula,
+                                "periodo" => $sql,
+                                "fechainicio" => $fechainicio,
+                                "fechacorte" => $fechacorte,
+                                "nomina" => $rn,
+                                "asig" => $asig,
+                                "cargo" => $cargo,
+                                "directivo" => $directivo,
+                                "tipocorte" => $tipocorte,
+                                "activesummonto" => $activesummonto
+                            ]);
                         } else {
-                            Return response()->json([
-                                        "active" => false,
-                                        "message" => "No se encuentra Disponible el periodo Seleccionado, Intente más tarde."]);
+                            return response()->json([
+                                "active" => false,
+                                "message" => "No se encuentra Disponible el periodo Seleccionado, Intente más tarde."
+                            ]);
                         }
                     } else {
-                        Return response()->json([
-                                    "active" => false,
-                                    "message" => "No se puede ubicar el recibo de pago de este personal"]);
+                        return response()->json([
+                            "active" => false,
+                            "message" => "No se puede ubicar el recibo de pago de este personal"
+                        ]);
                     }
                 } else {
-                    Return response()->json([
-                                "active" => false,
-                                "message" => "No Se puede ubicar la información sobre el recibo Consultado"]);
+                    return response()->json([
+                        "active" => false,
+                        "message" => "No Se puede ubicar la información sobre el recibo Consultado"
+                    ]);
                 }
                 break;
             case 3:
-            case 4:                
+            case 4:
                 switch (trim($tipoPago->codigo)) {
-                    case"90": /// utilidades anuales
+                    case "90": /// utilidades anuales
                         if (PeriodosModels::whereIn('corte', [1, 2, 4])->where('rp_cont_nomina', $tipoPago->codigo)->where('anio', $this->anio)->where('tiponomina', $cedula->nomina_id)->exists()) {
 
                             $sqls = PeriodosModels::wherein('corte', [1, 2, 4])->where('rp_cont_nomina', $tipoPago->codigo)->where('anio', $this->anio)->where('tiponomina', $cedula->nomina_id)->get();
                             $idperiodos = $sqls->pluck('id');
-                            
+
                             ///nos traemos el ultimo recibo de pago para calcula
                             if (RecibosNominaModel::whereIn('rp_periodo_id', $idperiodos)->where('cedula', $cedula->cedula_empleado)->exists()) {
                                 $recibo = RecibosNominaModel::whereIn('rp_periodo_id', $idperiodos)->where('cedula', $cedula->cedula_empleado)->get();
@@ -308,9 +335,9 @@ class PersonalApiController extends Controller {
                                 $sql = PeriodosModels::find($rn->rp_periodo_id);
 
                                 $asig = AsigDeducModel::select('coditem', 'descripcion', DB::raw("sum(monto) as monto"), 'tipo', 'auxi_num', 'auxi_char')
-                                                ->join('rp_items', 'rp_asignaciones_deducciones.rp_items_id', 'rp_items.id')
-                                                ->wherein('rp_nomina_id', $idrecibo)->groupby('rp_items_id')
-                                                ->orderBy('tipo', 'asc')->orderBy('coditem', 'ASC')->get();
+                                    ->join('rp_items', 'rp_asignaciones_deducciones.rp_items_id', 'rp_items.id')
+                                    ->wherein('rp_nomina_id', $idrecibo)->groupby('rp_items_id')
+                                    ->orderBy('tipo', 'asc')->orderBy('coditem', 'ASC')->get();
 
                                 $fechacorte = $this->fechacorte;
                                 $fechainicio = $this->fechainicio;
@@ -319,32 +346,37 @@ class PersonalApiController extends Controller {
                                 $tipocorte = $request->corte;
 
                                 if ($sql->active === 1) {
-                                    return response()->json(["active" => true,
-                                                "cedula" => $cedula,
-                                                "periodo" => $sql,
-                                                "fechainicio" => $fechainicio,
-                                                "fechacorte" => $fechacorte,
-                                                "nomina" => $rn,
-                                                "asig" => $asig,
-                                                "cargo" => $cargo,
-                                                "directivo" => $directivo,
-                                                "tipocorte" => $tipocorte,
-                                                "activesummonto" => $activesummonto]);
+                                    return response()->json([
+                                        "active" => true,
+                                        "cedula" => $cedula,
+                                        "periodo" => $sql,
+                                        "fechainicio" => $fechainicio,
+                                        "fechacorte" => $fechacorte,
+                                        "nomina" => $rn,
+                                        "asig" => $asig,
+                                        "cargo" => $cargo,
+                                        "directivo" => $directivo,
+                                        "tipocorte" => $tipocorte,
+                                        "activesummonto" => $activesummonto
+                                    ]);
                                 } else {
-                                    Return response()->json([
-                                                "active" => false,
-                                                "message" => "No se encuentra Disponible el periodo Seleccionado, Intente más tarde.",
-                                                "data" => $sqls]);
+                                    return response()->json([
+                                        "active" => false,
+                                        "message" => "No se encuentra Disponible el periodo Seleccionado, Intente más tarde.",
+                                        "data" => $sqls
+                                    ]);
                                 }
                             } else {
-                                Return response()->json([
-                                            "active" => false,
-                                            "message" => "No se puede ubicar el recibo de pago de este personal"]);
+                                return response()->json([
+                                    "active" => false,
+                                    "message" => "No se puede ubicar el recibo de pago de este personal"
+                                ]);
                             }
                         } else {
-                            Return response()->json([
-                                        "active" => false,
-                                        "message" => "No Se puede ubicar la información sobre el recibo Consultado"]);
+                            return response()->json([
+                                "active" => false,
+                                "message" => "No Se puede ubicar la información sobre el recibo Consultado"
+                            ]);
                         }
                         break;
                     case "90A"; ///anticipos de utilidades  sin importar los meses de carga                     
@@ -364,9 +396,9 @@ class PersonalApiController extends Controller {
                                     $datarecibo[$periodos->id]["id"] = $rn->id;
 
                                     $asig = AsigDeducModel::select('coditem', 'descripcion', DB::raw("sum(monto) as monto"), 'tipo', 'auxi_num', 'auxi_char')
-                                                    ->join('rp_items', 'rp_asignaciones_deducciones.rp_items_id', 'rp_items.id')
-                                                    ->where('rp_nomina_id', $rn->id)->groupby('rp_items_id')
-                                                    ->orderBy('tipo', 'asc')->orderBy('coditem', 'ASC')->get();
+                                        ->join('rp_items', 'rp_asignaciones_deducciones.rp_items_id', 'rp_items.id')
+                                        ->where('rp_nomina_id', $rn->id)->groupby('rp_items_id')
+                                        ->orderBy('tipo', 'asc')->orderBy('coditem', 'ASC')->get();
 
                                     foreach ($asig as $key => $asignaciones) {
                                         $datarecibo[$periodos->id]["asignaciones"][$key]["descripcion"] = $asignaciones->coditem . " - " . strtoupper($asignaciones->descripcion);
@@ -377,31 +409,35 @@ class PersonalApiController extends Controller {
                                 $activesummonto = true;
                                 $tipocorte = $request->corte;
 
-                                return response()->json(["active" => true,
-                                            "cedula" => $cedula,
-                                            "periodo" => $sqls->toArray(),
-                                            "datarecibo" => $datarecibo,
-                                            "cargo" => $cargo,
-                                            "directivo" => $directivo,
-                                            "tipocorte" => $tipocorte,
-                                            "activesummonto" => $activesummonto]);
+                                return response()->json([
+                                    "active" => true,
+                                    "cedula" => $cedula,
+                                    "periodo" => $sqls->toArray(),
+                                    "datarecibo" => $datarecibo,
+                                    "cargo" => $cargo,
+                                    "directivo" => $directivo,
+                                    "tipocorte" => $tipocorte,
+                                    "activesummonto" => $activesummonto
+                                ]);
                             } else {
-                                Return response()->json([
-                                            "active" => false,
-                                            "message" => "No se puede ubicar el recibo de pago de este personal"]);
+                                return response()->json([
+                                    "active" => false,
+                                    "message" => "No se puede ubicar el recibo de pago de este personal"
+                                ]);
                             }
                         } else {
-                            Return response()->json([
-                                        "active" => false,
-                                        "message" => "No se encuentra Disponible el periodo Seleccionado, Intente más tarde.",]);
+                            return response()->json([
+                                "active" => false,
+                                "message" => "No se encuentra Disponible el periodo Seleccionado, Intente más tarde.",
+                            ]);
                         }
                         break;
                     default:
-                        
-                  //     return json_encode([$this->mes, $this->anio,"default",$tipoPago->codigo]);
-                        
+
+                        //     return json_encode([$this->mes, $this->anio,"default",$tipoPago->codigo]);
+
                         if (PeriodosModels::whereIn('corte', [1, 2, 4])->where('rp_cont_nomina', trim($tipoPago->codigo))->where('mes', $this->mes)->where('anio', $this->anio)->where('tiponomina', $cedula->nomina_id)->exists()) {
-                            $sqls = PeriodosModels::wherein('corte', [1, 2, 4])->where('rp_cont_nomina',trim($tipoPago->codigo))->where('mes', $this->mes)->where('anio', $this->anio)->where('tiponomina', $cedula->nomina_id)->get();
+                            $sqls = PeriodosModels::wherein('corte', [1, 2, 4])->where('rp_cont_nomina', trim($tipoPago->codigo))->where('mes', $this->mes)->where('anio', $this->anio)->where('tiponomina', $cedula->nomina_id)->get();
 
                             $idperiodos = $sqls->pluck('id');
                             ///nos traemos el ultimo recibo de pago para calcula
@@ -414,9 +450,9 @@ class PersonalApiController extends Controller {
                                 $sql = PeriodosModels::find($rn->rp_periodo_id);
 
                                 $asig = AsigDeducModel::select('coditem', 'descripcion', DB::raw("sum(monto) as monto"), 'tipo', 'auxi_num', 'auxi_char')
-                                                ->join('rp_items', 'rp_asignaciones_deducciones.rp_items_id', 'rp_items.id')
-                                                ->wherein('rp_nomina_id', $idrecibo)->groupby('rp_items_id')
-                                                ->orderBy('tipo', 'asc')->orderBy('coditem', 'ASC')->get();
+                                    ->join('rp_items', 'rp_asignaciones_deducciones.rp_items_id', 'rp_items.id')
+                                    ->wherein('rp_nomina_id', $idrecibo)->groupby('rp_items_id')
+                                    ->orderBy('tipo', 'asc')->orderBy('coditem', 'ASC')->get();
 
                                 if ($request["tprecibo"] == 91) {
                                     $fechacorte = $rn->fec_ini != null ? carbon::create($rn->fec_ini) : null;
@@ -429,37 +465,41 @@ class PersonalApiController extends Controller {
                                 $tipocorte = $request->corte;
 
                                 if ($sql->active === 1) {
-                                    return response()->json(["active" => true,
-                                                "cedula" => $cedula,
-                                                "periodo" => $sql,
-                                                "fechainicio" => $fechainicio,
-                                                "fechacorte" => $fechacorte,
-                                                "nomina" => $rn,
-                                                "asig" => $asig,
-                                                "cargo" => $cargo,
-                                                "directivo" => $directivo,
-                                                "tipocorte" => $tipocorte,
-                                                "activesummonto" => $activesummonto]);
+                                    return response()->json([
+                                        "active" => true,
+                                        "cedula" => $cedula,
+                                        "periodo" => $sql,
+                                        "fechainicio" => $fechainicio,
+                                        "fechacorte" => $fechacorte,
+                                        "nomina" => $rn,
+                                        "asig" => $asig,
+                                        "cargo" => $cargo,
+                                        "directivo" => $directivo,
+                                        "tipocorte" => $tipocorte,
+                                        "activesummonto" => $activesummonto
+                                    ]);
                                 } else {
-                                    Return response()->json([
-                                                "active" => false,
-                                                "message" => "No se encuentra Disponible el periodo Seleccionado, Intente más tarde.",
+                                    return response()->json([
+                                        "active" => false,
+                                        "message" => "No se encuentra Disponible el periodo Seleccionado, Intente más tarde.",
                                     ]);
                                 }
                             } else {
-                                Return response()->json([
-                                            "active" => false,
-                                            "message" => "No se puede ubicar el recibo de pago de este personal"]);
+                                return response()->json([
+                                    "active" => false,
+                                    "message" => "No se puede ubicar el recibo de pago de este personal"
+                                ]);
                             }
                         } else {
-                            Return response()->json([
-                                        "active" => false,
-                                        "message" => "No Se puede ubicar la información sobre el recibo Consultado"]);
+                            return response()->json([
+                                "active" => false,
+                                "message" => "No Se puede ubicar la información sobre el recibo Consultado"
+                            ]);
                         }
                         break;
                 }
                 break;
-        }//fin swich cortes
+        } //fin swich cortes
     }
 
     /**
@@ -468,17 +508,33 @@ class PersonalApiController extends Controller {
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id) {
+    public function destroy($id)
+    {
         //
     }
 
     /** para generar las connstancias por primera vez */
-    public function ConstanciasCreate(Request $request) {
+    public function ConstanciasCreate(Request $request)
+    {
 
         try {
-            $cedula = PersonalModel::select('id', 'primer_nombre', 'primer_apellido', 'segundo_nombre', 'segundo_apellido',
-                                    'cedula_empleado', 'cargo_id', 'nomina_id', 'fecha_ingreso', 'contrato_1', 'contrato_2', 'finalizacion_1', 'finalizacion_2', 'situacion_contractual')
-                            ->where('cedula_empleado', $request->cedula)->first();
+            $cedula = PersonalModel::select(
+                'id',
+                'primer_nombre',
+                'primer_apellido',
+                'segundo_nombre',
+                'segundo_apellido',
+                'cedula_empleado',
+                'cargo_id',
+                'nomina_id',
+                'fecha_ingreso',
+                'contrato_1',
+                'contrato_2',
+                'finalizacion_1',
+                'finalizacion_2',
+                'situacion_contractual'
+            )
+                ->where('cedula_empleado', $request->cedula)->first();
 
             if ($cedula->contrato_2 == null) {
                 $fegaegreso = $cedula->finalizacion_1;
@@ -492,9 +548,9 @@ class PersonalApiController extends Controller {
             $cargo = $cedula->RelationCargos != null ? $cedula->RelationCargos->nombre_cargo : null;
 
             $monto = RecibosNominaModel::select('sueldo')
-            ->join('rp_periodo', 'rp_nomina.rp_periodo_id', 'rp_periodo.id')
-            ->where('rp_periodo.rp_cont_nomina', "01")
-            ->where('cedula', $request->cedula)->get()->last();
+                ->join('rp_periodo', 'rp_nomina.rp_periodo_id', 'rp_periodo.id')
+                ->where('rp_periodo.rp_cont_nomina', "01")
+                ->where('cedula', $request->cedula)->get()->last();
 
             $formatter = new NumeroALetras();
             $montoletras = $formatter->toMoney($monto->sueldo, 2, 'BOLIVARES', 'CENTIMOS');
@@ -559,15 +615,32 @@ class PersonalApiController extends Controller {
     }
 
     /** para validar las constancias ya generadas */
-    public function ConstanciaShow(Request $request) {
+    public function ConstanciaShow(Request $request)
+    {
         try {
             if (ConstanciasModel::where("serial", $request->codigo)->exists()) {
                 $cod = base64_decode($request->codigo, true);
                 $subs = explode('|', $cod);
 
-                $cedula = PersonalModel::select('id', 'primer_nombre', 'primer_apellido', 'segundo_nombre', 'segundo_apellido', 'estatus_id', 'fecha_egreso',
-                                        'cedula_empleado', 'cargo_id', 'nomina_id', 'fecha_ingreso', 'contrato_1', 'contrato_2', 'finalizacion_1', 'finalizacion_2', 'situacion_contractual')
-                                ->where('cedula_empleado', $subs[0])->first();
+                $cedula = PersonalModel::select(
+                    'id',
+                    'primer_nombre',
+                    'primer_apellido',
+                    'segundo_nombre',
+                    'segundo_apellido',
+                    'estatus_id',
+                    'fecha_egreso',
+                    'cedula_empleado',
+                    'cargo_id',
+                    'nomina_id',
+                    'fecha_ingreso',
+                    'contrato_1',
+                    'contrato_2',
+                    'finalizacion_1',
+                    'finalizacion_2',
+                    'situacion_contractual'
+                )
+                    ->where('cedula_empleado', $subs[0])->first();
 
                 $cons = ConstanciasModel::find($subs[1]);
 
@@ -592,13 +665,14 @@ class PersonalApiController extends Controller {
         }
     }
 
-    public function ApiListadoGeneral(Request $request) {
+    public function ApiListadoGeneral(Request $request)
+    {
 
         ini_set('max_execution_time', 300); // 300 segundos = 5 minutos
 
         $user = ENV('DEV_USER_CHANGE', false) ?
-                \Auth::loginUsingId(ENV('OTHER_USER_ID'), true) :
-                \Auth::user();
+            \Auth::loginUsingId(ENV('OTHER_USER_ID'), true) :
+            \Auth::user();
 
         //  dd($user,$user->tokenCan());
         $nivel = PoliceEstructure::VerifiedNivelPermissions($user);
@@ -618,10 +692,10 @@ class PersonalApiController extends Controller {
                 $skillPermisado = $user->RelationPermisos()->groupby('skill_id')->pluck('skill_id');
 
                 $result = $dato->wherein('id', $idPersonals)
-                                ->whereIn('cartera_id', $carteraPermisada)
-                                ->whereIn('skill_id', $skillPermisado)
-                                ->orderby('primer_nombre', 'ASC')->limit(1000)->get();
-               
+                    ->whereIn('cartera_id', $carteraPermisada)
+                    ->whereIn('skill_id', $skillPermisado)
+                    ->orderby('primer_nombre', 'ASC')->limit(1000)->get();
+
                 break;
             case 3:
                 $carterasautorize = $user->RelationPermisos()->groupby('cartera_id')->pluck('cartera_id');
@@ -639,8 +713,8 @@ class PersonalApiController extends Controller {
                 $personal = $carterasPersonal[3];
 
                 $result = $dato->whereIn('id', $personal)
-                                ->wherein('skill_id', $skills)
-                                ->orderby('primer_nombre', 'ASC')->limit(1000)->get();
+                    ->wherein('skill_id', $skills)
+                    ->orderby('primer_nombre', 'ASC')->limit(1000)->get();
 
                 //   $result = $dato->get();
                 break;
@@ -653,9 +727,9 @@ class PersonalApiController extends Controller {
                 return response()->json("Recursos no autorizados", 403);
                 break;
         }
-        
+
         foreach ($result as $datos) {
-            
+
             $row["Registrado"]      = date('d/m/Y h:i:s', strtotime($datos->created_at));
             $row["Nacionalidad"]    = $datos->nacionalidad;
             $row["Cedula"]          = $datos->cedula_empleado;
@@ -667,7 +741,7 @@ class PersonalApiController extends Controller {
             $row["Email"]           = $datos->email;
             $row["Nivel Academico"] = $datos->nivel_academico;
             $row["Especialidad"]    = $datos->especialidad;
-            $row["Fecha Nacimiento"]= date('d/m/Y', strtotime($datos->fecha_nacimiento));
+            $row["Fecha Nacimiento"] = date('d/m/Y', strtotime($datos->fecha_nacimiento));
             $row["Sexo"]            = $datos->sexo;
             $row["Tlf. Local"]      = $datos->telefono_casa;
             $row["Tlf. Movil"]      = $datos->telefono_movil;
@@ -677,20 +751,23 @@ class PersonalApiController extends Controller {
             $row["Ciudad"]          = $datos->RelationCiudad != null ? $datos->RelationCiudad->ciudad : null;
             $row["Sector"]          = $datos->sector;
             $row["Direccion"]       = $datos->direccion;
-            
-             if ($datos->htransporte != null) {
+
+            if ($datos->htransporte != null) {
                 switch ($datos->htransporte):
-                    case 1 : $row["Utiliza Transporte"] = "AM";
+                    case 1:
+                        $row["Utiliza Transporte"] = "AM";
                         break;
-                    case 2 : $row["Utiliza Transporte"] = "PM";
+                    case 2:
+                        $row["Utiliza Transporte"] = "PM";
                         break;
-                    case 3 :$row["Utiliza Transporte"]  = "Ambos";
+                    case 3:
+                        $row["Utiliza Transporte"]  = "Ambos";
                         break;
                 endswitch;
             } else {
                 $row["Utiliza Transporte"] = "";
-            }                       
-            
+            }
+
             $row["Transporte"]      = $datos->htransporte;
             $row["Fecha Ingreso"]   = date('d/m/Y', strtotime($datos->fecha_ingreso));
             $row["Nomina"]          = $datos->RelationNomina != null ? $datos->RelationNomina->nombre_nomina : null;
@@ -718,24 +795,24 @@ class PersonalApiController extends Controller {
             $row["Estatus"]                 = $datos->RelationEstatus->estatus;
             $row["Firma 1er. Contrato"]         = date('d/m/Y', strtotime($datos->contrato_1));
             $row["Finalizacion 1er. Contrato"]  = date('d/m/Y', strtotime($datos->finalizacion_1));
-            $row["Firma 2do. Contrato"]         = $datos->contrato_2 != null ? date('d/m/Y', strtotime($datos->contrato_2)): null;
-            $row["Finalizacion 2do. Contrato"]  = $datos->finalizacion_2  != null ? date('d/m/Y', strtotime($datos->finalizacion_2)): null;
+            $row["Firma 2do. Contrato"]         = $datos->contrato_2 != null ? date('d/m/Y', strtotime($datos->contrato_2)) : null;
+            $row["Finalizacion 2do. Contrato"]  = $datos->finalizacion_2  != null ? date('d/m/Y', strtotime($datos->finalizacion_2)) : null;
             $row["Tipo de Contrato"]            = $datos->situacion_contractual;
             $row["Fecha de Egreso"]             = $datos->fecha_egreso != null ? date('d/m/Y', strtotime($datos->fecha_egreso)) : null;
             $row["Motivo del Egreso"]           = $datos->motivo_egreso != null ? $datos->motivo_egreso : null;
             $row["Fotografia"]                  = $datos->image != null ?  "SI" : "NO";
-            
+
             if ($datos->RelationCentroCosto == null) {
-            $row["Cod. CECO"] = null;
-            $row["Nombre CECOS"]  = null;
-            $row["Porcentaje CECO"]  = null;
+                $row["Cod. CECO"] = null;
+                $row["Nombre CECOS"]  = null;
+                $row["Porcentaje CECO"]  = null;
             } else {
                 $cod = array();
                 $ceco = array();
                 $porcentaje = array();
 
                 foreach ($datos->RelationCentroCosto()->get() as $centroasignados) {
-                    
+
                     array_push($cod, $centroasignados->RelationCECO->cod_ceco);
                     array_push($ceco, $centroasignados->RelationCECO->nombre_ceco);
                     array_push($porcentaje, number_format($centroasignados->porcentaje));
@@ -745,7 +822,7 @@ class PersonalApiController extends Controller {
                 $row["Nombre CECOS"] = implode($string, $ceco);
                 $row["Porcentaje CECO"] = implode($string, $porcentaje);
             }
-            
+
             $data[] = $row;
         }
 

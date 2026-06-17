@@ -75,7 +75,7 @@
                                                         : $users->RelationUsers->email)
                                                     : 'N/D' !!}
                                                 </td>
-                                                <td>
+                                                <td>                                                  
                                                     <div class='btn-group'>
                                                         @permission('estructura.permisos.create')
                                                             <button type="button" class="btn btn-success btn-sm"

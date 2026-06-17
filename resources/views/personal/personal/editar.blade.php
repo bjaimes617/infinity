@@ -1012,7 +1012,18 @@
                                                                            data-bootstrap-switch data-off-color="danger" data-on-color="success"> 
                                                                 </fieldset>                                                                                                      
                                                             </div>
-                                                        </div>   
+                                                        </div>  
+                                                        <div class="col-md-12"> 
+                                                            <label class="col-form-label" for="observaciones_egreso">Observaciones sobre el Egreso <span style="color:red">*</span></label>  
+                                                            <div class="form-group"> 
+                                                                <div class="input-group">
+                                                                    <div class="input-group-prepend">
+                                                                        <span class="input-group-text" data-toggle="tooltip" data-placement="top" title="Ingrese observaciones detalladas sobre el egreso..."><i class="fas fa-question-circle"></i></span>
+                                                                    </div> 
+                                                                    <textarea class="form-control" id="observaciones_egreso" name="observaciones_egreso" rows="2" placeholder="Ingrese observaciones detalladas sobre el egreso...">{{ old('observaciones_egreso', $personal->observaciones_egreso) }}</textarea>
+                                                                </div> 
+                                                            </div>                                                     
+                                                        </div>  
                                                         <div class="col-md-12" id="norecontratardisplay" {!!$style!!}>
                                                             <label class="col-form-label" for="norecontratar">Indique los Motivos por lo que no se debe re contratar a esta persona <span style="color:red">*</span></label>                                                                                                                                                                                                      
                                                             <div class="form-group">

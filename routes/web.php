@@ -145,7 +145,7 @@ Route::middleware(['auth', 'activity'])->group(function () {
 
     Route::get('estructura/autorizacion/permisos/editar/{id}',      [PoliceEstructure::class, 'PermisosEdit'])->middleware('permission:estructura.permisos.create')->name('estructura.autorizacion.edit');
     Route::put('estructura/autorizacion/permisos/editar/{id}',      [PoliceEstructure::class, 'PermisosUpdate'])->middleware('permission:estructura.permisos.create')->name('estructura.autorizacion.update');
-    Route::delete('estructura/autorizacion/delete/{id}',            [PoliceEstructure::class, 'PermisosDestroy'])->middleware('permission:estructura.permisos.create')->name('estructura.autorizacion.delete');
+    Route::delete('estructura/autorizacion/{id}/delete/',            [PoliceEstructure::class, 'PermisosDestroy'])->middleware('permission:estructura.permisos.create')->name('estructura.autorizacion.delete');
     ///reportes de estructura
     Route::get('estructura/reportes/cecos',                         [PoliceEstructure::class, 'CecosGenerate'])->middleware('permission:estructura.cecos.registrados')->name('estructura.reporte.cecos');
     Route::get('estructura/reportes/gerencial',                     [PoliceEstructure::class, 'GerencialGenerate'])->middleware('permission:estructura.index.gerencias')->name('estructura.reporte.gerencial');

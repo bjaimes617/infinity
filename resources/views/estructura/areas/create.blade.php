@@ -202,6 +202,20 @@
                                                     </div>
                                                 </div>
                                             </div>
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label class="col-form-label" for="tipo_formato">Formato que deben utilizar para la Carga de Variables<span style="color:red">*</span></label>
+                                                    <div class="input-group">
+                                                        <select id="tipo_formato" name="tipo_formato[]"
+                                                            class="form-control select2" multiple="multiple"
+                                                            style="width: 100%;">
+                                                          @foreach ($type_format as $key => $value)
+                                                              <option value="{{ $key }}">{{ $key }} - {{ $value }}</option>
+                                                          @endforeach
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
                                                     <label class="col-form-label" for="tipo_periodo">Periodo de Pago<span

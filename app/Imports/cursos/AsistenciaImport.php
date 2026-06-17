@@ -16,7 +16,7 @@ use App\Models\cursos\PersonalModel;
 use Illuminate\Validation\Rule;
 use Carbon\Carbon;
 
-class AsistenciaImport implements ToCollection, WithHeadingRow, WithValidation
+class AsistenciaImport implements ToCollection, WithHeadingRow
 {
     use ActivityLogger;
     use Importable;
@@ -42,112 +42,115 @@ class AsistenciaImport implements ToCollection, WithHeadingRow, WithValidation
     public function collection(Collection $collection)
     {
 
-        //try {
-        $begin = $this->cabecera[3];
-        $fecha = Carbon::createFromFormat('Y_m_d', $begin)->format('Y-m-d');
-
-        $dia = date('l', strtotime($fecha)); ///dia de la semana en letras///   
-        $hora = date('H:i:s', strtotime(now()));
-
-
-
-        foreach ($collection as $row) {
-            $sistencia = new AsistenciaModel();
-            $sistencia->facilitador_id  = $this->facilitador->personal_id;
-            $sistencia->rec_cparticipantes_id = $this->participantes[$row["cedula"]];
-            $sistencia->rec_cursos_id   = $this->curso;
-            $sistencia->prefijo         = $row[$begin];
-            $part = ParticipantesModel::find($this->participantes[$row["cedula"]]);
-
-            switch ($row[$begin]) {
-                case "E":
-                    $part->estatus_id = 15;
-                    $part->rec_observacion_id = $this->egresos[$row["observaciones"]];
-                    if ($part->cambiocampana == "SI") {
-                        $objPersonal = PersonalModel::where('cedula_empleado', $part->cedula_empleado)->first();
-                        $objPersonal->estatus_id = 1;
-                        $objPersonal->save();
-                    }
-                    break;
-                case "NA":
-                    $part->estatus_id = 17;
-                    $part->rec_observacion_id = 14;
-                    if ($part->cambiocampana == "SI") {
-                        $objPersonal = PersonalModel::where('cedula_empleado', $part->cedula_empleado)->first();
-                        $objPersonal->estatus_id = 1;
-                        $objPersonal->save();
-                    }
-                    break;
-                case "AB":
-                    $part->estatus_id = 13;
-                    $part->rec_observacion_id = $this->abandonos[$row["observaciones"]];
-                    if ($part->cambiocampana == "SI") {
-                        $objPersonal = PersonalModel::where('cedula_empleado', $part->cedula_empleado)->first();
-                        $objPersonal->estatus_id = 1;
-                        $objPersonal->save();
-                    }
-                    break;
+        try {
+            $begin = $this->cabecera[3];
+            if (Carbon::hasFormat($begin, 'Y_m_d')) {
+                $fecha = Carbon::createFromFormat('Y_m_d', $begin)->format('Y-m-d');
+            } else {
+                // 2. Si no, que Carbon intente adivinar el formato que esté recibiendo
+                $fecha = Carbon::parse($begin)->format('Y-m-d');
             }
 
-            if ($part->cambiocampana == "SI") {
-                $personal = PersonalModel::where('cedula_empleado', $part->cedula_empleado)->first();
-                if (!AsistenciaOperativaModel::where('personal_id', $personal->id)
-                    ->where('created_at', 'like', $begin . '%')->exists()) {
-                    $sistenciaop = new AsistenciaOperativaModel();
-                    $sistenciaop->tipo_asistencia = "CC";
-                    $sistenciaop->gerente_id = $personal->gerente_area_id;
-                    $sistenciaop->supervisor_id = $personal->jefe_inmediato;
-                    $sistenciaop->coordinador_id = $personal->jefe_inmediato_segundo;
-                    $sistenciaop->personal_id = $personal->id;
-                    $sistenciaop->area_trabajo_id = $personal->area_trabajo_id;
-                    $sistenciaop->cartera_id = $personal->cartera_id;
-                    $sistenciaop->skill_id = $personal->skill_id;
-                    switch ($this->participantes[$row["cedula"]]) {
-                        case "A":
-                            $val = "CCA";
-                            break;
-                        case "I":
-                            $val = "CCI";
-                            break;
-                        default:
-                            $val = "CC" . $this->participantes[$row["cedula"]];
-                            break;
-                    }
-                    $sistenciaop->prefijo = $val;
-                    $sistenciaop->block = 1;
-                    $sistenciaop->dia = $dia;
-                    $sistenciaop->observacion = "Registro de Asistencia automatico por cambio de campaña";
-                    $sistenciaop->created_at = $begin . " " . $hora;
-                    $sistenciaop->created_at = $begin . " " . $hora;
-                    $sistenciaop->save();
+            $dia = date('l', strtotime($fecha)); ///dia de la semana en letras///   
+            $hora = date('H:i:s', strtotime(now()));
+
+            foreach ($collection as $row) {
+                $sistencia = new AsistenciaModel();
+                $sistencia->facilitador_id  = $this->facilitador->personal_id;
+                $sistencia->rec_cparticipantes_id = $this->participantes[$row["cedula"]];
+                $sistencia->rec_cursos_id   = $this->curso;
+                $sistencia->prefijo         = $row[$begin];
+                $part = ParticipantesModel::find($this->participantes[$row["cedula"]]);
+
+                switch ($row[$begin]) {
+                    case "E":
+                        $part->estatus_id = 15;
+                        $part->rec_observacion_id = $this->egresos[$row["observaciones"]];
+                        if ($part->cambiocampana == "SI") {
+                            $objPersonal = PersonalModel::where('cedula_empleado', $part->cedula_empleado)->first();
+                            $objPersonal->estatus_id = 1;
+                            $objPersonal->save();
+                        }
+                        break;
+                    case "NA":
+                        $part->estatus_id = 17;
+                        $part->rec_observacion_id = 14;
+                        if ($part->cambiocampana == "SI") {
+                            $objPersonal = PersonalModel::where('cedula_empleado', $part->cedula_empleado)->first();
+                            $objPersonal->estatus_id = 1;
+                            $objPersonal->save();
+                        }
+                        break;
+                    case "AB":
+                        $part->estatus_id = 13;
+                        $part->rec_observacion_id = $this->abandonos[$row["observaciones"]];
+                        if ($part->cambiocampana == "SI") {
+                            $objPersonal = PersonalModel::where('cedula_empleado', $part->cedula_empleado)->first();
+                            $objPersonal->estatus_id = 1;
+                            $objPersonal->save();
+                        }
+                        break;
                 }
+
+                if ($part->cambiocampana == "SI") {
+                    $personal = PersonalModel::where('cedula_empleado', $part->cedula_empleado)->first();
+                    if (!AsistenciaOperativaModel::where('personal_id', $personal->id)
+                        ->where('created_at', 'like', $begin . '%')->exists()) {
+                        $sistenciaop = new AsistenciaOperativaModel();
+                        $sistenciaop->tipo_asistencia = "CC";
+                        $sistenciaop->gerente_id = $personal->gerente_area_id;
+                        $sistenciaop->supervisor_id = $personal->jefe_inmediato;
+                        $sistenciaop->coordinador_id = $personal->jefe_inmediato_segundo;
+                        $sistenciaop->personal_id = $personal->id;
+                        $sistenciaop->area_trabajo_id = $personal->area_trabajo_id;
+                        $sistenciaop->cartera_id = $personal->cartera_id;
+                        $sistenciaop->skill_id = $personal->skill_id;
+                        switch ($this->participantes[$row["cedula"]]) {
+                            case "A":
+                                $val = "CCA";
+                                break;
+                            case "I":
+                                $val = "CCI";
+                                break;
+                            default:
+                                $val = "CC" . $this->participantes[$row["cedula"]];
+                                break;
+                        }
+                        $sistenciaop->prefijo = $val;
+                        $sistenciaop->block = 1;
+                        $sistenciaop->dia = $dia;
+                        $sistenciaop->observacion = "Registro de Asistencia automatico por cambio de campaña";
+                        $sistenciaop->created_at = $begin . " " . $hora;
+                        $sistenciaop->created_at = $begin . " " . $hora;
+                        $sistenciaop->save();
+                    }
+                }
+
+                $sistencia->block = 1;
+                $sistencia->dia = $dia;
+                $sistencia->observacion = "Registro de Asistencia del curso modalidad Masiva";
+                $sistencia->created_at = $fecha . " " . $hora;
+                $sistencia->created_at = $fecha . " " . $hora;
+
+                $part->save();
+                $sistencia->save();
+
+
+                ActivityLogger::activity("Curso - Registro de asistencia: " . $row["cedula"] . " Curso " . $this->curso . " " . json_encode($row));
             }
 
-            $sistencia->block = 1;
-            $sistencia->dia = $dia;
-            $sistencia->observacion = "Registro de Asistencia del curso modalidad Masiva";
-            $sistencia->created_at = $fecha . " " . $hora;
-            $sistencia->created_at = $fecha . " " . $hora;
+            if ($this->facilitador->finaliza == $fecha) {
+                $this->facilitador->automaticClose = 1;
+                $this->facilitador->active = 0;
+                $this->facilitador->save();
+            }
 
-            $part->save();
-            $sistencia->save();
-
-
-            ActivityLogger::activity("Curso - Registro de asistencia: " . $row["cedula"] . " Curso " . $this->curso . " " . json_encode($row));
-        }
-
-        if ($this->facilitador->finaliza == $fecha) {
-            $this->facilitador->automaticClose = 1;
-            $this->facilitador->active = 0;
-            $this->facilitador->save();
-        }
-
-        \Session::flash('success', 'Asistencias registradas correctamente');
-        return true;
-        /*  } catch (\Throwable $e) {
+            \Session::flash('success', 'Asistencias registradas correctamente');
+            return true;
+        } catch (\Throwable $e) {
             \Session::flash('error', 'Ocurrio un problema, ' . $e->getMessage());
             return back()->withErrors([]);
-        }*/
+        }
     }
 
     public function rules(): array

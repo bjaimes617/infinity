@@ -124,21 +124,21 @@
                                     <tr>
                                         <td><B> A.) Carga Operaciones y Unidades de Apoyo Quincenal</B></span></td>
                                         <td>
-                                            <a class="btn btn-info btn-block disabled" id="enlace1" href="{{\Storage::disk('comisiones')->url('formatos/OperacionesApoyoQuincenal.xlsx')}}">
+                                            <a class="btn btn-info btn-block enlaces disabled" id="A" href="{{\Storage::disk('comisiones')->url('formatos/OperacionesApoyoQuincenal.xlsx')}}">
                                                 <i class="fa fa-download"></i> Formato Para Carga Variables / Comisiones Apoyo Quincenal</a>
                                         </td>
                                     </tr>
                                     <tr>
                                         <td><B> B.) Carga Operaciones Semanal Portabilidad Ejecutivos</B></span></td>
                                         <td>
-                                            <a class="btn btn-info btn-block disabled" id="enlace2" href="{{\Storage::disk('comisiones')->url('formatos/OperacionesSemanal.xlsx')}}">
+                                            <a class="btn btn-info btn-block enlaces disabled" id="B" href="{{\Storage::disk('comisiones')->url('formatos/OperacionesSemanal.xlsx')}}">
                                                 <i class="fa fa-download"></i> Formato de Comisiones Semanal Ejecutivos</a>
                                         </td>
                                     </tr> 
                                     <tr>
                                         <td><B> C.) Carga Variables </B></span></td>
                                         <td>
-                                            <a class="btn btn-info btn-block disabled"  id="enlace3" href="{{\Storage::disk('comisiones')->url('formatos/Variables.xlsx')}}">
+                                            <a class="btn btn-info btn-block enlaces disabled"  id="C" href="{{\Storage::disk('comisiones')->url('formatos/Variables.xlsx')}}">
                                                 <i class="fa fa-download"></i> Formato Para Carga Variables</a>
                                         </td>
                                     </tr>                                     

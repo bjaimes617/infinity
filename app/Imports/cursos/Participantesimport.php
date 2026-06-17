@@ -149,7 +149,7 @@ class Participantesimport implements ToCollection, WithHeadingRow, WithValidatio
                     $onFailure('La Cedula de Identidad es Obligatoria');
                 } else if (!ctype_digit($value)) {
                     $onFailure('La Cedula de Identidad debe ser solo númerico');
-                } else if ($value >= 6 || $value <= 8) {
+                } else if (strlen($value) < 6 || strlen($value) > 8) {
                     $onFailure('La Cedula debe contener una logintud mayor a 6 o menor 8');
                 } else if (PersonalModel::where('cedula_empleado', $value)->exists()) {
                     $objPersonal = PersonalModel::where('cedula_empleado', $value)->first();

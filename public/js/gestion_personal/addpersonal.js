@@ -625,14 +625,17 @@ function HidenParcial_Egreso() {
     $("#divegreso").fadeOut();
     $("#fegreso").val("");
     $("#motivoegreso").val("");
+    $("#observaciones_egreso").val("");
     $("#fegreso").removeAttr("required", "required");
     $("#motivoegreso").removeAttr("required", "required");
+    $("#observaciones_egreso").removeAttr("required", "required");
 }
 //logica del bloque de egresos
 function HandleEgresosStatus() {
     $("#divegreso").fadeIn();
     $("#fegreso").attr("required", "required");
     $("#motivoegreso").attr("required", "required");
+    $("#observaciones_egreso").attr("required", "required");
 
     if ($("#fegreso").data("DateTimePicker")) {
         $("#fegreso").data("DateTimePicker").destroy();

@@ -37,20 +37,23 @@ use Carbon\Carbon;
 use App\Exceptions\ValidateAditionals;
 use App\Models\personal\EstatusModel;
 
-class UpdatePersonalImport implements ToCollection, WithHeadingRow, WithValidation {
+class UpdatePersonalImport implements ToCollection, WithHeadingRow, WithValidation
+{
 
     use Importable;
     use ActivityLogger;
 
-    public function __construct() {
+    public function __construct()
+    {
 
         $this->nacademicos = config('app.especialidad');
         $this->horariolab = config('app.horariolaboral');
         $this->contractual = config('app.contractual');
     }
 
-    public function collection(Collection $rows) {
-        
+    public function collection(Collection $rows)
+    {
+
         $validateAdd = array();
         /// esta variable es para el mensaje de retoirno
         $cantidad = count($rows);
@@ -168,12 +171,15 @@ class UpdatePersonalImport implements ToCollection, WithHeadingRow, WithValidati
                 $historial->finalizacion_1 = $objPersonal->finalizacion_2;
 
                 $historial->situacion_contractual = $objPersonal->getrawOriginal('situacion_contractual');
-                $historial->status_carnet = $objPersonal->status_carnet;
+                $historial->status_carnet           = $objPersonal->status_carnet;
+                $historial->observaciones_egreso    = $objPersonal->observaciones_egreso;
+                $historial->fecha_egreso            = $objPersonal->fecha_egreso;
+                $historial->motivo_egreso           = $objPersonal->motivo_egreso;
+                $historial->estatus_id              = $objPersonal->estatus_id;
 
-                $historial->fecha_egreso = $objPersonal->fecha_egreso;
-                $historial->motivo_egreso = $objPersonal->motivo_egreso;
-                $historial->estatus_id = $objPersonal->estatus_id;
-
+                $historial->vacaciones_init = $objPersonal->vacaciones_init;
+                $historial->vacaciones_end = $objPersonal->vacaciones_end;
+                $historial->usuario_crm_portabilidad = $objPersonal->usuario_crm_portabilidad;
                 $historial->user_id = $objPersonal->user_id;
 
                 //GUARDAMOS QUIEN ACTUALIZO EL REGISTRO
@@ -213,21 +219,29 @@ class UpdatePersonalImport implements ToCollection, WithHeadingRow, WithValidati
                 if (!empty($row['nivel_academico'])) {
                     $nivelAcademico = "";
                     switch ($row['nivel_academico']) {
-                        case 'BACHILLER': $nivelAcademico = 1;
+                        case 'BACHILLER':
+                            $nivelAcademico = 1;
                             break;
-                        case 'T.S.U': $nivelAcademico = 2;
+                        case 'T.S.U':
+                            $nivelAcademico = 2;
                             break;
-                        case 'LIC.': $nivelAcademico = 3;
+                        case 'LIC.':
+                            $nivelAcademico = 3;
                             break;
-                        case 'ING.': $nivelAcademico = 4;
+                        case 'ING.':
+                            $nivelAcademico = 4;
                             break;
-                        case 'TECNICO MEDIO': $nivelAcademico = 6;
+                        case 'TECNICO MEDIO':
+                            $nivelAcademico = 6;
                             break;
-                        case 'MAGISTER': $nivelAcademico = 7;
+                        case 'MAGISTER':
+                            $nivelAcademico = 7;
                             break;
-                        case 'ESTUDIANTE': $nivelAcademico = 8;
+                        case 'ESTUDIANTE':
+                            $nivelAcademico = 8;
                             break;
-                        case 'OTRO': $nivelAcademico = 5;
+                        case 'OTRO':
+                            $nivelAcademico = 5;
                             break;
                     }
                     $objPersonal->nivel_academico = $nivelAcademico;
@@ -260,11 +274,14 @@ class UpdatePersonalImport implements ToCollection, WithHeadingRow, WithValidati
                         $objPersonal->activetransporte = 1;
 
                         switch ($row['horario_transporte']) {
-                            case 'AM': $horariotrans = 1;
+                            case 'AM':
+                                $horariotrans = 1;
                                 break;
-                            case 'PM': $horariotrans = 2;
+                            case 'PM':
+                                $horariotrans = 2;
                                 break;
-                            case 'AMBOS': $horariotrans = 3;
+                            case 'AMBOS':
+                                $horariotrans = 3;
                                 break;
                         }
                         $objPersonal->htransporte = $horariotrans;
@@ -272,7 +289,7 @@ class UpdatePersonalImport implements ToCollection, WithHeadingRow, WithValidati
                     } else {
                         $objPersonal->activetransporte = 0;
                         $objPersonal->htransporte = null;
-                        $objPersonal->zona_transporte_id =56;
+                        $objPersonal->zona_transporte_id = 56;
                     }
                 }
                 if (!empty($row['fecha_ingreso'])) {
@@ -283,11 +300,14 @@ class UpdatePersonalImport implements ToCollection, WithHeadingRow, WithValidati
                 }
                 if (!empty($row['estatus_cargo'])) {
                     switch ($row["estatus_cargo"]):
-                        case "Periodo de Prueba" : $estatuscargo = 1;
+                        case "Periodo de Prueba":
+                            $estatuscargo = 1;
                             break;
-                        case "Encargado" : $estatuscargo = 2;
+                        case "Encargado":
+                            $estatuscargo = 2;
                             break;
-                        case "Titular" : $estatuscargo = 3;
+                        case "Titular":
+                            $estatuscargo = 3;
                             break;
                     endswitch;
                     $objPersonal->estatuscargo = $estatuscargo;
@@ -302,9 +322,11 @@ class UpdatePersonalImport implements ToCollection, WithHeadingRow, WithValidati
                 }
                 if (!empty($row['jornada'])) {
                     switch ($row['jornada']) {
-                        case '8 Horas': $jornada = 1;
+                        case '8 Horas':
+                            $jornada = 1;
                             break;
-                        case '6 Horas': $jornada = 2;
+                        case '6 Horas':
+                            $jornada = 2;
                             break;
                     }
                     $objPersonal->jornada = $jornada;
@@ -353,7 +375,7 @@ class UpdatePersonalImport implements ToCollection, WithHeadingRow, WithValidati
                     $objPersonal->area_trabajo_id = $area;
                 }
                 if (!empty($row['cartera'])) {
-                    if( !isset( $area) ){
+                    if (!isset($area)) {
                         return back()->with('error', 'Ingrese La gerencia para poder asignar la cartera');
                     } else {
                         $cartera = CarteraModel::where('nombre_cartera', '=', trim($row['cartera']))->where('area_trabajo_id', $area)->first()->id;
@@ -361,7 +383,7 @@ class UpdatePersonalImport implements ToCollection, WithHeadingRow, WithValidati
                     }
                 }
                 if (!empty($row['skill'])) {
-                    if( !isset( $cartera) ){
+                    if (!isset($cartera)) {
                         return back()->with('error', 'Ingrese La cartera para poder asignar el skill');
                     } else {
                         $skill = SkillModels::where('nombre_skill', '=', trim($row['skill']))->where('cartera_id', $cartera)->first()->id;
@@ -403,35 +425,46 @@ class UpdatePersonalImport implements ToCollection, WithHeadingRow, WithValidati
                 }
 
                 if (!empty($row['situacion_contractual'])) {
-           
-                   // $situacionContractual = array_search(ucwords(strtolower($row['situacion_contractual'])),$this->contractual);                    
+
+                    // $situacionContractual = array_search(ucwords(strtolower($row['situacion_contractual'])),$this->contractual);                    
                     switch (ucwords(strtolower($row['situacion_contractual']))) {
-                        case 'Contratado': $situacionContractual = 1;
+                        case 'Contratado':
+                            $situacionContractual = 1;
                             break;
-                        case 'Fijo': $situacionContractual = 2;
+                        case 'Fijo':
+                            $situacionContractual = 2;
                             break;
-                        case 'Freelance': $situacionContractual = 3;
+                        case 'Freelance':
+                            $situacionContractual = 3;
                             break;
-                        case 'Honorarios': $situacionContractual = 4;
+                        case 'Honorarios':
+                            $situacionContractual = 4;
                             break;
-                        case 'Finalizado': $situacionContractual = 5;
+                        case 'Finalizado':
+                            $situacionContractual = 5;
                             break;
-                        case 'Abandono': $situacionContractual = 6;
+                        case 'Abandono':
+                            $situacionContractual = 6;
                             break;
-                        case 'Pendiente Por Contrato': $situacionContractual = 7;
+                        case 'Pendiente Por Contrato':
+                            $situacionContractual = 7;
                             break;
-                        case "Pendiente Por Documentacion" : $situacionContractual = 9;
+                        case "Pendiente Por Documentacion":
+                            $situacionContractual = 9;
                             break;
-                    }                    
+                    }
                     $objPersonal->situacion_contractual = $situacionContractual;
                 }
                 if (!empty($row['estatus_carnet'])) {
                     switch ($row['estatus_carnet']) {
-                        case 'Impreso': $estatusCarnet = 1;
+                        case 'Impreso':
+                            $estatusCarnet = 1;
                             break;
-                        case 'Extraviado': $estatusCarnet = 2;
+                        case 'Extraviado':
+                            $estatusCarnet = 2;
                             break;
-                        case 'No Impreso': $estatusCarnet = 3;
+                        case 'No Impreso':
+                            $estatusCarnet = 3;
                             break;
                     }
                     $objPersonal->status_carnet = $estatusCarnet;
@@ -445,33 +478,33 @@ class UpdatePersonalImport implements ToCollection, WithHeadingRow, WithValidati
                 if (!empty($row['ciudad'])) {
                     $objPersonal->ciudad_id = in_array($objPersonal->sede_laboral, ['STV', 'ATENAS']) ? CiudadesModel::where('ciudad', 'like', '%' . $row['ciudad'] . '%')->first()->id : 149;
                 }
-                
+
                 if (!empty($row['estatus']) && !empty($row['fecha_egreso']) && !empty($row['motivo_egreso'])) {
-                        $objPersonal->estatus_id = EstatusModel::where('estatus', 'like', '%' . $row['estatus'] . '%')->first()->id;
-                        $objPersonal->fecha_egreso = Date::excelToDateTimeObject($row['fecha_egreso'])->format('Y-m-d');
-                        $objPersonal->motivo_egreso = ucwords(strtolower($row['motivo_egreso']));
-                        if (ENV('ACTIVE_API_AUTOSERVICIOS', false)) {
-                            $bashurl = "URL_DISBLED_AUTOSERVICIOS";
-                            $api = new ApiCheckautoservicios($bashurl, $objPersonal->cedula_empleado);
-                            $rs = $api->CheckInfinityPersonal();
-                        }
+                    $objPersonal->estatus_id = EstatusModel::where('estatus', 'like', '%' . $row['estatus'] . '%')->first()->id;
+                    $objPersonal->fecha_egreso = Date::excelToDateTimeObject($row['fecha_egreso'])->format('Y-m-d');
+                    $objPersonal->motivo_egreso = ucwords(strtolower($row['motivo_egreso']));
+                    if (ENV('ACTIVE_API_AUTOSERVICIOS', false)) {
+                        $bashurl = "URL_DISBLED_AUTOSERVICIOS";
+                        $api = new ApiCheckautoservicios($bashurl, $objPersonal->cedula_empleado);
+                        $rs = $api->CheckInfinityPersonal();
+                    }
                 }
 
-            
-               if (\Auth::user()->hasPermission('personal.cecos.autorice')) {                 
+
+                if (\Auth::user()->hasPermission('personal.cecos.autorice')) {
                     /// Tengo permisos para editar CECOS
                     if ($row["cod_ceco"] != "" && $row["porcentajes"] != "" || $row["cod_ceco"] != null && $row["porcentajes"] != null) {
-                         ///columnas tienen datos   
+                        ///columnas tienen datos   
                         $cods = explode("|", $row["cod_ceco"]);
-                        $porcentajes = explode("|", $row["porcentajes"]);                                
+                        $porcentajes = explode("|", $row["porcentajes"]);
                         CentroCostoAsignadoModel::where('personal_id', $objPersonal->id)->delete();
-                        foreach ( $cods as $llave => $codigosCecos) {                     
+                        foreach ($cods as $llave => $codigosCecos) {
                             switch ((string) $codigosCecos) {
                                 case "30540":
                                     $aplicar = 21;
                                     $cecocarcartera = $objPersonal->cartera_id;
                                     break;
-                                case "00001":                                
+                                case "00001":
                                     $aplicar = 19;
                                     $cecocarcartera = $objPersonal->cartera_id;
                                     break;
@@ -492,40 +525,40 @@ class UpdatePersonalImport implements ToCollection, WithHeadingRow, WithValidati
                             $cecos->porcentaje = $porcentajes[$llave];
                             $cecos->save();
                         }
-                    } else {                   
-                        $verifiSkill = SkillModels::find($objPersonal->skill_id);                  
-                        if($verifiSkill->cod_ceco != "00000" || $verifiSkill->cod_ceco == null){
+                    } else {
+                        $verifiSkill = SkillModels::find($objPersonal->skill_id);
+                        if ($verifiSkill->cod_ceco != "00000" || $verifiSkill->cod_ceco == null) {
                             CentroCostoAsignadoModel::where('personal_id', $objPersonal->id)->delete();
                             $areas = new CentroCostoAsignadoModel();
                             $areas->personal_id = $objPersonal->id;
                             $areas->cartera_id  = $objPersonal->cartera_id;
                             $areas->skill_id    = $objPersonal->skill_id;
                             $areas->porcentaje  = null;
-                            $areas->save();  
-                        } 
+                            $areas->save();
+                        }
                     }
-               } else {
-                /// no tengo permisos para editar CEcos                   
-                    $verifiSkill = SkillModels::find($objPersonal->skill_id);                  
-                        if($verifiSkill->cod_ceco != "00000" || $verifiSkill->cod_ceco == null){
-                            CentroCostoAsignadoModel::where('personal_id', $objPersonal->id)->delete();
-                            $areas = new CentroCostoAsignadoModel();
-                            $areas->personal_id = $objPersonal->id;
-                            $areas->cartera_id  = $objPersonal->cartera_id;
-                            $areas->skill_id    = $objPersonal->skill_id;
-                            $areas->porcentaje  = null;
-                            $areas->save();  
-                        }                    
-               }
+                } else {
+                    /// no tengo permisos para editar CEcos                   
+                    $verifiSkill = SkillModels::find($objPersonal->skill_id);
+                    if ($verifiSkill->cod_ceco != "00000" || $verifiSkill->cod_ceco == null) {
+                        CentroCostoAsignadoModel::where('personal_id', $objPersonal->id)->delete();
+                        $areas = new CentroCostoAsignadoModel();
+                        $areas->personal_id = $objPersonal->id;
+                        $areas->cartera_id  = $objPersonal->cartera_id;
+                        $areas->skill_id    = $objPersonal->skill_id;
+                        $areas->porcentaje  = null;
+                        $areas->save();
+                    }
+                }
 
                 $nuevos_valores = [];
                 $valores_alt = [];
 
-                if($objPersonal->fecha_egreso != null && $objPersonal->estatus_id == 1){
-                    $objPersonal->fecha_egreso = null;                 
-                    $objPersonal->motivo_egreso = null;                 
+                if ($objPersonal->fecha_egreso != null && $objPersonal->estatus_id == 1) {
+                    $objPersonal->fecha_egreso = null;
+                    $objPersonal->motivo_egreso = null;
                 }
-                
+
                 // Verificar cambios realizados
                 $changedFields = $objPersonal->getDirty(); // Obtiene los campos que fueron modificados
                 // Antes de guardar, puedes inspeccionar qué ha cambiado
@@ -545,18 +578,19 @@ class UpdatePersonalImport implements ToCollection, WithHeadingRow, WithValidati
                 $historial->save();
 
                 $objPersonal->save();
-                $objeto_personal = json_encode([$objPersonal,$row]);
+                $objeto_personal = json_encode([$objPersonal, $row]);
 
                 ActivityLogger::activity($mensaje_log, $objeto_personal);
             }
             \Session::flash('success', 'Un total de ' . $cantidad . ' Expedientes fueron actualizados exitosamente, por favor valide los datos.');
             return true;
-        } catch (\Exception $e) {            
+        } catch (\Exception $e) {
             throw new ValidateAditionals([$e->getMessage() . ' en Linea ' . $e->getLine()]);
         }
     }
 
-    public function rules(): array {
+    public function rules(): array
+    {
         return [
             'nacionalidad' => function ($attribute, $value, $onFailure) {
                 if (trim($value) != "") {
@@ -565,7 +599,7 @@ class UpdatePersonalImport implements ToCollection, WithHeadingRow, WithValidati
                     }
                 }
             },
-             'nacionalidad_cuenta' => function ($attribute, $value, $onFailure) {
+            'nacionalidad_cuenta' => function ($attribute, $value, $onFailure) {
                 if (trim($value) != "") {
                     if (!in_array($value, ["V", "E", "P"])) {
                         $onFailure('la nacionalidad del Titular de Cuenta no existe');
@@ -595,12 +629,11 @@ class UpdatePersonalImport implements ToCollection, WithHeadingRow, WithValidati
                                 $fecha2 = Carbon::parse($objPersonal->fecha_egreso);
                                 ///validamos cuantos dias han pasado desde que fue egresado
                                 $diferencia_en_dias = $fecha1->diffInDays($fecha2);
-                                if(!\Auth::user()->hasPermission(['personal.update.blockregistred'])){
+                                if (!\Auth::user()->hasPermission(['personal.update.blockregistred'])) {
                                     if ($diferencia_en_dias <= config('app.diaspararecontratar')) {
                                         $onFailure('Esta persona tiene menos de 90 Días de Egresado.');
                                     }
                                 }
-                               
                             }
                         }
                     }
@@ -661,30 +694,28 @@ class UpdatePersonalImport implements ToCollection, WithHeadingRow, WithValidati
             },
             'horario_operativo' => function ($attribute, $value, $onFailure) {
                 if (trim($value) != "") {
-                    if (!in_array(trim($value), config('app.horariolaboral'))) {
+                    if (!in_array(strtoupper($value), array_map('strtoupper', config('app.horariolaboral')))) {
                         $onFailure('El horario operativo del empleado es invalido.');
                     }
                 }
             },
             'jornada' => function ($attribute, $value, $onFailure) {
                 if (trim($value) != "") {
-                    $jornada = array('8 Horas', '6 Horas');
-                    if (!in_array(trim($value), $jornada)) {
-                        $onFailure('La jornada del empleado es invalida.');
+                    if (!in_array(strtoupper(trim($value)), array_map('strtoupper', ['8 Horas', '6 Horas']))) {
+                        $onFailure('La jornada del empleado debe ser 8 Horas o 6 Horas.');
                     }
                 }
             },
             'turno' => function ($attribute, $value, $onFailure) {
                 if (trim($value) != "") {
-                    $turno = array('AM', 'PM');
-                    if (!in_array(trim($value), $turno)) {
-                        $onFailure('El turno del empleado es invalido.');
+                    if (!in_array(strtoupper(trim($value)), array_map('strtoupper', ['AM', 'PM']))) {
+                        $onFailure('El turno del empleado debe ser AM o PM.');
                     }
                 }
             },
             'libranza' => function ($attribute, $value, $onFailure) {
                 if (trim($value) != "") {
-                    if (!LibranzasModel::where('libranzas', '=', trim($value))->where('estatus_id', '=', 1)->exists()) {
+                    if (!LibranzasModel::where('libranzas', '=', ucfirst($value))->where('estatus_id', '=', 1)->exists()) {
                         $onFailure('La libranza ingresada no existe.');
                     }
                 }
@@ -723,8 +754,8 @@ class UpdatePersonalImport implements ToCollection, WithHeadingRow, WithValidati
                     }
 
                     $user = ENV('DEV_USER_CHANGE', false) ?
-                            \Auth::loginUsingId(ENV('OTHER_USER_ID'), true) :
-                            \Auth::user();
+                        \Auth::loginUsingId(ENV('OTHER_USER_ID'), true) :
+                        \Auth::user();
 
                     $nivel = PoliceEstructure::VerifiedNivelPermissions($user);
                     switch ($nivel) {
@@ -753,7 +784,6 @@ class UpdatePersonalImport implements ToCollection, WithHeadingRow, WithValidati
                 }
             },
             'cartera' => function ($attribute, $value, $onFailure) {
-
                 if ($value != null) {
                     if (!CarteraModel::where('nombre_cartera', '=', trim($value))->where('estatus_id', '=', 1)->exists()) {
                         $onFailure('La Unidad o Campaña ingresada no existe.');
@@ -768,8 +798,8 @@ class UpdatePersonalImport implements ToCollection, WithHeadingRow, WithValidati
                     }
 
                     $user = ENV('DEV_USER_CHANGE', false) ?
-                            \Auth::loginUsingId(ENV('OTHER_USER_ID'), true) :
-                            \Auth::user();
+                        \Auth::loginUsingId(ENV('OTHER_USER_ID'), true) :
+                        \Auth::user();
 
                     $nivel = PoliceEstructure::VerifiedNivelPermissions($user);
                     switch ($nivel) {
@@ -796,7 +826,7 @@ class UpdatePersonalImport implements ToCollection, WithHeadingRow, WithValidati
                 }
             },
             'situacion_contractual' => function ($attribute, $value, $onFailure) {
-                if (trim($value) != "") {                      
+                if (trim($value) != "") {
                     if (!in_array(ucwords(strtolower($value)), $this->contractual)) {
                         $onFailure('La situacion contractual ingresada es invalida.');
                     }
@@ -830,7 +860,7 @@ class UpdatePersonalImport implements ToCollection, WithHeadingRow, WithValidati
                     }
                 }
             },
-             'fecha_egreso' => function ($attribute, $value, $onFailure) {
+            'fecha_egreso' => function ($attribute, $value, $onFailure) {
                 if ($value != null) {
                     if (!Date::excelToDateTimeObject(trim($value))) {
                         $onFailure('El Formato de la fecha de egreso no es correcta ');
@@ -839,27 +869,27 @@ class UpdatePersonalImport implements ToCollection, WithHeadingRow, WithValidati
             },
             'estatus' => function ($attribute, $value, $onFailure) {
                 if ($value != null) {
-                     if (!EstatusModel::where('estatus', 'LIKE', '%' . $value . '%')->exists()) {
+                    if (!EstatusModel::where('estatus', 'LIKE', '%' . $value . '%')->exists()) {
                         $onFailure('El estatus ingresado no es Correcto');
                     }
                 }
             },
-             'motivo_egreso' => function ($attribute, $value, $onFailure) {
+            'motivo_egreso' => function ($attribute, $value, $onFailure) {
                 if ($value != null) {
-                     if (!MotivosEgresosModel::where('descripcion', 'LIKE', '%' . $value . '%')->exists()) {
+                    if (!MotivosEgresosModel::where('descripcion', 'LIKE', '%' . $value . '%')->exists()) {
                         $onFailure('El motivo de egreso no es Correcto');
                     }
                 }
             },
             '*.contrato2' => ['nullable', function ($attribute, $value, $onFailure) {
-                    if ($value !== null) {
-                        try {
-                            Date::excelToDateTimeObject(trim($value));
-                        } catch (\Exception $e) {
-                            $onFailure('El Formato del Contrato 2 no es correcto.');
-                        }
+                if ($value !== null) {
+                    try {
+                        Date::excelToDateTimeObject(trim($value));
+                    } catch (\Exception $e) {
+                        $onFailure('El Formato del Contrato 2 no es correcto.');
                     }
-                }],
+                }
+            }],
             'tiempocontrato2' => ['nullable', 'required_with:*.contrato2', 'in:90,60,120,180,240,270'],
             'estatus_carnet' => function ($attribute, $value, $onFailure) {
                 if (trim($value) != "") {

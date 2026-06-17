@@ -23,7 +23,7 @@ use App\Models\personal\SkillModels;
 use App\Models\personal\BlacklistModel;
 use App\Models\personal\HistoricoPersonalModel;
 use App\Models\personal\SedeModel;
-use App\Models\personal\MotivosEgresosModel; 
+use App\Models\personal\MotivosEgresosModel;
 use App\Models\RegionModel;
 use App\Models\EstadosModel;
 use App\Models\CiudadesModel;
@@ -40,11 +40,13 @@ use DateTime;
 use DateInterval;
 use App\Http\Controllers\PoliceEstructure;
 
-class PersonalController extends Controller {
+class PersonalController extends Controller
+{
 
     use ActivityLogger;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->middleware(['auth', 'verified', 'check.password', 'BlockRegistedPersonal']);
 
         $this->nacademicos = config('app.especialidad');
@@ -58,14 +60,15 @@ class PersonalController extends Controller {
         $this->horarioTransportes = config('app.horarioTransporte') != null ? config('app.horarioTransporte') : [];
         $this->jornadas = config('app.jornada') != null ? config('app.jornada') : [];
         $this->tiemposContrato = config('app.tiemposContrato') != null ? config('app.tiemposContrato') : [];
-        $this->motivosEgresos = MotivosEgresosModel::select('id','descripcion')->where('active', 1)->orderBy('descripcion','ASC')->pluck('descripcion','id')->toArray();
+        $this->motivosEgresos = MotivosEgresosModel::select('id', 'descripcion')->where('active', 1)->orderBy('descripcion', 'ASC')->pluck('descripcion', 'id')->toArray();
         $this->CargoGerentes = CargoModel::where('nombre_cargo', 'like', 'Director%')
-                        ->Orwhere('nombre_cargo', 'like', 'Gerente%')
-                        ->Orwhere('nombre_cargo', 'like', 'Customer Technical Support Manager%')
-                        ->Orwhere('nombre_cargo', 'like', '%Presidente%')->pluck('id');                   
+            ->Orwhere('nombre_cargo', 'like', 'Gerente%')
+            ->Orwhere('nombre_cargo', 'like', 'Customer Technical Support Manager%')
+            ->Orwhere('nombre_cargo', 'like', '%Presidente%')->pluck('id');
     }
 
-    public function Imagesave($file) {
+    public function Imagesave($file)
+    {
         $name_file = time() . '_' . $file->getClientOriginalName();
         if (\Storage::disk('personal')->put($name_file, file_get_contents($file->getRealPath()))) {
             return $name_file;
@@ -74,7 +77,8 @@ class PersonalController extends Controller {
         }
     }
 
-    public function deleteImg($nombre_imagen) {
+    public function deleteImg($nombre_imagen)
+    {
         if (\Storage::disk('personal')->delete($nombre_imagen)) {
             return true;
         } else {
@@ -82,11 +86,12 @@ class PersonalController extends Controller {
         }
     }
 
-    public function index() {
+    public function index()
+    {
 
         $user = ENV('DEV_USER_CHANGE', false) ?
-                \Auth::loginUsingId(ENV('OTHER_USER_ID'), true) :
-                \Auth::user();
+            \Auth::loginUsingId(ENV('OTHER_USER_ID'), true) :
+            \Auth::user();
 
         //\session()->regenerate();        
         $estatus = EstatusModel::where('group_module', 'R')->get();
@@ -102,13 +107,14 @@ class PersonalController extends Controller {
         return view('personal.personal.index')->with(["areas" => $areas, "status" => $estatus]);
     }
 
-    public function CreatePersonal() {
+    public function CreatePersonal()
+    {
 
         $region = RegionModel::where('active', 1)->get();
         $gerente = PersonalModel::select(DB::raw("concat(primer_nombre,' ',primer_apellido) as nombre"), "dir_personal.id")
-                        ->whereIn('cargo_id', $this->CargoGerentes)
-                        ->whereIn('dir_personal.estatus_id', [1, 7, 8, 9, 10])
-                        ->orderby('primer_nombre', 'ASC')->get();
+            ->whereIn('cargo_id', $this->CargoGerentes)
+            ->whereIn('dir_personal.estatus_id', [1, 7, 8, 9, 10])
+            ->orderby('primer_nombre', 'ASC')->get();
 
         $cargo = CargoModel::where('estatus_id', 1)->orderby('nombre_cargo', 'ASC')->get();
         $nomina = NominaModel::all();
@@ -122,45 +128,56 @@ class PersonalController extends Controller {
         $rol = Role::where('slug', 'like', '%operativa%')->orWhere('slug', 'like', 'cursos%')->get();
 
         return view('personal.personal.create')->with([
-                    "gerente" => $gerente,
-                    "horariolab" => $this->horariolab,
-                    "sedes" => $this->sedes,
-                    "contractual" => $this->contractual,
-                    "nomina" => $nomina,
-                    "cargo" => $cargo,
-                    "status" => $estatus,
-                    "libranza" => $libranza,
-                    "area" => $areatrabajo,
-                    "zonatransporte" => $zonatransporte,
-                    "asignarcar" => $asignarcar,
-                    "tipoContrato" => $this->tipoContrato,
-                    "nacionalidades" => $this->nacionalidades,
-                    "especialidades" => $this->especialidades,
-                    "horariosTransporte" => $this->horarioTransportes,
-                    "hijo" => $this->hijo,
-                    "jornadas" => $this->jornadas,
-                    "banco" => $banco,
-                    "roles" => $rol,
-                    "tiemposContrato" => $this->tiemposContrato,
-                    "region" => $region,
-                    "motivoegreso"=> $this->motivosEgresos,
-                ])->render();
+            "gerente" => $gerente,
+            "horariolab" => $this->horariolab,
+            "sedes" => $this->sedes,
+            "contractual" => $this->contractual,
+            "nomina" => $nomina,
+            "cargo" => $cargo,
+            "status" => $estatus,
+            "libranza" => $libranza,
+            "area" => $areatrabajo,
+            "zonatransporte" => $zonatransporte,
+            "asignarcar" => $asignarcar,
+            "tipoContrato" => $this->tipoContrato,
+            "nacionalidades" => $this->nacionalidades,
+            "especialidades" => $this->especialidades,
+            "horariosTransporte" => $this->horarioTransportes,
+            "hijo" => $this->hijo,
+            "jornadas" => $this->jornadas,
+            "banco" => $banco,
+            "roles" => $rol,
+            "tiemposContrato" => $this->tiemposContrato,
+            "region" => $region,
+            "motivoegreso" => $this->motivosEgresos,
+        ])->render();
     }
 
-    public function create(request $request) {
+    public function create(request $request)
+    {
 
         $data = array();
         $row = array();
 
         $user = ENV('DEV_USER_CHANGE', false) ?
-                \Auth::loginUsingId(ENV('OTHER_USER_ID'), true) :
-                \Auth::user();
+            \Auth::loginUsingId(ENV('OTHER_USER_ID'), true) :
+            \Auth::user();
 
         //\session()->regenerate();    
 
         $nivel = PoliceEstructure::VerifiedNivelPermissions($user);
-        $dato = PersonalModel::select(DB::raw("concat(primer_nombre,' ',primer_apellido) as nombre"), "id", "cedula_empleado",
-                "fecha_ingreso", "situacion_contractual", "area_trabajo_id", "cartera_id", "estatus_id", "skill_id", "cargo_id");
+        $dato = PersonalModel::select(
+            DB::raw("concat(primer_nombre,' ',primer_apellido) as nombre"),
+            "id",
+            "cedula_empleado",
+            "fecha_ingreso",
+            "situacion_contractual",
+            "area_trabajo_id",
+            "cartera_id",
+            "estatus_id",
+            "skill_id",
+            "cargo_id"
+        );
         /*  DESCRIPCION DE NIVELES
          *   4: personal asignado y por skill autorizado
          *   3: Personal Por skill Autorizado
@@ -178,66 +195,66 @@ class PersonalController extends Controller {
                 if ($request->area == null && $request->cartera == null && $request->skill == null && $request->estatus == null) {
 
                     $result = $dato->wherein('id', $idPersonals)
-                            ->whereIn('cartera_id', $carteraPermisada)
-                            ->whereIn('skill_id', $skillPermisado)
-                            ->orderby('primer_nombre', 'ASC');
+                        ->whereIn('cartera_id', $carteraPermisada)
+                        ->whereIn('skill_id', $skillPermisado)
+                        ->orderby('primer_nombre', 'ASC');
                 }
                 ////GERENCIA TIENE DATOS PERO ESTATUS NO
                 if ($request->area != null && $request->cartera == null && $request->skill == null && $request->estatus == null) {
 
                     $result = $dato->wherein('id', $idPersonals)
-                            ->where('area_trabajo_id', $request->area)
-                            ->whereIn('cartera_id', $carteraPermisada)
-                            ->whereIn('skill_id', $skillPermisado)
-                            ->orderby('primer_nombre', 'ASC');
+                        ->where('area_trabajo_id', $request->area)
+                        ->whereIn('cartera_id', $carteraPermisada)
+                        ->whereIn('skill_id', $skillPermisado)
+                        ->orderby('primer_nombre', 'ASC');
                 }
                 ////GERENCIA CARTERA TIENEN DATOS PERO ESTATUS NO
                 if ($request->area != null && $request->cartera != null && $request->skill == null && $request->estatus == null) {
 
                     $result = $dato->wherein('id', $idPersonals)
-                            ->where('cartera_id', $request->cartera)
-                            ->whereIn('skill_id', $skillPermisado)
-                            ->orderby('primer_nombre', 'ASC');
+                        ->where('cartera_id', $request->cartera)
+                        ->whereIn('skill_id', $skillPermisado)
+                        ->orderby('primer_nombre', 'ASC');
                 }
                 ////GERENCIA CARTERA Y SKILL TIENEN DATOS PERO ESTATUS NO
                 if ($request->area != null && $request->cartera != null && $request->skill != null && $request->estatus == null) {
 
                     $result = $dato->wherein('id', $idPersonals)
-                            ->where('skill_id', $request->skill)
-                            ->orderby('primer_nombre', 'ASC');
+                        ->where('skill_id', $request->skill)
+                        ->orderby('primer_nombre', 'ASC');
                 }
                 ///TODOS LOS SELECTORES POSEEN DATOS
                 if ($request->area != null && $request->cartera != null && $request->skill != null && $request->estatus != null) {
                     $result = $dato->wherein('id', $idPersonals)
-                            ->where('skill_id', $request->skill)
-                            ->whereIn('estatus_id', $request->estatus)
-                            ->orderby('primer_nombre', 'ASC');
+                        ->where('skill_id', $request->skill)
+                        ->whereIn('estatus_id', $request->estatus)
+                        ->orderby('primer_nombre', 'ASC');
                 }
                 ///ESTATUS POSEE DATOS                
                 if ($request->area == null && $request->cartera == null && $request->skill == null && $request->estatus != null) {
 
                     $result = $dato->wherein('id', $idPersonals)
-                            ->whereIn('cartera_id', $carteraPermisada)
-                            ->whereIn('skill_id', $skillPermisado)
-                            ->whereIn('estatus_id', $request->estatus)
-                            ->orderby('primer_nombre', 'ASC');
+                        ->whereIn('cartera_id', $carteraPermisada)
+                        ->whereIn('skill_id', $skillPermisado)
+                        ->whereIn('estatus_id', $request->estatus)
+                        ->orderby('primer_nombre', 'ASC');
                 }
                 //// GERENCIA Y ESTATUS POSEE DATOS 
                 if ($request->area != null && $request->cartera == null && $request->skill == null && $request->estatus != null) {
                     $result = $dato->wherein('id', $idPersonals)
-                            ->where('area_trabajo_id', $request->area)
-                            ->whereIn('skill_id', $skillPermisado)
-                            ->whereIn('estatus_id', $request->estatus)
-                            ->orderby('primer_nombre', 'ASC');
+                        ->where('area_trabajo_id', $request->area)
+                        ->whereIn('skill_id', $skillPermisado)
+                        ->whereIn('estatus_id', $request->estatus)
+                        ->orderby('primer_nombre', 'ASC');
                 }
                 /// GERENCIA, UNIDAD Y ESTATUS POSEEN DATOS.
                 if ($request->area != null && $request->cartera != null && $request->skill == null && $request->estatus != null) {
 
                     $result = $dato->wherein('id', $idPersonals)
-                            ->where('cartera_id', $request->cartera)
-                            ->whereIn('skill_id', $skillPermisado)
-                            ->whereIn('estatus_id', $request->estatus)
-                            ->orderby('primer_nombre', 'ASC');
+                        ->where('cartera_id', $request->cartera)
+                        ->whereIn('skill_id', $skillPermisado)
+                        ->whereIn('estatus_id', $request->estatus)
+                        ->orderby('primer_nombre', 'ASC');
                 }
                 //  $result = $dato->get();
                 break;
@@ -288,60 +305,60 @@ class PersonalController extends Controller {
 
                 if ($request->area == null && $request->cartera == null && $request->skill == null && $request->estatus == null) {
                     $result = $dato->whereIn('id', $personal)
-                            ->wherein('skill_id', $skills)
-                            ->orderby('primer_nombre', 'ASC');
+                        ->wherein('skill_id', $skills)
+                        ->orderby('primer_nombre', 'ASC');
                 }
                 if ($request->area != null && $request->cartera == null && $request->skill == null && $request->estatus == null) {
                     $result = $dato->whereIn('id', $personal)
-                            ->where('area_trabajo_id', $request->area)
-                            ->wherein('skill_id', $skills)
-                            ->orderby('primer_nombre', 'ASC');
+                        ->where('area_trabajo_id', $request->area)
+                        ->wherein('skill_id', $skills)
+                        ->orderby('primer_nombre', 'ASC');
                 }
                 if ($request->area != null && $request->cartera != null && $request->skill == null && $request->estatus == null) {
                     $result = $dato->whereIn('id', $personal)
-                            ->where('area_trabajo_id', $request->area)
-                            ->where('cartera_id', $request->cartera)
-                            ->wherein('skill_id', $skills)
-                            ->orderby('primer_nombre', 'ASC');
+                        ->where('area_trabajo_id', $request->area)
+                        ->where('cartera_id', $request->cartera)
+                        ->wherein('skill_id', $skills)
+                        ->orderby('primer_nombre', 'ASC');
                 }
                 if ($request->area != null && $request->cartera != null && $request->skill != null && $request->estatus == null) {
                     $result = $dato->whereIn('id', $personal)
-                            ->where('area_trabajo_id', $request->area)
-                            ->where('cartera_id', $request->cartera)
-                            ->where('skill_id', $request->skill)
-                            ->orderby('primer_nombre', 'ASC');
+                        ->where('area_trabajo_id', $request->area)
+                        ->where('cartera_id', $request->cartera)
+                        ->where('skill_id', $request->skill)
+                        ->orderby('primer_nombre', 'ASC');
                 }
 
                 ///TODOS LOS SELECTORES POSEEN DATOS
                 if ($request->area != null && $request->cartera != null && $request->skill != null && $request->estatus != null) {
                     $result = $dato->whereIn('id', $personal)
-                            ->where('area_trabajo_id', $request->area)
-                            ->where('cartera_id', $request->cartera)
-                            ->where('skill_id', $request->skill)
-                            ->whereIn('estatus_id', $request->estatus)
-                            ->orderby('primer_nombre', 'ASC');
+                        ->where('area_trabajo_id', $request->area)
+                        ->where('cartera_id', $request->cartera)
+                        ->where('skill_id', $request->skill)
+                        ->whereIn('estatus_id', $request->estatus)
+                        ->orderby('primer_nombre', 'ASC');
                 }
                 ///ESTATUS POSEE DATOS                
                 if ($request->area == null && $request->cartera == null && $request->skill == null && $request->estatus != null) {
                     $result = $dato->whereIn('id', $personal)
-                            ->wherein('skill_id', $skills)
-                            ->whereIn('estatus_id', $request->estatus)
-                            ->orderby('primer_nombre', 'ASC');
+                        ->wherein('skill_id', $skills)
+                        ->whereIn('estatus_id', $request->estatus)
+                        ->orderby('primer_nombre', 'ASC');
                 }
                 //// GERENCIA Y ESTATUS POSEE DATOS 
                 if ($request->area != null && $request->cartera == null && $request->skill == null && $request->estatus != null) {
                     $result = $dato->whereIn('id', $personal)
-                            ->where('area_trabajo_id', $request->area)
-                            ->whereIn('estatus_id', $request->estatus)
-                            ->orderby('primer_nombre', 'ASC');
+                        ->where('area_trabajo_id', $request->area)
+                        ->whereIn('estatus_id', $request->estatus)
+                        ->orderby('primer_nombre', 'ASC');
                 }
                 /// GERENCIA, UNIDAD Y ESTATUS POSEEN DATOS.
                 if ($request->area != null && $request->cartera != null && $request->skill == null && $request->estatus != null) {
                     $result = $dato->whereIn('id', $personal)
-                            ->where('area_trabajo_id', $request->area)
-                            ->where('cartera_id', $request->cartera)
-                            ->whereIn('estatus_id', $request->estatus)
-                            ->orderby('primer_nombre', 'ASC');
+                        ->where('area_trabajo_id', $request->area)
+                        ->where('cartera_id', $request->cartera)
+                        ->whereIn('estatus_id', $request->estatus)
+                        ->orderby('primer_nombre', 'ASC');
                 }
 
                 //   $result = $dato->get();
@@ -354,40 +371,40 @@ class PersonalController extends Controller {
                 ////GERENCIA TIENE DATOS PERO ESTATUS NO
                 if ($request->area != null && $request->cartera == null && $request->skill == null && $request->estatus == null) {
                     $result = $dato->where('area_trabajo_id', $request->area)
-                            ->orderby('primer_nombre', 'ASC');
+                        ->orderby('primer_nombre', 'ASC');
                 }
                 ////GERENCIA CARTERA TIENEN DATOS PERO ESTATUS NO
                 if ($request->area != null && $request->cartera != null && $request->skill == null && $request->estatus == null) {
                     $result = $dato->where('cartera_id', $request->cartera)
-                            ->orderby('primer_nombre', 'ASC');
+                        ->orderby('primer_nombre', 'ASC');
                 }
                 ////GERENCIA CARTERA Y SKILL TIENEN DATOS PERO ESTATUS NO
                 if ($request->area != null && $request->cartera != null && $request->skill != null && $request->estatus == null) {
                     $result = $dato->where('skill_id', $request->skill)
-                            ->orderby('primer_nombre', 'ASC');
+                        ->orderby('primer_nombre', 'ASC');
                 }
                 ///TODOS LOS SELECTORES POSEEN DATOS
                 if ($request->area != null && $request->cartera != null && $request->skill != null && $request->estatus != null) {
                     $result = $dato->where('skill_id', $request->skill)
-                            ->whereIn('estatus_id', $request->estatus)
-                            ->orderby('primer_nombre', 'ASC');
+                        ->whereIn('estatus_id', $request->estatus)
+                        ->orderby('primer_nombre', 'ASC');
                 }
                 ///ESTATUS POSEE DATOS                
                 if ($request->area == null && $request->cartera == null && $request->skill == null && $request->estatus != null) {
                     $result = $dato->whereIn('estatus_id', $request->estatus)
-                            ->orderby('primer_nombre', 'ASC');
+                        ->orderby('primer_nombre', 'ASC');
                 }
                 //// GERENCIA Y ESTATUS POSEE DATOS 
                 if ($request->area != null && $request->cartera == null && $request->skill == null && $request->estatus != null) {
                     $result = $dato->where('area_trabajo_id', $request->area)
-                            ->whereIn('estatus_id', $request->estatus)
-                            ->orderby('primer_nombre', 'ASC');
+                        ->whereIn('estatus_id', $request->estatus)
+                        ->orderby('primer_nombre', 'ASC');
                 }
                 /// GERENCIA, UNIDAD Y ESTATUS POSEEN DATOS.
                 if ($request->area != null && $request->cartera != null && $request->skill == null && $request->estatus != null) {
                     $result = $dato->where('cartera_id', $request->cartera)
-                            ->whereIn('estatus_id', $request->estatus)
-                            ->orderby('primer_nombre', 'ASC');
+                        ->whereIn('estatus_id', $request->estatus)
+                        ->orderby('primer_nombre', 'ASC');
                 }
                 // $result = $dato->get();
                 break;
@@ -453,7 +470,8 @@ class PersonalController extends Controller {
         return json_encode($data);
     }
 
-    public function store(Request $request) {
+    public function store(Request $request)
+    {
 
         try {
             $objPersonal = new PersonalModel();
@@ -507,16 +525,16 @@ class PersonalController extends Controller {
             $objPersonal->nomina_id = $request->nomina;
             $objPersonal->cargo_id = $request->cargo;
             $objPersonal->estatuscargo = $request->estatuscargo;
-            
+
             $objPersonal->nacionalidad_cuenta = $request->nacionalidad_cuenta;
             $objPersonal->cedula_titular = $request->cedulatitular;
             $objPersonal->nombre_titular = ucfirst(strtolower($request->nombretitular));
             $objPersonal->bancos_id = $request->banco;
             $objPersonal->cuenta_bancaria = $request->ctabancaria;
-            
+
             $objPersonal->todoticket_integral     = $request->integral;
             $objPersonal->todoticket_alimentacion = $request->alimentacion;
-                
+
             $objPersonal->sede_laboral = $request->sede;
             $objPersonal->horario_operativo = $request->horario;
             $objPersonal->jornada = $request->jornada;
@@ -561,11 +579,13 @@ class PersonalController extends Controller {
                 case null:
                     $objPersonal->fecha_egreso = null;
                     $objPersonal->motivo_egreso = null;
+                    $objPersonal->observaciones_egreso = null;
                     break;
                 default:
                     $egreso = Carbon::createFromFormat('d/m/Y', $request->fegreso)->format('Y-m-d');
                     $objPersonal->fecha_egreso = $egreso;
                     $objPersonal->motivo_egreso = ucfirst(strtolower($request->motivoegreso));
+                    $objPersonal->observaciones_egreso = ucfirst(strtolower($request->observaciones_egreso));
 
                     if (!EgresadosModel::where('fecha', $egreso)->where('dir_personal_id', $id)->exists()) {
                         $nuevo_egreso = new EgresadosModel();
@@ -580,7 +600,7 @@ class PersonalController extends Controller {
                     }
                     /// eliminamos las asistencias tomadas a partir de su fecha de egreso hasta el dia en curso
                     AsistenciaOperativaModel::where('personal_id', $id)
-                            ->whereBetween('created_at', array("$egreso 00:00:01", date('Y-m-d H:m:s', strtotime(now()))))->delete();
+                        ->whereBetween('created_at', array("$egreso 00:00:01", date('Y-m-d H:m:s', strtotime(now()))))->delete();
 
                     if (env('ACTIVE_DISBLED_AUTOSERVICIOS')) {
                         $bashurl = "URL_DISBLED_AUTOSERVICIOS";
@@ -667,7 +687,8 @@ class PersonalController extends Controller {
         }
     }
 
-    public function edit($id) {
+    public function edit($id)
+    {
 
         $personal = PersonalModel::find($id);
 
@@ -681,14 +702,14 @@ class PersonalController extends Controller {
         $libranza = LibranzasModel::Where('estatus_id', 1)->OrderBy('id', 'asc')->get();
 
         $acargo = CargoModel::where('nombre_cargo', 'like', 'Director%')
-                        ->Orwhere('nombre_cargo', 'like', 'Gerente%')
-                        ->Orwhere('nombre_cargo', 'like', 'Customer Technical Support Manager%')
-                        ->Orwhere('nombre_cargo', 'like', '%Presidente%')->pluck('id');
+            ->Orwhere('nombre_cargo', 'like', 'Gerente%')
+            ->Orwhere('nombre_cargo', 'like', 'Customer Technical Support Manager%')
+            ->Orwhere('nombre_cargo', 'like', '%Presidente%')->pluck('id');
 
         $gerente = PersonalModel::select(DB::raw("concat(primer_nombre,' ',primer_apellido) as nombre"), "dir_personal.id")
-                        ->whereIn('cargo_id', $acargo)
-                        ->whereIn('dir_personal.estatus_id', [1, 7, 8, 9, 10])
-                        ->orderby('primer_nombre', 'ASC')->get();
+            ->whereIn('cargo_id', $acargo)
+            ->whereIn('dir_personal.estatus_id', [1, 7, 8, 9, 10])
+            ->orderby('primer_nombre', 'ASC')->get();
 
         $nomina = NominaModel::Where('estatus_id', 1)->get();
         $estatus = EstatusModel::where('group_module', 'R')->get();
@@ -696,7 +717,7 @@ class PersonalController extends Controller {
         $area = AreatrabajoModel::Where('estatus_id', 1)->get();
 
         $cartera = CarteraModel::where('area_trabajo_id', $personal->area_trabajo_id)
-                        ->where('estatus_id', 1)->get();
+            ->where('estatus_id', 1)->get();
 
         $skill = SkillModels::where('id', $personal->skill_id)->get();
         //dd($skill,$personal->skill_id);
@@ -725,44 +746,45 @@ class PersonalController extends Controller {
         }
         //dd($styleVacaciones);
         return view('personal.personal.editar')
-                        ->with([
-                            "blacklist" => $listanegra,
-                            "originblacklist" => $originblacklist,
-                            "personal" => $personal,
-                            "supervisor1" => $supervisor1,
-                            "supervisor2" => $supervisor2,
-                            "gerente" => $gerente,
-                            "academicos" => $this->nacademicos,
-                            "horariolab" => $this->horariolab,
-                            "sedes" => $this->sedes,
-                            "contractual" => $this->contractual,
-                            "nomina" => $nomina,
-                            "cargo" => $cargo,
-                            "status" => $estatus,
-                            "libranza" => $libranza,
-                            "area" => $area,
-                            "cartera" => $cartera,
-                            "skill" => $skill,
-                            "zonatransporte" => $zonas,
-                            "tipoContrato" => $this->tipoContrato,
-                            "nacionalidades" => $this->nacionalidades,
-                            "especialidades" => $this->especialidades,
-                            "horariosTransporte" => $this->horarioTransportes,
-                            "hijo" => $this->hijo,
-                            "jornadas" => $this->jornadas,
-                            "banco" => $banco,
-                            "roles" => $rol,
-                            "autorice" => $autorice,
-                            "rolactive" => $rolactive,
-                            "ciudad" => $ciudad,
-                            "estado" => $estado,
-                            "region" => $region,
-                            "tiemposContrato" => $this->tiemposContrato,
-                            "motivoegreso"=> $this->motivosEgresos,
-        ]);
+            ->with([
+                "blacklist" => $listanegra,
+                "originblacklist" => $originblacklist,
+                "personal" => $personal,
+                "supervisor1" => $supervisor1,
+                "supervisor2" => $supervisor2,
+                "gerente" => $gerente,
+                "academicos" => $this->nacademicos,
+                "horariolab" => $this->horariolab,
+                "sedes" => $this->sedes,
+                "contractual" => $this->contractual,
+                "nomina" => $nomina,
+                "cargo" => $cargo,
+                "status" => $estatus,
+                "libranza" => $libranza,
+                "area" => $area,
+                "cartera" => $cartera,
+                "skill" => $skill,
+                "zonatransporte" => $zonas,
+                "tipoContrato" => $this->tipoContrato,
+                "nacionalidades" => $this->nacionalidades,
+                "especialidades" => $this->especialidades,
+                "horariosTransporte" => $this->horarioTransportes,
+                "hijo" => $this->hijo,
+                "jornadas" => $this->jornadas,
+                "banco" => $banco,
+                "roles" => $rol,
+                "autorice" => $autorice,
+                "rolactive" => $rolactive,
+                "ciudad" => $ciudad,
+                "estado" => $estado,
+                "region" => $region,
+                "tiemposContrato" => $this->tiemposContrato,
+                "motivoegreso" => $this->motivosEgresos,
+            ]);
     }
 
-    public function ViewPersonal($id) {
+    public function ViewPersonal($id)
+    {
 
         $personal = PersonalModel::find($id);
         $ciudad = $personal->ciudad_id !== null ? CiudadesModel::find($personal->ciudad_id) : CiudadesModel::find(149);
@@ -775,14 +797,14 @@ class PersonalController extends Controller {
         $libranza = LibranzasModel::Where('estatus_id', 1)->OrderBy('id', 'asc')->get();
 
         $acargo = CargoModel::where('nombre_cargo', 'like', 'Director%')
-                        ->Orwhere('nombre_cargo', 'like', 'Gerente%')
-                        ->Orwhere('nombre_cargo', 'like', 'Customer Technical Support Manager%')
-                        ->Orwhere('nombre_cargo', 'like', '%Presidente%')->pluck('id');
+            ->Orwhere('nombre_cargo', 'like', 'Gerente%')
+            ->Orwhere('nombre_cargo', 'like', 'Customer Technical Support Manager%')
+            ->Orwhere('nombre_cargo', 'like', '%Presidente%')->pluck('id');
 
         $gerente = PersonalModel::select(DB::raw("concat(primer_nombre,' ',primer_apellido) as nombre"), "dir_personal.id")
-                        ->whereIn('cargo_id', $acargo)
-                        ->whereIn('dir_personal.estatus_id', [1, 7, 8, 9, 10])
-                        ->orderby('primer_nombre', 'ASC')->get();
+            ->whereIn('cargo_id', $acargo)
+            ->whereIn('dir_personal.estatus_id', [1, 7, 8, 9, 10])
+            ->orderby('primer_nombre', 'ASC')->get();
 
         $nomina = NominaModel::Where('estatus_id', 1)->get();
         $estatus = EstatusModel::where('group_module', 'R')->get();
@@ -790,7 +812,7 @@ class PersonalController extends Controller {
         $area = AreatrabajoModel::Where('estatus_id', 1)->get();
 
         $cartera = CarteraModel::where('area_trabajo_id', $personal->area_trabajo_id)
-                        ->where('estatus_id', 1)->get();
+            ->where('estatus_id', 1)->get();
 
         $skill = SkillModels::where('id', $personal->skill_id)->get();
         //dd($skill,$personal->skill_id);
@@ -819,44 +841,45 @@ class PersonalController extends Controller {
         }
 
         return view('personal.personal.view')
-                        ->with([
-                            "blacklist" => $listanegra,
-                            "originblacklist" => $originblacklist,
-                            "personal" => $personal,
-                            "supervisor1" => $supervisor1,
-                            "supervisor2" => $supervisor2,
-                            "gerente" => $gerente,
-                            "academicos" => $this->nacademicos,
-                            "horariolab" => $this->horariolab,
-                            "sedes" => $this->sedes,
-                            "contractual" => $this->contractual,
-                            "nomina" => $nomina,
-                            "cargo" => $cargo,
-                            "status" => $estatus,
-                            "libranza" => $libranza,
-                            "area" => $area,
-                            "cartera" => $cartera,
-                            "skill" => $skill,
-                            "zonatransporte" => $zonas,
-                            "tipoContrato" => $this->tipoContrato,
-                            "nacionalidades" => $this->nacionalidades,
-                            "especialidades" => $this->especialidades,
-                            "horariosTransporte" => $this->horarioTransportes,
-                            "hijo" => $this->hijo,
-                            "jornadas" => $this->jornadas,
-                            "banco" => $banco,
-                            "roles" => $rol,
-                            "autorice" => $autorice,
-                            "rolactive" => $rolactive,
-                            "ciudad" => $ciudad,
-                            "estado" => $estado,
-                            "region" => $region,
-                            "tiemposContrato" => $this->tiemposContrato,
-                            "motivoegreso"=> $this->motivosEgresos
-                        ])->render();
+            ->with([
+                "blacklist" => $listanegra,
+                "originblacklist" => $originblacklist,
+                "personal" => $personal,
+                "supervisor1" => $supervisor1,
+                "supervisor2" => $supervisor2,
+                "gerente" => $gerente,
+                "academicos" => $this->nacademicos,
+                "horariolab" => $this->horariolab,
+                "sedes" => $this->sedes,
+                "contractual" => $this->contractual,
+                "nomina" => $nomina,
+                "cargo" => $cargo,
+                "status" => $estatus,
+                "libranza" => $libranza,
+                "area" => $area,
+                "cartera" => $cartera,
+                "skill" => $skill,
+                "zonatransporte" => $zonas,
+                "tipoContrato" => $this->tipoContrato,
+                "nacionalidades" => $this->nacionalidades,
+                "especialidades" => $this->especialidades,
+                "horariosTransporte" => $this->horarioTransportes,
+                "hijo" => $this->hijo,
+                "jornadas" => $this->jornadas,
+                "banco" => $banco,
+                "roles" => $rol,
+                "autorice" => $autorice,
+                "rolactive" => $rolactive,
+                "ciudad" => $ciudad,
+                "estado" => $estado,
+                "region" => $region,
+                "tiemposContrato" => $this->tiemposContrato,
+                "motivoegreso" => $this->motivosEgresos
+            ])->render();
     }
 
-    private function HistoricosStore($objPersonal) {
+    private function HistoricosStore($objPersonal)
+    {
 
         $historial = new HistoricoPersonalModel();
         $historial->cod_profit = $objPersonal->cod_profit;
@@ -888,8 +911,7 @@ class PersonalController extends Controller {
         $historial->cargo_id = $objPersonal->cargo_id;
         $historial->usuario_crm_portabilidad = $objPersonal->usuario_crm_portabilidad;
         $historial->estatuscargo = $objPersonal->getrawOriginal('estatuscargo');
-        
-       
+
         $historial->nacionalidad_cuenta = $objPersonal->nacionalidad_cuenta;
         $historial->cedula_titular = $objPersonal->cedula_titular;
         $historial->nombre_titular = ucfirst(strtolower($objPersonal->nombre_titular));
@@ -897,8 +919,7 @@ class PersonalController extends Controller {
         $historial->cuenta_bancaria = $objPersonal->cuenta_bancaria;
         $historial->todoticket_integral     = $objPersonal->todoticket_integral;
         $historial->todoticket_alimentacion = $objPersonal->todoticket_alimentacion;
-        
-        
+
         $historial->sede_laboral = $objPersonal->sede_laboral;
         $historial->horario_operativo = $objPersonal->horario_operativo;
         $historial->jornada = $objPersonal->getrawOriginal('jornada');
@@ -918,13 +939,15 @@ class PersonalController extends Controller {
         $historial->contrato_2 = $objPersonal->contrato_2;
         $historial->finalizacion_2 = $objPersonal->finalizacion_2;
         $historial->situacion_contractual = $objPersonal->getrawOriginal('situacion_contractual');
-        $historial->status_carnet = $objPersonal->status_carnet;
-        $historial->fecha_egreso = $objPersonal->fecha_egreso;
-        $historial->motivo_egreso = $objPersonal->motivo_egreso;
-        $historial->estatus_id = $objPersonal->estatus_id;
+        $historial->status_carnet   = $objPersonal->status_carnet;
+        $historial->fecha_egreso    = $objPersonal->fecha_egreso;
+        $historial->motivo_egreso   = $objPersonal->motivo_egreso;
+        $historial->observaciones_egreso = $objPersonal->observaciones_egreso;
+        $historial->estatus_id      = $objPersonal->estatus_id;
         $historial->vacaciones_init = $objPersonal->vacaciones_init;
+        $historial->usuario_crm_portabilidad = $objPersonal->usuario_crm_portabilidad;
         $historial->vacaciones_end  = $objPersonal->vacaciones_end;
-        $historial->user_id = null;
+        $historial->user_id         = null;
 
         //GUARDAMOS QUIEN ACTUALIZO EL REGISTRO
         $historial->modificado_por = \Auth::user()->username;
@@ -935,7 +958,8 @@ class PersonalController extends Controller {
         return $historial;
     }
 
-    private function GetDirtyHistorico($objPersonal, $historial) {
+    private function GetDirtyHistorico($objPersonal, $historial)
+    {
 
         $nuevos_valores = [];
         $valores_alt = [];
@@ -960,8 +984,9 @@ class PersonalController extends Controller {
         $historial->save();
     }
 
-    public function update(Request $request, $id) {
-      
+    public function update(Request $request, $id)
+    {
+
         $objPersonal = PersonalModel::find($id);
         //ANTES DE ACTUALIZAR EL REGISTRO GUARDAMOS UN HISTORIAL DEL MISMO
         $historico = $this->HistoricosStore($objPersonal, $request);
@@ -1011,24 +1036,26 @@ class PersonalController extends Controller {
             $objPersonal->fecha_ingreso = Carbon::createFromFormat('d/m/Y', $request->fingreso)->format('Y-m-d');
             $objPersonal->nomina_id = $request->nomina;
             $objPersonal->cargo_id = $request->cargo;
-            $objPersonal->estatuscargo = $request->estatuscargo;            
+            $objPersonal->estatuscargo = $request->estatuscargo;
 
             ///Si el Usuario posee Permisos para Modificar las cuentas Bancarias o el valor almacenado esta Vacio
-            if (\Auth::user()->hasPermission('personal.update.ctabancarias') ||
-                ($objPersonal->nombre_titular == null 
-                || $objPersonal->nacionalidad_cuenta == null
-                || $objPersonal->cedula_titular == null
-                || $objPersonal->bancos_id == null 
-                || $objPersonal->cuenta_bancaria == null                
-                #|| $personal->todoticket_integral == '0' 
-                #|| $personal->todoticket_alimentacion == '0'
-                )) {
-               
+            if (
+                \Auth::user()->hasPermission('personal.update.ctabancarias') ||
+                ($objPersonal->nombre_titular == null
+                    || $objPersonal->nacionalidad_cuenta == null
+                    || $objPersonal->cedula_titular == null
+                    || $objPersonal->bancos_id == null
+                    || $objPersonal->cuenta_bancaria == null
+                    #|| $personal->todoticket_integral == '0' 
+                    #|| $personal->todoticket_alimentacion == '0'
+                )
+            ) {
+
                 $objPersonal->nacionalidad_cuenta   = isset($request->nacionalidad_cuenta) ? $request->nacionalidad_cuenta : $objPersonal->nacionalidad_cuenta;
                 $objPersonal->cedula_titular        = isset($request->cedulatitular) ? $request->cedulatitular : $objPersonal->cedula_titular;
                 $objPersonal->nombre_titular        = isset($request->nombretitular) ? ucfirst(strtolower($request->nombretitular)) : $objPersonal->nombre_titular;
                 $objPersonal->bancos_id             = isset($request->banco) ? $request->banco : $objPersonal->bancos_id;
-                $objPersonal->cuenta_bancaria       = isset($request->ctabancaria) ? $request->ctabancaria : $objPersonal->cuenta_bancaria;                
+                $objPersonal->cuenta_bancaria       = isset($request->ctabancaria) ? $request->ctabancaria : $objPersonal->cuenta_bancaria;
                 $objPersonal->todoticket_integral     = isset($request->integral) ? $request->integral : $objPersonal->todoticket_integral;
                 $objPersonal->todoticket_alimentacion = isset($request->alimentacion) ? $request->alimentacion : $objPersonal->todoticket_alimentacion;
             }
@@ -1096,11 +1123,13 @@ class PersonalController extends Controller {
                 case 1:
                     $objPersonal->fecha_egreso = null;
                     $objPersonal->motivo_egreso = null;
+                    $objPersonal->observaciones_egreso = null;
                     break;
                 case 2:
                     $egreso = Carbon::createFromFormat('d/m/Y', $request->fegreso)->format('Y-m-d');
                     $objPersonal->fecha_egreso = $egreso;
                     $objPersonal->motivo_egreso = ucfirst(strtolower($request->motivoegreso));
+                    $objPersonal->observaciones_egreso = ucfirst(strtolower($request->observaciones_egreso));
 
                     if (!EgresadosModel::where('fecha', $egreso)->where('dir_personal_id', $id)->exists()) {
                         $nuevo_egreso = new EgresadosModel();
@@ -1115,7 +1144,7 @@ class PersonalController extends Controller {
                     }
                     /// eliminamos las asistencias tomadas a partir de su fecha de egreso hasta el dia en curso
                     AsistenciaOperativaModel::where('personal_id', $objPersonal->id)
-                            ->whereBetween('created_at', array("$egreso 00:00:01", date('Y-m-d H:m:s', strtotime(now()))))->delete();
+                        ->whereBetween('created_at', array("$egreso 00:00:01", date('Y-m-d H:m:s', strtotime(now()))))->delete();
 
                     ///va contra autoservicios y verifica elimina el usuario si existe 
                     if (ENV('ACTIVE_API_AUTOSERVICIOS', false)) {
@@ -1152,7 +1181,7 @@ class PersonalController extends Controller {
                 $objPersonal->estatus_id = $request->status;
             }
 
-          
+
             switch (\Auth::user()->haspermission('personal.cecos.autorice')) {
                 case true;
                     $objPersonal->RelationCentroCosto()->delete();
@@ -1173,7 +1202,7 @@ class PersonalController extends Controller {
                     }
                     break;
                 case false:
-                    
+
                     $objPersonal->RelationCentroCosto()->delete();
 
                     foreach ($request->ceco as $centro) {
@@ -1268,22 +1297,22 @@ class PersonalController extends Controller {
                     }
                     break;
             }
-       
+
             //// Condicion para el Estatus de Vacaciones.
-            if($request->status == 8){
+            if ($request->status == 8) {
 
                 ///registro nuevo
-                if($objPersonal->vacaciones_init == null && $objPersonal->vacaciones_end == null){
+                if ($objPersonal->vacaciones_init == null && $objPersonal->vacaciones_end == null) {
                     $casoVacaciones = 0;
                 }
 
                 #tengo valores de vacaciones ya almacenados
-                if($objPersonal->vacaciones_init != null && $objPersonal->vacaciones_end != null){
+                if ($objPersonal->vacaciones_init != null && $objPersonal->vacaciones_end != null) {
                     $casoVacaciones = 1;
                 }
 
-                switch($casoVacaciones){
-                    case 0: 
+                switch ($casoVacaciones) {
+                    case 0:
                         $startDate  = Carbon::createFromFormat('d/m/Y', $request->vacaciones_init)->format('Y-m-d');
                         $enddate    = Carbon::createFromFormat('d/m/Y', $request->vacaciones_end)->format('Y-m-d');
 
@@ -1294,53 +1323,58 @@ class PersonalController extends Controller {
                         $end->modify('+ 1 day');
 
                         $period = new DatePeriod(
-                                new DateTime($startDate),
-                                new DateInterval('P1D'), $end);
+                            new DateTime($startDate),
+                            new DateInterval('P1D'),
+                            $end
+                        );
                         ///recorremos los dias respectivos del rango de vacaciones
 
                         foreach ($period as $key => $value) {
                             $date = $value->format('Y-m-d');
                             $dia = date('l', strtotime($date));
 
-                                $asistencia = new AsistenciaOperativaModel();
-                                $asistencia->tipo_asistencia    = "Vacaciones";                    
-                                $asistencia->gerente_id         = $objPersonal->gerente_area_id;
-                                $asistencia->supervisor_id      = $objPersonal->jefe_inmediato;
-                                $asistencia->coordinador_id     = $objPersonal->jefe_inmediato_segundo;
-                                $asistencia->personal_id        = $objPersonal->id;
-                                $asistencia->area_trabajo_id    = $objPersonal->area_trabajo_id;
-                                $asistencia->cartera_id         = $objPersonal->cartera_id;
-                                $asistencia->skill_id           = $objPersonal->skill_id;
-                                $asistencia->prefijo            = "VAC";
-                                $asistencia->block              = 1;
-                                $asistencia->dia                = $dia;
-                                $asistencia->observacion        = "Vacaciones Cargadas Desde La Ficha de Personal";
-                                $asistencia->created_at         = date('Y-m-d H:i:s', strtotime($date));
-                                $asistencia->updated_at         = date('Y-m-d H:i:s', strtotime($date));
-                                $asistencia->save();
-                        }                        
-                        $objeto_asistencia = json_encode(["Fecha Inicio:"=> $startDate, "fecha Final: "=> $enddate]);
-                        ActivityLogger::activity("Registro de Vacaciones Cedula: ".$objPersonal->cedula_empleado , $objeto_asistencia);
-                    break;
-                    case 1:                        
+                            $asistencia = new AsistenciaOperativaModel();
+                            $asistencia->tipo_asistencia    = "Vacaciones";
+                            $asistencia->gerente_id         = $objPersonal->gerente_area_id;
+                            $asistencia->supervisor_id      = $objPersonal->jefe_inmediato;
+                            $asistencia->coordinador_id     = $objPersonal->jefe_inmediato_segundo;
+                            $asistencia->personal_id        = $objPersonal->id;
+                            $asistencia->area_trabajo_id    = $objPersonal->area_trabajo_id;
+                            $asistencia->cartera_id         = $objPersonal->cartera_id;
+                            $asistencia->skill_id           = $objPersonal->skill_id;
+                            $asistencia->prefijo            = "VAC";
+                            $asistencia->block              = 1;
+                            $asistencia->dia                = $dia;
+                            $asistencia->observacion        = "Vacaciones Cargadas Desde La Ficha de Personal";
+                            $asistencia->created_at         = date('Y-m-d H:i:s', strtotime($date));
+                            $asistencia->updated_at         = date('Y-m-d H:i:s', strtotime($date));
+                            $asistencia->save();
+                        }
+                        $objeto_asistencia = json_encode(["Fecha Inicio:" => $startDate, "fecha Final: " => $enddate]);
+                        ActivityLogger::activity("Registro de Vacaciones Cedula: " . $objPersonal->cedula_empleado, $objeto_asistencia);
+                        break;
+                    case 1:
                         $startDate  = Carbon::createFromFormat('d/m/Y', $request->vacaciones_init)->format('Y-m-d');
                         $enddate    = Carbon::createFromFormat('d/m/Y', $request->vacaciones_end)->format('Y-m-d');
                         /// si las fechas recibidas son diferentes a las almacenadas
-                        if($startDate != $objPersonal->vacaciones_init || $enddate != $objPersonal->vacaciones_end){
-                        
+                        if ($startDate != $objPersonal->vacaciones_init || $enddate != $objPersonal->vacaciones_end) {
+
                             if (AsistenciaOperativaModel::where('personal_id', $objPersonal->id)
-                                ->where('prefijo',"VAC")
-                                ->whereBetween('created_at', array($objPersonal->vacaciones_init.' 00:00:01', $objPersonal->vacaciones_end. ' 23:59:59'))->exists())  {
-                                
-                                AsistenciaOperativaModel::where('personal_id', $objPersonal->id)->where('prefijo',"VAC")
-                                ->whereBetween('created_at', array($objPersonal->vacaciones_init.' 00:00:01', $objPersonal->vacaciones_end. ' 23:59:59'))->delete();
+                                ->where('prefijo', "VAC")
+                                ->whereBetween('created_at', array($objPersonal->vacaciones_init . ' 00:00:01', $objPersonal->vacaciones_end . ' 23:59:59'))->exists()
+                            ) {
+
+                                AsistenciaOperativaModel::where('personal_id', $objPersonal->id)->where('prefijo', "VAC")
+                                    ->whereBetween('created_at', array($objPersonal->vacaciones_init . ' 00:00:01', $objPersonal->vacaciones_end . ' 23:59:59'))->delete();
 
                                 $end = new DateTime($enddate);
                                 $end->modify('+ 1 day');
 
                                 $period = new DatePeriod(
-                                        new DateTime($startDate),
-                                        new DateInterval('P1D'), $end);
+                                    new DateTime($startDate),
+                                    new DateInterval('P1D'),
+                                    $end
+                                );
                                 ///recorremos los dias respectivos del rango de vacaciones
                                 $objPersonal->vacaciones_init = $startDate;
                                 $objPersonal->vacaciones_end = $enddate;
@@ -1349,29 +1383,29 @@ class PersonalController extends Controller {
                                     $date = $value->format('Y-m-d');
                                     $dia = date('l', strtotime($date));
 
-                                        $asistencia = new AsistenciaOperativaModel();
-                                        $asistencia->tipo_asistencia    = "Vacaciones";                    
-                                        $asistencia->gerente_id         = $objPersonal->gerente_area_id;
-                                        $asistencia->supervisor_id      = $objPersonal->jefe_inmediato;
-                                        $asistencia->coordinador_id     = $objPersonal->jefe_inmediato_segundo;
-                                        $asistencia->personal_id        = $objPersonal->id;
-                                        $asistencia->area_trabajo_id    = $objPersonal->area_trabajo_id;
-                                        $asistencia->cartera_id         = $objPersonal->cartera_id;
-                                        $asistencia->skill_id           = $objPersonal->skill_id;
-                                        $asistencia->prefijo            = "VAC";
-                                        $asistencia->block              = 1;
-                                        $asistencia->dia                = $dia;
-                                        $asistencia->observacion        = "Vacaciones Cargadas Desde La Ficha de Personal";
-                                        $asistencia->created_at         = date('Y-m-d H:i:s', strtotime($date));
-                                        $asistencia->updated_at         = date('Y-m-d H:i:s', strtotime($date));
-                                        $asistencia->save();
-                                }                        
-                                $objeto_asistencia = json_encode(["Fecha Inicio:"=> $startDate, "fecha Final: "=> $enddate]);
-                                ActivityLogger::activity("Registro de Vacaciones Cedula: ".$objPersonal->cedula_empleado , $objeto_asistencia);
-                            } 
-                        } 
-                    break;
-                }            
+                                    $asistencia = new AsistenciaOperativaModel();
+                                    $asistencia->tipo_asistencia    = "Vacaciones";
+                                    $asistencia->gerente_id         = $objPersonal->gerente_area_id;
+                                    $asistencia->supervisor_id      = $objPersonal->jefe_inmediato;
+                                    $asistencia->coordinador_id     = $objPersonal->jefe_inmediato_segundo;
+                                    $asistencia->personal_id        = $objPersonal->id;
+                                    $asistencia->area_trabajo_id    = $objPersonal->area_trabajo_id;
+                                    $asistencia->cartera_id         = $objPersonal->cartera_id;
+                                    $asistencia->skill_id           = $objPersonal->skill_id;
+                                    $asistencia->prefijo            = "VAC";
+                                    $asistencia->block              = 1;
+                                    $asistencia->dia                = $dia;
+                                    $asistencia->observacion        = "Vacaciones Cargadas Desde La Ficha de Personal";
+                                    $asistencia->created_at         = date('Y-m-d H:i:s', strtotime($date));
+                                    $asistencia->updated_at         = date('Y-m-d H:i:s', strtotime($date));
+                                    $asistencia->save();
+                                }
+                                $objeto_asistencia = json_encode(["Fecha Inicio:" => $startDate, "fecha Final: " => $enddate]);
+                                ActivityLogger::activity("Registro de Vacaciones Cedula: " . $objPersonal->cedula_empleado, $objeto_asistencia);
+                            }
+                        }
+                        break;
+                }
             } else {
                 $objPersonal->vacaciones_init = null;
                 $objPersonal->vacaciones_end = null;
@@ -1395,32 +1429,36 @@ class PersonalController extends Controller {
                 \Session::flash('error', "Ocurrio un error al actualizar");
             }
         } catch (\Exception $e) {
-            \Session::flash('error', $e->getMessage().' '.$e->getLine());
+            \Session::flash('error', $e->getMessage() . ' ' . $e->getLine());
             return back();
         }
     }
 
-    public function remove($id) {
+    public function remove($id)
+    {
         $objPersonal = PersonalModel::find($id);
         $objPersonal->Delete();
         \Session::flash('success', 'El Expediente ha sido movido a la papelera.');
         return back();
     }
 
-    public function RemoveIndex() {
+    public function RemoveIndex()
+    {
 
         $personal = PersonalModel::onlyTrashed()->get();
 
         return view('personal.personal.deleted')->with("personal", $personal);
     }
 
-    public function restore($id) {
+    public function restore($id)
+    {
         PersonalModel::withTrashed()->find($id)->restore();
         \Session::flash('success', 'El Expediente Ha sido Restaurado exitosamente.');
         return back();
     }
 
-    public function destroy($id) {
+    public function destroy($id)
+    {
         $obpersonal = PersonalModel::withTrashed()->find($id);
 
         if ($obpersonal->image != null) {
@@ -1432,12 +1470,14 @@ class PersonalController extends Controller {
         return back();
     }
 
-    public function IndexUploadMasive() {
+    public function IndexUploadMasive()
+    {
 
         return view('personal.personal.upload.index');
     }
 
-    public function StoreUploadMasive(Request $request) {
+    public function StoreUploadMasive(Request $request)
+    {
 
 
         try {
@@ -1456,16 +1496,18 @@ class PersonalController extends Controller {
         }
     }
 
-    public function IndexUpdateMasive() {
+    public function IndexUpdateMasive()
+    {
 
         return view('personal.personal.upload.update');
     }
 
-    public function UpdateMasive(Request $request) {
+    public function UpdateMasive(Request $request)
+    {
 
         try {
             Excel::import(new UpdatePersonalImport, request()->file('archivo'));
-           
+
             return back();
         } catch (\Maatwebsite\Excel\Validators\ValidationException $e) { //retorno de las reglas de validacion
             return back()->withErrors($e->failures());
@@ -1479,14 +1521,16 @@ class PersonalController extends Controller {
         }
     }
 
-    public function historial($id) {
+    public function historial($id)
+    {
 
-        $historial = HistoricoPersonalModel::where('personal_id', $id)->orderby('id','DESC')->get();
+        $historial = HistoricoPersonalModel::where('personal_id', $id)->orderby('id', 'DESC')->get();
 
         return view('personal.personal.historial', compact('historial'));
     }
 
-    public function historialView($id) {
+    public function historialView($id)
+    {
 
         $personal = HistoricoPersonalModel::find($id);
 
@@ -1495,23 +1539,23 @@ class PersonalController extends Controller {
         $ciudad = CiudadesModel::find($personal->ciudad_id);
 
         $supervisor1 = PersonalModel::select(DB::raw("concat(primer_nombre,' ',primer_apellido) as nombre"), "id")
-                        ->where('id', $personal->jefe_inmediato)->first();
+            ->where('id', $personal->jefe_inmediato)->first();
 
         $supervisor2 = PersonalModel::select(DB::raw("concat(primer_nombre,' ',primer_apellido) as nombre"), "id")
-                        ->where('id', $personal->jefe_inmediato_segundo)->first();
+            ->where('id', $personal->jefe_inmediato_segundo)->first();
 
         $cargo = CargoModel::Where('estatus_id', 1)->OrderBy('nombre_cargo', 'asc')->get();
         $libranza = LibranzasModel::Where('estatus_id', 1)->OrderBy('id', 'asc')->get();
 
         $acargo = CargoModel::where('nombre_cargo', 'like', 'Director%')
-                        ->Orwhere('nombre_cargo', 'like', 'Gerente%')
-                        ->Orwhere('nombre_cargo', 'like', 'Customer Technical Support Manager%')
-                        ->Orwhere('nombre_cargo', 'like', '%Presidente%')->pluck('id');
+            ->Orwhere('nombre_cargo', 'like', 'Gerente%')
+            ->Orwhere('nombre_cargo', 'like', 'Customer Technical Support Manager%')
+            ->Orwhere('nombre_cargo', 'like', '%Presidente%')->pluck('id');
 
         $gerente = PersonalModel::select(DB::raw("concat(primer_nombre,' ',primer_apellido) as nombre"), "dir_personal.id")
-                        ->whereIn('cargo_id', $acargo)
-                        ->whereIn('dir_personal.estatus_id', [1, 7, 8, 9, 10])
-                        ->orderby('primer_nombre', 'ASC')->get();
+            ->whereIn('cargo_id', $acargo)
+            ->whereIn('dir_personal.estatus_id', [1, 7, 8, 9, 10])
+            ->orderby('primer_nombre', 'ASC')->get();
 
         $nomina = NominaModel::Where('estatus_id', 1)->get();
         $estatus = EstatusModel::where('group_module', 'R')->get();
@@ -1628,29 +1672,29 @@ class PersonalController extends Controller {
             $estado_lp = null;
             $region_lp = null;
             $ciudad_lp = null;
-        }        
-        if (isset($cambios->todoticket_integral)){
-            $integral_lp = $cambios->todoticket_integral  == "1" ? "SI": "NO";
-        }else {
+        }
+        if (isset($cambios->todoticket_integral)) {
+            $integral_lp = $cambios->todoticket_integral  == "1" ? "SI" : "NO";
+        } else {
             $integral_lp = null;
-        }        
-        if (isset($cambios->todoticket_alimentacion)){
-            $alimentacion_lp = $cambios->todoticket_alimentacion  == "1" ? "SI": "NO";
-        }else{
+        }
+        if (isset($cambios->todoticket_alimentacion)) {
+            $alimentacion_lp = $cambios->todoticket_alimentacion  == "1" ? "SI" : "NO";
+        } else {
             $alimentacion_lp = null;
-        }  
-        
-        if (isset($cambios->vacaciones_init)){
-            $integral_lp = $cambios->vacaciones_init  == "1" ? "SI": "NO";
-        }else {
+        }
+
+        if (isset($cambios->vacaciones_init)) {
+            $integral_lp = $cambios->vacaciones_init  == "1" ? "SI" : "NO";
+        } else {
             $integral_lp = null;
-        }  
-        if (isset($cambios->todoticket_integral)){
-            $integral_lp = $cambios->todoticket_integral  == "1" ? "SI": "NO";
-        }else {
+        }
+        if (isset($cambios->todoticket_integral)) {
+            $integral_lp = $cambios->todoticket_integral  == "1" ? "SI" : "NO";
+        } else {
             $integral_lp = null;
-        }  
-        
+        }
+
         if (isset($cambios->sede_laboral)) {
             $sedenew = SedeModel::select('real_name')->where('nombre_sede', $cambios->sede_laboral)->first();
             $sedelp = $sedenew->real_name;
@@ -1659,90 +1703,90 @@ class PersonalController extends Controller {
         }
 
         return view('personal.personal.historialView')
-                        ->with([
-                            "blacklist" => $listanegra,
-                            "originblacklist" => $originblacklist,
-                            "personal" => $personal,
-                            "supervisor1" => $supervisor1,
-                            "supervisor2" => $supervisor2,
-                            "gerente" => $gerente,
-                            "academicos" => $this->nacademicos,
-                            "horariolab" => $this->horariolab,
-                            "sedes" => $this->sedes,
-                            "nomina" => $nomina,
-                            "cargo" => $cargo,
-                            "status" => $estatus,
-                            "libranza" => $libranza,
-                            "area" => $area,
-                            "cartera" => $cartera,
-                            "skill" => $skill,
-                            "zonatransporte" => $zonas,
-                            "banco" => $banco,
-                            "cambios" => $cambios,
-                            "estado" => $estados,
-                            "region" => $region,
-                            "ciudad" => $ciudad,
-                            "integral_lp"=>$integral_lp,
-                            "alimentacion_lp"=>$alimentacion_lp,
-                            "region_lp" => $region_lp,
-                            "estado_lp" => $estado_lp,
-                            "ciudad_lp" => $ciudad_lp,
-                            "banco_lp" => $banco_lp,
-                            "nomina_lp" => $nomina_lp,
-                            "libranza_lp" => $libranza_lp,
-                            "cargo_lp" => $cargo_lp,
-                            "gerente_lp" => $gerente_lp,
-                            "jefe_lp" => $jefe_lp,
-                            "jefe2_lp" => $jefe2_lp,
-                            "area_lp" => $area_lp,
-                            "cartera_lp" => $cartera_lp,
-                            "skill_lp" => $skill_lp,
-                            "estatus_lp" => $estatus_lp,
-                            "zona_lp" => $zona_lp,
-                            "sede_lp" => $sedelp,
-                            "tipoContrato" => $this->tipoContrato,
-                            "nacionalidades" => $this->nacionalidades,
-                            "especialidades" => $this->especialidades,
-                            "horariosTransporte" => $this->horarioTransportes,
-                            "hijo" => $this->hijo,
-                            "jornadas" => $this->jornadas,
-                            "tiemposContrato" => $this->tiemposContrato
-                        ])->render();
+            ->with([
+                "blacklist" => $listanegra,
+                "originblacklist" => $originblacklist,
+                "personal" => $personal,
+                "supervisor1" => $supervisor1,
+                "supervisor2" => $supervisor2,
+                "gerente" => $gerente,
+                "academicos" => $this->nacademicos,
+                "horariolab" => $this->horariolab,
+                "sedes" => $this->sedes,
+                "nomina" => $nomina,
+                "cargo" => $cargo,
+                "status" => $estatus,
+                "libranza" => $libranza,
+                "area" => $area,
+                "cartera" => $cartera,
+                "skill" => $skill,
+                "zonatransporte" => $zonas,
+                "banco" => $banco,
+                "cambios" => $cambios,
+                "estado" => $estados,
+                "region" => $region,
+                "ciudad" => $ciudad,
+                "integral_lp" => $integral_lp,
+                "alimentacion_lp" => $alimentacion_lp,
+                "region_lp" => $region_lp,
+                "estado_lp" => $estado_lp,
+                "ciudad_lp" => $ciudad_lp,
+                "banco_lp" => $banco_lp,
+                "nomina_lp" => $nomina_lp,
+                "libranza_lp" => $libranza_lp,
+                "cargo_lp" => $cargo_lp,
+                "gerente_lp" => $gerente_lp,
+                "jefe_lp" => $jefe_lp,
+                "jefe2_lp" => $jefe2_lp,
+                "area_lp" => $area_lp,
+                "cartera_lp" => $cartera_lp,
+                "skill_lp" => $skill_lp,
+                "estatus_lp" => $estatus_lp,
+                "zona_lp" => $zona_lp,
+                "sede_lp" => $sedelp,
+                "tipoContrato" => $this->tipoContrato,
+                "nacionalidades" => $this->nacionalidades,
+                "especialidades" => $this->especialidades,
+                "horariosTransporte" => $this->horarioTransportes,
+                "hijo" => $this->hijo,
+                "jornadas" => $this->jornadas,
+                "tiemposContrato" => $this->tiemposContrato
+            ])->render();
     }
 
     public function IndexReplicasExpedientes()
-    {        
+    {
         return view('personal.replicas.index');
     }
 
     public function ShowReplicasExpedientes(Request $request)
     {
-        try{
-            $fecha = Carbon::createFromFormat('m/Y',$request->fecha);
+        try {
+            $fecha = Carbon::createFromFormat('m/Y', $request->fecha);
             $año = $fecha->copy()->format('Y');
             $mes = $fecha->copy()->format('m');
 
-            $directories = Storage::disk('replicalp')->files($año.'/'.$mes.'/');
-            if(!empty($directories)){                
-                foreach($directories as $files){
+            $directories = Storage::disk('replicalp')->files($año . '/' . $mes . '/');
+            if (!empty($directories)) {
+                foreach ($directories as $files) {
                     ///sacamos la ruta del nombre del archivo
                     /// 0 año 1 dia 2 nombre archivo
-                    $ident= explode('/',$files);      
+                    $ident = explode('/', $files);
                     // 0 año , 1 mes, 2 dia, 3 nombre
-                    $explodediareplica = explode('_',$ident[2]);            
-                    $row["dia"]          = $explodediareplica[2];   
+                    $explodediareplica = explode('_', $ident[2]);
+                    $row["dia"]          = $explodediareplica[2];
                     $row["nombres"]      = $ident[2];
-                    $row["acciones"] =  '<a href="'.Storage::disk('replicalp')->url($files).'" target="_blank" class="btn btn-sm btn-primary" data-toggle="tooltip" data-placement="top" title="Descargar Replica del Expediente">
+                    $row["acciones"] =  '<a href="' . Storage::disk('replicalp')->url($files) . '" target="_blank" class="btn btn-sm btn-primary" data-toggle="tooltip" data-placement="top" title="Descargar Replica del Expediente">
                         <i class="fa fa-download"></i>
                     </a>';
-                        
+
                     $data[] = $row;
                 }
                 return json_encode($data);
             } else {
                 return json_encode([]);
             }
-        } catch(\Exception $e){
+        } catch (\Exception $e) {
             return json_encode($e->getMessage());
         }
     }
