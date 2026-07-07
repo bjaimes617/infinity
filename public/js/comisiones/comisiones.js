@@ -209,7 +209,18 @@ $("#carteras").on("change", function () {
     $("#tipo_periodo").prop("disabled", true);
     ///siempre mantenemos lso botones desactivados
     var url = $(this).data("href");
-    cartera = $(this).val();
+    var cartera = [];
+    ///enviamos array de carteras si es distribuido
+    if ($(this).val() == 53) {
+        $("#carteras option").each(function () {
+            if ($(this).val() !== "") {
+                cartera.push($(this).val());
+            }
+        });
+    } else {
+        cartera = $(this).val();
+    }
+
     $("#skill").empty();
 
     var data = { cartera: cartera, _token: $("input[name=_token]").val() };

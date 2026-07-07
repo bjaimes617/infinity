@@ -15,7 +15,7 @@ class AlterSkillsTypeFormatVariables extends Migration
     public function up()
     {
         Schema::table('dir_skill', function (Blueprint $table) {
-            $table->json('type_format_uploads')->default('["A","B","C"]')->after('tipo_periodo')->nullable();
+            $table->json('type_format_uploads')->default('["A"]')->after('tipo_periodo')->nullable();
         });
 
         $sede = new SedeModel();

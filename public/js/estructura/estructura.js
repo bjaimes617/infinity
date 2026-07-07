@@ -283,6 +283,7 @@ $("#skill").on("change", function () {
     ///activa los botones para enviar el formulario///
     $("#buttonskill").removeAttr("disabled");
     $("#buttonskilldelete").removeAttr("disabled");
+
     var url = $(this).data("href");
     var data = {
         skill_id: $(this).val(),
@@ -368,8 +369,9 @@ $("#skill").on("change", function () {
                     break;
             }
 
+            $("#tipo_formato").val(null).trigger("change");
             data.type_format.forEach(function (item) {
-                $('#tipo_formato option[value="' + item + '"]')
+                $("#tipo_formato option[value=" + item + "]")
                     .prop("selected", true)
                     .trigger("change");
             });

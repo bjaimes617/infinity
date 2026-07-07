@@ -202,7 +202,6 @@ class ComisionesController extends Controller
                 break;
         }
 
-
         return json_encode([
             'tipo_periodo'      => $tipo_periodo,
             'tipo_formatos'     => $tipo_formatos,
