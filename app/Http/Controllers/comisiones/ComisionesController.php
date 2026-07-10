@@ -202,6 +202,7 @@ class ComisionesController extends Controller
                 break;
         }
 
+
         return json_encode([
             'tipo_periodo'      => $tipo_periodo,
             'tipo_formatos'     => $tipo_formatos,
@@ -455,10 +456,10 @@ class ComisionesController extends Controller
         $totalRows = $worksheet->getHighestRow(); // Esto devuelve el número total de filas
 
         $headings = (new HeadingRowImport)->toArray($request->file('archivo'));
-        if (in_array("comision_usd", $headings[0][0])) {
-            $typeImport = "A";
-        } else {
+        if (in_array("altas", $headings[0][0])) {
             $typeImport = "B";
+        } else {
+            $typeImport = "A";
         }
 
         $file = $request->file('archivo');
