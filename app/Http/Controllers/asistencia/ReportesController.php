@@ -26,7 +26,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use DatePeriod;
 use DateTime;
 use DateInterval;
-
+use DivisionByZeroError;
 use Carbon\Carbon;
 use App\Http\Controllers\PoliceEstructure;
 
@@ -49,6 +49,7 @@ class ReportesController extends Controller {
                         ->orwhere('nombre_cargo', 'like', 'Team%')
                         ->orwhere('nombre_cargo', 'like', 'Validador%')
                         ->orwhere('nombre_cargo', 'like', 'Back%')
+                        ->orwhere('nombre_cargo', 'like', 'Asesor%')
                         ->orwhere('nombre_cargo', 'like', 'Agente%')->pluck('id');
         $this->ejecutivo = $ejecutivo;
 
@@ -326,8 +327,13 @@ class ReportesController extends Controller {
     }
 
     public function indicadoresCreate(Request $request) {
-        //dd($request->all());
-        $namecampania = SkillModels::find($request->skill)->nombre_skill;
+    
+        if(count($request->skill ) <= 1){
+            $namecampania = SkillModels::Wherein('id',$request->skill)->first()->nombre_skill;
+        } else {
+            $namecampania = CarteraModel::find($request->carteras)->nombre_cartera;
+        }
+       
 
         $fecha = explode("-", $request->fecha);
 
@@ -344,66 +350,64 @@ class ReportesController extends Controller {
         // se ubica todos los convados del dia por la fecha en cuestion
         $convocados = ConvocadosModels::select(db::raw("total_convocados, date_format(created_at,'%Y-%m-%d')as fecha"))
                         ->whereBetween('created_at', array($begin->copy()->format('Y-m-d H:i:s'), $end->copy()->format('Y-m-d H:i:s')))
-                        ->where('skill_id', $request->skill)->get();
-
+                        ->wherein('skill_id', $request->skill)->get();           
         ///Se calcula el maximo de convocados de todos los dias buscados ///
         $arrayconvocados = $convocados->pluck('total_convocados')->ToArray();
 
         $ingresos = PersonalModel::select(db::raw("count(id) as ingresos, date_format(created_at,'%Y-%m-%d')as fecha"))
                         ->whereBetween('created_at', array($begin->copy()->format('Y-m-d H:i:s'), $end->copy()->format('Y-m-d H:i:s')))
                         ->wherein('dir_personal.cargo_id', $this->ejecutivo)
-                        ->where('skill_id', $request->skill)->groupBy('fecha')->get();
+                        ->wherein('skill_id', $request->skill)->groupBy('fecha')->get();
 
         $nolaboral = AsistenciaOperativaModel::select(db::raw("count(dir_asistencia_operativa.id) as nolaboral, date_format(dir_asistencia_operativa.created_at,'%Y-%m-%d')as fecha"))
                         ->leftjoin('dir_personal', 'dir_asistencia_operativa.personal_id', 'dir_personal.id')
                         ->whereBetween('dir_asistencia_operativa.created_at', array($begin->copy()->format('Y-m-d H:i:s'), $end->copy()->format('Y-m-d H:i:s')))
                         ->wherein('dir_personal.cargo_id', $this->ejecutivo)
-                        ->where('dir_asistencia_operativa.skill_id', $request->skill)->whereIn('dir_asistencia_operativa.prefijo', ['NL'])->groupBy('fecha')->get();
+                        ->wherein('dir_asistencia_operativa.skill_id', $request->skill)->whereIn('dir_asistencia_operativa.prefijo', ['NL'])->groupBy('fecha')->get();
 
         $asistentes = AsistenciaOperativaModel::select(db::raw("count(dir_asistencia_operativa.id) as asistentes, date_format(dir_asistencia_operativa.created_at,'%Y-%m-%d')as fecha"))
                         ->leftjoin('dir_personal', 'dir_asistencia_operativa.personal_id', 'dir_personal.id')
                         ->whereBetween('dir_asistencia_operativa.created_at', array($begin->copy()->format('Y-m-d H:i:s'), $end->copy()->format('Y-m-d H:i:s')))
-                        ->wherein('dir_personal.cargo_id', CargoModel::where('nombre_cargo', 'like', 'Ejecutivo%')
-                                ->orwhere('nombre_cargo', 'like', 'Team%')->orwhere('nombre_cargo', 'like', 'Validador%')->pluck('id'))
-                        ->where('dir_asistencia_operativa.skill_id', $request->skill)->whereIn('dir_asistencia_operativa.prefijo', ['A', 'FER', 'DOM'])->groupBy('fecha')->get();
+                        ->wherein('dir_personal.cargo_id', $this->ejecutivo)
+                        ->wherein('dir_asistencia_operativa.skill_id', $request->skill)->whereIn('dir_asistencia_operativa.prefijo', ['A', 'FER', 'DOM'])->groupBy('fecha')->get();
 
         $faltas = AsistenciaOperativaModel::select(db::raw("count(dir_asistencia_operativa.id) as faltantes, date_format(dir_asistencia_operativa.created_at,'%Y-%m-%d')as fecha"))
                         ->leftjoin('dir_personal', 'dir_asistencia_operativa.personal_id', 'dir_personal.id')
                         ->whereBetween('dir_asistencia_operativa.created_at', array($begin->copy()->format('Y-m-d H:i:s'), $end->copy()->format('Y-m-d H:i:s')))
                         ->wherein('dir_personal.cargo_id', $this->ejecutivo)
-                        ->where('dir_asistencia_operativa.skill_id', $request->skill)->where('dir_asistencia_operativa.prefijo', 'FI')->groupBy('fecha')->get();
+                        ->wherein('dir_asistencia_operativa.skill_id', $request->skill)->where('dir_asistencia_operativa.prefijo', 'FI')->groupBy('fecha')->get();
         //DD($request->skill,$faltas);
         $reposos = AsistenciaOperativaModel::select(db::raw("count(dir_asistencia_operativa.id) as reposos, date_format(dir_asistencia_operativa.created_at,'%Y-%m-%d')as fecha"))
                         ->leftjoin('dir_personal', 'dir_asistencia_operativa.personal_id', 'dir_personal.id')
                         ->whereBetween('dir_asistencia_operativa.created_at', array($begin->copy()->format('Y-m-d H:i:s'), $end->copy()->format('Y-m-d H:i:s')))
                         ->wherein('dir_personal.cargo_id', $this->ejecutivo)
-                        ->where('dir_asistencia_operativa.skill_id', $request->skill)->where('dir_asistencia_operativa.prefijo', 'SSO')->groupBy('fecha')->get();
+                        ->wherein('dir_asistencia_operativa.skill_id', $request->skill)->where('dir_asistencia_operativa.prefijo', 'SSO')->groupBy('fecha')->get();
 
         $cambios = ChangeCampaingModels::select(db::raw("count(dir_cambios_campaing.id) as cambio, date_format(dir_cambios_campaing.created_at,'%Y-%m-%d')as fecha"))
                         ->leftjoin('dir_personal', 'dir_cambios_campaing.personal_id', 'dir_personal.id')
                         ->whereBetween('dir_cambios_campaing.created_at', array($begin->copy()->format('Y-m-d H:i:s'), $end->copy()->format('Y-m-d H:i:s')))
                         ->wherein('dir_personal.cargo_id', $this->ejecutivo)
-                        ->where('dir_cambios_campaing.actual_skill_id', $request->skill)->groupBy('fecha')->get();
+                        ->wherein('dir_cambios_campaing.actual_skill_id', $request->skill)->groupBy('fecha')->get();
 
         $cambiosin = ChangeCampaingModels::select(db::raw("count(dir_cambios_campaing.id) as cambio, date_format(dir_cambios_campaing.created_at,'%Y-%m-%d')as fecha"))
                         ->leftjoin('dir_personal', 'dir_cambios_campaing.personal_id', 'dir_personal.id')
                         ->whereBetween('dir_cambios_campaing.created_at', array($begin->copy()->format('Y-m-d H:i:s'), $end->copy()->format('Y-m-d H:i:s')))
                         ->wherein('dir_personal.cargo_id', $this->ejecutivo)
-                        ->where('dir_cambios_campaing.nuevo_skill_id', $request->skill)->groupBy('fecha')->get();
+                        ->wherein('dir_cambios_campaing.nuevo_skill_id', $request->skill)->groupBy('fecha')->get();
 
         $vacaciones = AsistenciaOperativaModel::select(db::raw("count(dir_asistencia_operativa.id) as vacaciones, date_format(dir_asistencia_operativa.created_at,'%Y-%m-%d')as fecha"))
                         ->leftjoin('dir_personal', 'dir_asistencia_operativa.personal_id', 'dir_personal.id')
                         ->whereBetween('dir_asistencia_operativa.created_at', array($begin->copy()->format('Y-m-d H:i:s'), $end->copy()->format('Y-m-d H:i:s')))
                         ->wherein('dir_personal.cargo_id', $this->ejecutivo)
-                        ->where('dir_asistencia_operativa.skill_id', $request->skill)
+                        ->wherein('dir_asistencia_operativa.skill_id', $request->skill)
                         ->where('dir_asistencia_operativa.prefijo', 'VAC')->groupBy('fecha')->get();
 
         $egresos = EgresadosModel::select(db::raw("count(dir_egresados.id) as egresos, date_format(dir_egresados.fecha,'%Y-%m-%d')as fecha"))
                         ->leftjoin('dir_personal', 'dir_egresados.dir_personal_id', 'dir_personal.id')
                         ->whereBetween('fecha', array("$begin", "$end"))
                         ->wherein('dir_personal.cargo_id', $this->ejecutivo)
-                        ->where('dir_egresados.skill_id', $request->skill)->groupBy('fecha')->get();
-        //dd($cambiosin);
+                        ->wherein('dir_egresados.skill_id', $request->skill)->groupBy('fecha')->get();
+        
         $row = array();
 
         $totalconvocados = 0;
@@ -470,7 +474,7 @@ class ReportesController extends Controller {
         try { /// calculamos el ausentismo FI / Asistente, en caso de no poder dividir, se coloca 0;
             $row["ausentismo"] = $totalfaltantes / $totalconvocados;
             $row["ausentismo"] = round($row["ausentismo"] * 100, 2);
-        } catch (\Exception $ex) {
+        } catch (DivisionByZeroError $ex) {
             $row["ausentismo"] = 0;
         }
 
@@ -479,8 +483,10 @@ class ReportesController extends Controller {
             foreach ($period as $key => $value) {
                 $recuentoperiodo = $recuentoperiodo + 1;
             }
-            $maxconvocados = max($arrayconvocados);    //// maximo de convocados
-            $minconvocados = min($arrayconvocados);    //// min de convocados
+
+            
+            $maxconvocados = !empty($arrayconvocados) ? max($arrayconvocados) : 0;    //// maximo de convocados
+            $minconvocados = !empty($arrayconvocados) ? min($arrayconvocados) : 0;    //// min de convocados
             /// calculamos el promedio de los convocados segun el rango
             // $promedioconvocados = $totalconvocados / $recuentoperiodo;
             ///suma los ingresos, egresos y cambios se divive entre 2 para promediar
@@ -492,14 +498,14 @@ class ReportesController extends Controller {
 
             $rotacion = ($erpromedio / (($minconvocados + $maxconvocados) / 2)) * 100;
             $row["rotacion"] = round($rotacion, 2);
-        } catch (\Exception $ex) {
+        } catch (\DivisionByZeroError $ex) {
             $row["rotacion"] = 0;
         }
 
         try {
             $indicerot = (($totalegresos + $totalcambios) / ($maxconvocados)) * 100;
             $row["indicerot"] = round($indicerot, 2);
-        } catch (\Exception $ex) {
+        } catch (\DivisionByZeroError $ex) {
             $row["indicerot"] = 0;
         }
         //dd($row);

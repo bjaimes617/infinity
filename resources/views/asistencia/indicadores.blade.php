@@ -83,8 +83,8 @@
                                         <div class="input-group-prepend">
                                             <span class="input-group-text"><i class="fa fa-bullhorn"></i></span>
                                         </div>
-                                        <select name="skill" id="skill" required class="form-control select2">                                                   
-                                            <option value="">[SELECCIONE]</option>                                                
+                                        <select name="skill[]" id="skill" required multiple class="form-control select2" data-placeholder="[SELECCIONE]">                                                   
+                                                                                 
                                         </select>                                              
                                     </div> 
                                 </div>

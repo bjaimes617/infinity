@@ -152,7 +152,7 @@ $('#carteras').on('change', function () {
         success: function (data) {
             if ($('#FormIndicadores').length == 1) {
                 $('#skill').empty();
-                $('#skill').append($("<option></option>").attr("value", '').text("[SELECCIONE]"));
+                var activeOptnionAll = true;
             } else {
                 $('#skill').empty();
                 $('#skill').append($("<option></option>").attr("value", '').text("[TODOS]"));
@@ -160,6 +160,10 @@ $('#carteras').on('change', function () {
 
             for (i = 0; i < data.length; i++) {
                 $('#skill').append($("<option></option>").attr("value", data[i].id).text(data[i].nombre_skill));
+            }
+
+            if (activeOptnionAll) {
+                $('#skill option').prop('selected', true).trigger('change');
             }
         }
     });
