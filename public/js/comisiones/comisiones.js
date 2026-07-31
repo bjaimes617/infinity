@@ -164,6 +164,11 @@ function AplicaFiltrosPostConsultas(data) {
             $("#enlace1").removeClass("disabled");
             $("#enlace2").removeClass("disabled");
             $("#enlace3").removeClass("disabled");
+
+            $("#periodo").empty();
+            $("#periodo").append(
+                $("<option></option>").attr("value", "").text("[CORTE]")
+            );
             break;
         default:
             break;
@@ -276,6 +281,7 @@ $("#skill").on("change", function () {
             });
 
             AplicaFiltrosPostConsultas(data);
+            $('button[type="submit"]').prop("disabled", false);
         },
         error: function (data) {
             var Toastr = main();
@@ -283,6 +289,12 @@ $("#skill").on("change", function () {
                 icon: "error",
                 title: data.responseJSON.message,
             });
+            $("#periodo").empty();
+            $("#periodo").append(
+                $("<option></option>").attr("value", "").text("[CORTE]")
+            );
+
+            $('button[type="submit"]').prop("disabled", true);
         },
     });
 });
@@ -311,6 +323,11 @@ $("#tipo_periodo").on("change", function () {
                 icon: "error",
                 title: data.responseJSON.message,
             });
+
+            $("#periodo").empty();
+            $("#periodo").append(
+                $("<option></option>").attr("value", "").text("[CORTE]")
+            );
         },
     });
 });

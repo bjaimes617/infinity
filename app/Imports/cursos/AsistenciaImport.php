@@ -42,19 +42,21 @@ class AsistenciaImport implements ToCollection, WithHeadingRow
     public function collection(Collection $collection)
     {
 
-        try {
-            $begin = $this->cabecera[3];
-            if (Carbon::hasFormat($begin, 'Y_m_d')) {
-                $fecha = Carbon::createFromFormat('Y_m_d', $begin)->format('Y-m-d');
-            } else {
-                // 2. Si no, que Carbon intente adivinar el formato que esté recibiendo
-                $fecha = Carbon::parse($begin)->format('Y-m-d');
-            }
 
-            $dia = date('l', strtotime($fecha)); ///dia de la semana en letras///   
-            $hora = date('H:i:s', strtotime(now()));
+        $begin = $this->cabecera[3];
+        if (Carbon::hasFormat($begin, 'Y_m_d')) {
+            $fecha = Carbon::createFromFormat('Y_m_d', $begin)->format('Y-m-d');
+        } else {
+            // 2. Si no, que Carbon intente adivinar el formato que esté recibiendo
+            $fecha = Carbon::parse($begin)->format('Y-m-d');
+        }
 
-            foreach ($collection as $row) {
+        $dia = date('l', strtotime($fecha)); ///dia de la semana en letras///   
+        $hora = date('H:i:s', strtotime(now()));
+        $ids_part = array_keys($this->participantes);
+        foreach ($collection as $row) {
+
+            if (array_search($row["cedula"], $ids_part)) {
                 $sistencia = new AsistenciaModel();
                 $sistencia->facilitador_id  = $this->facilitador->personal_id;
                 $sistencia->rec_cparticipantes_id = $this->participantes[$row["cedula"]];
@@ -135,22 +137,19 @@ class AsistenciaImport implements ToCollection, WithHeadingRow
                 $part->save();
                 $sistencia->save();
 
-
                 ActivityLogger::activity("Curso - Registro de asistencia: " . $row["cedula"] . " Curso " . $this->curso . " " . json_encode($row));
+            } else {
+                continue;
             }
-
-            if ($this->facilitador->finaliza == $fecha) {
-                $this->facilitador->automaticClose = 1;
-                $this->facilitador->active = 0;
-                $this->facilitador->save();
-            }
-
-            \Session::flash('success', 'Asistencias registradas correctamente');
-            return true;
-        } catch (\Throwable $e) {
-            \Session::flash('error', 'Ocurrio un problema, ' . $e->getMessage());
-            return back()->withErrors([]);
         }
+
+        if ($this->facilitador->finaliza == $fecha) {
+            $this->facilitador->automaticClose = 1;
+            $this->facilitador->active = 0;
+            $this->facilitador->save();
+        }
+
+        return true;
     }
 
     public function rules(): array

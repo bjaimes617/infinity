@@ -364,11 +364,11 @@ class AsistenciaController extends Controller
             ]);
 
             $nombre = "curso_DGC_" . $request->cursoasistencia . '_participantes.csv';
-            $cabeceras = "cedula;nombre;apellido;'" . $arrayBegin->copy()->format('Y-m-d') . ";observaciones";
+            $cabeceras = "cedula;nombre;apellido;" . $arrayBegin->copy()->format('Y_m_d') . ";observaciones";
             $disk->put($nombre, $cabeceras);
 
             foreach ($participantes as $participante) {
-                $disk->append($nombre, $participante->cedula_empleado . ';' . $participante->primer_nombre  . ';' . $participante->primer_apellido);
+                $disk->append($nombre, $participante->cedula_empleado . ';' . $participante->primer_nombre . ';' . $participante->primer_apellido);
             }
             return response()->download(storage_path('app/cursos/' . $nombre), $nombre)->deleteFileAfterSend(true);
         } else {
@@ -379,27 +379,27 @@ class AsistenciaController extends Controller
     public function UploadFilesAsistencia(request $request)
     {
 
-        try {
-            $files = $request->file('archivo');
-            $headings = (new HeadingRowImport)->toArray(request()->file('archivo'));
-            $primerasCabeceras = $headings[0][0];
+        //  try {
+        $files = $request->file('archivo');
+        $headings = (new HeadingRowImport)->toArray(request()->file('archivo'));
+        $primerasCabeceras = $headings[0][0];
 
-            if (empty($request->cursoasistencia)) {
-                $textnamefile = explode("_", $request->archivo->getClientOriginalName());
-                $idcurso = $textnamefile[2];
-            } else {
-                $idcurso = $request->cursoasistencia;
-            }
-
-            if (empty($idcurso) || $idcurso == "") {
-                return back()->with('error', 'No se pudo identificar el curso, renombre el Archivo o vuelva a Generar el Archivo de Carga');
-            }
-
-            Excel::import(new AsistenciaImport($idcurso, $primerasCabeceras), $files);
-
-            return back()->with('success', 'Asistencia cargada exitosamente.');
-        } catch (\Throwable $e) {
-            return back()->with('error', 'Ocurrio un problema. ' . $e->getMessage());
+        if (empty($request->cursoasistencia)) {
+            $textnamefile = explode("_", $request->archivo->getClientOriginalName());
+            $idcurso = $textnamefile[2];
+        } else {
+            $idcurso = $request->cursoasistencia;
         }
+
+        if (empty($idcurso) || $idcurso == "") {
+            return back()->with('error', 'No se pudo identificar el curso, renombre el Archivo o vuelva a Generar el Archivo de Carga');
+        }
+
+        Excel::import(new AsistenciaImport($idcurso, $primerasCabeceras), $files);
+
+        return back()->with('success', 'Asistencia cargada exitosamente.');
+        /* } catch (\Throwable $e) {
+            return back()->with('error', 'Ocurrio un problema. ' . $e->getMessage());
+        } */
     }
 }

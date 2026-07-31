@@ -94,29 +94,18 @@ class ComisionesController extends Controller
         return view('comisiones.index')->with(["areas" => $areas, "esquema" => $this->esquema, "timeMes" => $mes, "permiso" => $permiso]);
     }
 
-    ///funcion para Devolver el esquema de pagos ----> quincenal, mensual o mixto
-    public function getTipoPago(Request $request)
+    private function ValidateEstructureRangoFechas($intMeses, $tipo_periodo, $fechaActual, $request)
     {
-
-        $user = ENV('DEV_USER_CHANGE', false) ?
-            \Auth::loginUsingId(ENV('OTHER_USER_ID'), true) :
-            \Auth::user();
-
-        if (SkillModels::select('tipo_periodo')->where('id', $request->skill)->exists()) {
-            $tipo_periodo_sql = SkillModels::select('tipo_periodo', 'type_format_uploads')->where('id', $request->skill)->first();
-            $tipo_periodo = $tipo_periodo_sql->tipo_periodo;
-            $tipo_formatos = json_decode($tipo_periodo_sql->type_format_uploads);
-        } else {
-            $tipo_periodo = "";
-            $tipo_formatos = "";
-        }
-        ///Basados en la Fecha en curso se mostrara las primeras opciones
-        $fechaActual = Carbon::now();
-        //validacion de permisos para cargas demoradas se mostrara 1 si no tiene permisos, y 6 si los tiene
-        $intMeses = $user->hasPermission('comisiones.cargar.demoradas') == true ?  $this->Numero_meses_anteriores_permitido : $this->Numero_meses_anteriores_no_permitido;
-
         switch ($tipo_periodo) {
             case "Semanal":
+
+                $skill = SkillModels::find($request->skill);
+                $autorizados = json_decode($skill->dias);
+                $diaActual = $fechaActual->copy()->dayName;
+
+                if ($autorizados === null || array_search($diaActual, $autorizados, true) === false) {
+                    return json_encode(abort(500, "El Skill no esta autorizado a cargar Hoy " . $diaActual . " o no Esta habilitado para cargar."));
+                }
                 //DETERMINAMOS EN QUE SEMANA ESTAMOS DEL MES EN CURSO
                 $semanaencurso = $fechaActual->copy()->weekOfMonth;
 
@@ -163,28 +152,28 @@ class ComisionesController extends Controller
                 }
                 $semanasArray = $output;
 
+                return [$minDate, $maxDate, null, null, $semanasArray, $semanaencurso, $type_semana];
+
                 break;
             case "Quincenal": //SI EL TIPO DE PERIODO QUE VIENE ES QUINCENAL
 
                 $rangos = SkillRangoQuincenal::where('skill_id', $request->skill)->first();
                 $diaDelMes = $fechaActual->day; // Obtiene el día del mes  
 
-                if ($rangos->desde1 == $rangos->desde2 && $rangos->hasta1 === $rangos->hasta2) {
-                    //mostrara ambos cortes
-                    $quicena_en_curso = 3; // Primera quincena
-                    $minDate = $fechaActual->copy()->subMonth($intMeses)->format('m/Y');
-                    $maxDate = $fechaActual->copy()->format('m/Y');
+                if ($rangos->desde1 == $rangos->desde2 && $rangos->hasta1 == $rangos->hasta2) {
+                    if ($diaDelMes >= $rangos->desde1 && $diaDelMes <= $rangos->hasta1) {
+                        //mostrara ambos cortes
+                        $quicena_en_curso = 3; // Primera quincena
+                        $minDate = $fechaActual->copy()->subMonth($intMeses)->format('m/Y');
+                        $maxDate = $fechaActual->copy()->format('m/Y');
 
-                    $opcion_corte_show = ["1" => "1ra. Quincena", "2" => "2da. Quincena"];
-                } else if ($diaDelMes >= $rangos->desde2 && $diaDelMes < $rangos->hasta2) {
+                        $opcion_corte_show = ["1" => "1ra. Quincena", "2" => "2da. Quincena"];
 
-                    $quicena_en_curso = 1; // Primera quincena
-                    $minDate = $fechaActual->copy()->subMonth($intMeses)->format('m/Y');
-                    $maxDate = $fechaActual->copy()->format('m/Y');
-
-                    //MOSTRAMOS SOLO LA SEGUNDA QUINCENA DEL MES ANTERIOR                   
-                    $opcion_corte_show = ["2" => "2da. Quincena"];
-                } else {
+                        return [$minDate, $maxDate, $opcion_corte_show, $quicena_en_curso, null, null, null];
+                    } else {
+                        return json_encode(abort(500, "No se encuentra dentro del rango permitido de carga"));
+                    }
+                } else if ($diaDelMes >= $rangos->desde1 && $diaDelMes <= $rangos->hasta1) {
 
                     $quicena_en_curso = 2; // Segunda quincena
                     //DE LO CONTRARIO MOSTRAMOS SOLO EL MES ACTUAL
@@ -192,16 +181,70 @@ class ComisionesController extends Controller
                     $maxDate = Carbon::now()->format('m/Y');
                     //MOSTRAMOS PRIMERA QUINCENA EN EL SELECTOR DE CORTES                   
                     $opcion_corte_show = ["1" => "1ra. Quincena"];
+
+                    return [$minDate, $maxDate, $opcion_corte_show, $quicena_en_curso, null, null, null];
+                } else if ($diaDelMes >= $rangos->desde2 && $diaDelMes <= $rangos->hasta2) {
+
+                    $quicena_en_curso = 1; // Primera quincena
+                    $minDate = $fechaActual->copy()->subMonth($intMeses)->format('m/Y');
+                    $maxDate = $fechaActual->copy()->format('m/Y');
+
+                    //MOSTRAMOS SOLO LA SEGUNDA QUINCENA DEL MES ANTERIOR                   
+                    $opcion_corte_show = ["2" => "2da. Quincena"];
+
+                    return [$minDate, $maxDate, $opcion_corte_show, $quicena_en_curso, null, null, null];
+                } else {
+                    return json_encode(abort(500, "No se encuentra dentro del rango permitido de carga"));
                 }
                 break;
             case "Mixto":
                 $maxDate = $fechaActual->copy()->format('m/Y');
+                return [null, $maxDate, null, null, null, null, null];
                 break;
             default:
                 return json_encode(abort(500, "El Skill seleccionado No cuenta con el esquema de pago."));
                 break;
         }
+    }
+    ///funcion para Devolver el esquema de pagos ----> quincenal, mensual o mixto
+    public function getTipoPago(Request $request)
+    {
 
+        $user = ENV('DEV_USER_CHANGE', false) ?
+            \Auth::loginUsingId(ENV('OTHER_USER_ID'), true) :
+            \Auth::user();
+
+        if (SkillModels::select('tipo_periodo')->where('id', $request->skill)->exists()) {
+            $tipo_periodo_sql = SkillModels::select('tipo_periodo', 'type_format_uploads')->where('id', $request->skill)->first();
+            $tipo_periodo = $tipo_periodo_sql->tipo_periodo;
+            $tipo_formatos = json_decode($tipo_periodo_sql->type_format_uploads);
+        } else {
+            $tipo_periodo = "";
+            $tipo_formatos = "";
+        }
+        ///Basados en la Fecha en curso se mostrara las primeras opciones
+        $fechaActual = Carbon::now();
+        //validacion de permisos para cargas demoradas se mostrara 1 si no tiene permisos, y 6 si los tiene
+        $intMeses = !$user->hasPermission('comisiones.cargar.demoradas') == true ?
+            $this->Numero_meses_anteriores_permitido :
+            $this->Numero_meses_anteriores_no_permitido;
+
+        $rangoFechas = $this->ValidateEstructureRangoFechas($intMeses, $tipo_periodo, $fechaActual, $request);
+        /* [
+            0 => minDate,
+            1 => maxDate,
+            2 => opcion_corte_show,
+            3 => quicena_en_curso
+            4 => semanasArray
+            5 => semanaencurso
+        ] */
+        $quicena_en_curso = $rangoFechas[3];
+        $minDate = $rangoFechas[0];
+        $maxDate = $rangoFechas[1];
+        $opcion_corte_show = $rangoFechas[2];
+        $semanasArray = $rangoFechas[4];
+        $semanaencurso = $rangoFechas[5];
+        $type_semana = $rangoFechas[6];
 
         return json_encode([
             'tipo_periodo'      => $tipo_periodo,
@@ -229,89 +272,22 @@ class ComisionesController extends Controller
         //validacion de permisos para cargas demoradas se mostrara 1 si no tiene permisos, y 6 si los tiene
         $intMeses = $user->hasPermission('comisiones.cargar.demoradas') == true ?  $this->Numero_meses_anteriores_permitido : $this->Numero_meses_anteriores_no_permitido;
 
-        switch ($tipo_periodo) {
-            case "Semanal":
-                //DETERMINAMOS EN QUE SEMANA ESTAMOS DEL MES EN CURSO
-                $semanaencurso = $fechaActual->copy()->weekOfMonth;
-
-                switch ($semanaencurso) {
-                    case 1:
-                        $minDate = $fechaActual->copy()->subMonth($intMeses)->format('m/Y');
-                        $maxDate = $fechaActual->copy()->format('m/Y');
-                        $type_semana = 1;
-                        break;
-                    default:
-                        $minDate = $fechaActual->copy()->subMonth($intMeses)->format('m/Y');
-                        $maxDate = $fechaActual->copy()->format('m/Y');
-                        $type_semana = 2;
-                        break;
-                }
-                $year   = $fechaActual->copy()->format('Y');
-                $month  = $fechaActual->copy()->format('m');
-
-                $suff = array('st', 'nd', 'rd', 'th', 'th', 'th');   //week suffixes
-                $end = date('t', mktime(0, 0, 0, $month, 1, $year));   //last date day of month: 28 - 31
-                $start = date('w', mktime(0, 0, 0, $month, 1, $year));  //1st day of month: 0 - 6 (Sun - Sat)
-                $last = 8 - $start;      //get last day date (Sat) of first week
-                $noweeks = ceil((($end - ($last + 1)) / 7) + 1);  //total no. weeks in month
-                $output = [];      //initialize string		
-                $monthlabel = str_pad($month, 2, '0', STR_PAD_LEFT);
-
-                for ($x = 1; $x < $noweeks + 1; $x++) {
-                    if ($x == 1) {
-                        $startdate = "01-$monthlabel-$year";
-                        $day = $last - 6;
-                    } else {
-                        $day = $last + 1 + (($x - 2) * 7);
-                        $day = str_pad($day, 2, '0', STR_PAD_LEFT);
-                        $startdate = "$day-$monthlabel-$year";
-                    }
-                    if ($x == $noweeks) {
-                        $enddate = "$end-$monthlabel-$year";
-                    } else {
-                        $dayend = $day + 6;
-                        $dayend = str_pad($dayend, 2, '0', STR_PAD_LEFT);
-                        $enddate = "$dayend-$monthlabel-$year";
-                    }
-                    $output[$x] = "Semana {$x} -> $startdate al $enddate";
-                }
-                $semanasArray = $output;
-
-                break;
-            case "Quincenal": //SI EL TIPO DE PERIODO QUE VIENE ES QUINCENAL
-
-                $rangos = SkillRangoQuincenal::where('skill_id', $request->skill)->first();
-                $diaDelMes = $fechaActual->day; // Obtiene el día del mes  
-
-                if ($rangos->desde1 == $rangos->desde2 && $rangos->hasta1 === $rangos->hasta2) {
-                    //mostrara ambos cortes
-                    $quicena_en_curso = 3; // Primera quincena
-                    $minDate = $fechaActual->copy()->subMonth($intMeses)->format('m/Y');
-                    $maxDate = $fechaActual->copy()->format('m/Y');
-
-                    $opcion_corte_show = ["1" => "1ra. Quincena", "2" => "2da. Quincena"];
-                } else if ($diaDelMes >= $rangos->desde2 && $diaDelMes < $rangos->hasta2) {
-
-                    $quicena_en_curso = 1; // Primera quincena
-                    $minDate = $fechaActual->copy()->subMonth($intMeses)->format('m/Y');
-                    $maxDate = $fechaActual->copy()->format('m/Y');
-
-                    //MOSTRAMOS SOLO LA SEGUNDA QUINCENA DEL MES ANTERIOR                   
-                    $opcion_corte_show = ["2" => "2da. Quincena"];
-                } else {
-
-                    $quicena_en_curso = 2; // Segunda quincena
-                    //DE LO CONTRARIO MOSTRAMOS SOLO EL MES ACTUAL
-                    $minDate = $fechaActual->copy()->subMonth($intMeses)->format('m/Y');
-                    $maxDate = Carbon::now()->format('m/Y');
-                    //MOSTRAMOS PRIMERA QUINCENA EN EL SELECTOR DE CORTES                   
-                    $opcion_corte_show = ["1" => "1ra. Quincena"];
-                }
-                break;
-            default:
-                return json_encode(abort(500, "El Skill seleccionado No cuenta con el esquema de pago."));
-                break;
-        }
+        $rangoFechas = $this->ValidateEstructureRangoFechas($intMeses, $tipo_periodo, $fechaActual, $request);
+        /* [
+            0 => minDate,
+            1 => maxDate,
+            2 => opcion_corte_show,
+            3 => quicena_en_curso
+            4 => semanasArray
+            5 => semanaencurso
+        ] */
+        $quicena_en_curso = $rangoFechas[3];
+        $minDate = $rangoFechas[0];
+        $maxDate = $rangoFechas[1];
+        $opcion_corte_show = $rangoFechas[2];
+        $semanasArray = $rangoFechas[4];
+        $semanaencurso = $rangoFechas[5];
+        $type_semana = $rangoFechas[6];
 
         return json_encode([
             'tipo_periodo'      => $tipo_periodo,
@@ -333,7 +309,6 @@ class ComisionesController extends Controller
 
         $tipo_periodo = isset($request->tipo_periodo) ? $request->tipo_periodo : SkillModels::find($request->skill)->tipo_periodo;
 
-
         $user = ENV('DEV_USER_CHANGE', false) ?
             \Auth::loginUsingId(ENV('OTHER_USER_ID'), true) :
             \Auth::user();
@@ -341,98 +316,22 @@ class ComisionesController extends Controller
         //validacion de permisos para cargas demoradas se mostrara 1 si no tiene permisos, y 6 si los tiene
         $intMeses = $user->hasPermission('comisiones.cargar.demoradas') == true ?  $this->Numero_meses_anteriores_permitido : $this->Numero_meses_anteriores_no_permitido;
 
-        switch ($tipo_periodo) {
-            case "Semanal":
-                //DETERMINAMOS EN QUE SEMANA ESTAMOS DEL MES EN CURSO
-                $semanaencurso = $fecharecibida->copy()->weekOfMonth;
-                switch ($semanaencurso) {
-                    case 1:
-                        $minDate = $fecharecibida->copy()->subMonth($intMeses)->format('m/Y');
-                        $maxDate = $fecharecibida->copy()->format('m/Y');
-                        $type_semana = 1;
-                        break;
-                    default:
-                        $minDate = $fecharecibida->copy()->subMonth($intMeses)->format('m/Y');
-                        $maxDate = $fecharecibida->copy()->format('m/Y');
-                        $type_semana = 2;
-                        break;
-                }
-                $year   = $fecharecibida->copy()->format('Y');
-                $month  = $fecharecibida->copy()->format('m');
-
-                $suff = array('st', 'nd', 'rd', 'th', 'th', 'th');   //week suffixes
-                $end = date('t', mktime(0, 0, 0, $month, 1, $year));   //last date day of month: 28 - 31
-                $start = date('w', mktime(0, 0, 0, $month, 1, $year));  //1st day of month: 0 - 6 (Sun - Sat)
-                $last = 8 - $start;      //get last day date (Sat) of first week
-                $noweeks = ceil((($end - ($last + 1)) / 7) + 1);  //total no. weeks in month
-                $output = [];      //initialize string		
-                $monthlabel = str_pad($month, 2, '0', STR_PAD_LEFT);
-
-                for ($x = 1; $x < $noweeks + 1; $x++) {
-                    if ($x == 1) {
-                        $startdate = "01-$monthlabel-$year";
-                        $day = $last - 6;
-                    } else {
-                        $day = $last + 1 + (($x - 2) * 7);
-                        $day = str_pad($day, 2, '0', STR_PAD_LEFT);
-                        $startdate = "$day-$monthlabel-$year";
-                    }
-                    if ($x == $noweeks) {
-                        $enddate = "$end-$monthlabel-$year";
-                    } else {
-                        $dayend = $day + 6;
-                        $dayend = str_pad($dayend, 2, '0', STR_PAD_LEFT);
-                        $enddate = "$dayend-$monthlabel-$year";
-                    }
-                    $output[$x] = "Semana {$x} -> $startdate al $enddate";
-                }
-                $semanasArray = $output;
-
-                break;
-            case "Quincenal": //SI EL TIPO DE PERIODO QUE VIENE ES QUINCENAL
-
-                $rangos = SkillRangoQuincenal::where('skill_id', $request->skill)->first();
-                $diaDelMes = $fechaActual->day; // Obtiene el día del mes  
-
-                ///validamos si el mes recibido es igual al a fecha actual, en caso de ser diferentes se mostraran ambas quincenas
-                if (!$fechaActual->isSameMonth($fecharecibida)) {
-                    $opcion = 1;
-                    $quicena_en_curso = 3; // todas las quincenas
-                    $minDate = $fechaActual->copy()->subMonth($intMeses)->format('m/Y');
-                    $maxDate = $fechaActual->copy()->format('m/Y');
-                    $opcion_corte_show = ["1" => "1ra. Quincena", "2" => "2da. Quincena"];
-                    ///si no se cumple la condicion se valida si los rangos del skill son iguales y se mantiene le maxDate
-                    ///basados en la fecha en curso
-                } else if ($rangos->desde1 == $rangos->desde2 && $rangos->hasta1 === $rangos->hasta2) {
-                    $opcion = 2;
-                    //mostrara ambos cortes
-                    $quicena_en_curso = 3; // todas las quincenas
-                    $minDate = $fechaActual->copy()->subMonth($intMeses)->format('m/Y');
-                    $maxDate = $fechaActual->copy()->format('m/Y');
-
-                    $opcion_corte_show = ["1" => "1ra. Quincena", "2" => "2da. Quincena"];
-                } else if ($diaDelMes >= $rangos->desde2 && $diaDelMes < $rangos->hasta2) {
-                    $opcion = 3;
-                    $quicena_en_curso = 1; // Primera quincena
-                    $minDate = $fechaActual->copy()->subMonth($intMeses)->format('m/Y');
-                    $maxDate = $fechaActual->copy()->format('m/Y');
-
-                    //MOSTRAMOS SOLO LA SEGUNDA QUINCENA DEL MES ANTERIOR                   
-                    $opcion_corte_show = ["2" => "2da. Quincena"];
-                } else {
-                    $opcion = 4;
-                    $quicena_en_curso = 2; // Segunda quincena
-                    //DE LO CONTRARIO MOSTRAMOS SOLO EL MES ACTUAL
-                    $minDate = $fechaActual->copy()->subMonth($intMeses)->format('m/Y');
-                    $maxDate = $fechaActual->copy()->format('m/Y');
-                    //MOSTRAMOS PRIMERA QUINCENA EN EL SELECTOR DE CORTES                   
-                    $opcion_corte_show = ["1" => "1ra. Quincena"];
-                }
-                break;
-            default:
-                return json_encode(abort(500, "El Skill seleccionado No cuenta con el esquema de pago."));
-                break;
-        }
+        $rangoFechas = $this->ValidateEstructureRangoFechas($intMeses, $tipo_periodo, $fechaActual, $request);
+        /* [
+            0 => minDate,
+            1 => maxDate,
+            2 => opcion_corte_show,
+            3 => quicena_en_curso
+            4 => semanasArray
+            5 => semanaencurso
+        ] */
+        $quicena_en_curso = $rangoFechas[3];
+        $minDate = $rangoFechas[0];
+        $maxDate = $rangoFechas[1];
+        $opcion_corte_show = $rangoFechas[2];
+        $semanasArray = $rangoFechas[4];
+        $semanaencurso = $rangoFechas[5];
+        $type_semana = $rangoFechas[6];
 
         return json_encode([
             'tipo_periodo'      => $tipo_periodo,
@@ -441,7 +340,7 @@ class ComisionesController extends Controller
             'maxDate'           => $maxDate  ?? null,
             'opcion_corte_show' => $opcion_corte_show ?? null,
             'arreglo_semanal'   => $semanasArray ?? null,
-            'semana_en_curso'   => null
+            'semana_en_curso'   => $semanaencurso ?? null
         ]);
     }
 
@@ -771,7 +670,6 @@ class ComisionesController extends Controller
 
     public function paymentList(Request $request)
     {
-
 
         $fechaCarbon = Carbon::createFromFormat('m/Y', $request->paymentmes)->startOfMonth();
         $anio = $fechaCarbon->copy()->format('Y'); // Año seleccionado
@@ -1220,6 +1118,7 @@ class ComisionesController extends Controller
 
         return view('comisiones.reportes.index')->with(["areas" => $areas, "esquema" => $this->esquema, "timeMes" => $mes, "permiso" => $permiso]);
     }
+
     public function GetSemanas(Request $request)
     {
 
@@ -1235,64 +1134,22 @@ class ComisionesController extends Controller
 
         //validacion de permisos para cargas demoradas se mostrara 1 si no tiene permisos, y 6 si los tiene
         $intMeses = $user->hasPermission('comisiones.cargar.demoradas') == true ?  $this->Numero_meses_anteriores_permitido : $this->Numero_meses_anteriores_no_permitido;
-
-        switch ($tipo_periodo) {
-            case "Semanal":
-                //DETERMINAMOS EN QUE SEMANA ESTAMOS DEL MES EN CURSO
-                $semanaencurso = $fecharecibida->copy()->weekOfMonth;
-                switch ($semanaencurso) {
-                    case 1:
-                        $minDate = $fecharecibida->copy()->subMonth($intMeses)->format('m/Y');
-                        $maxDate = $fecharecibida->copy()->format('m/Y');
-                        $type_semana = 1;
-                        break;
-                    default:
-                        $minDate = $fecharecibida->copy()->subMonth($intMeses)->format('m/Y');
-                        $maxDate = $fecharecibida->copy()->format('m/Y');
-                        $type_semana = 2;
-                        break;
-                }
-                $year   = $fecharecibida->copy()->format('Y');
-                $month  = $fecharecibida->copy()->format('m');
-
-                $suff = array('st', 'nd', 'rd', 'th', 'th', 'th');   //week suffixes
-                $end = date('t', mktime(0, 0, 0, $month, 1, $year));   //last date day of month: 28 - 31
-                $start = date('w', mktime(0, 0, 0, $month, 1, $year));  //1st day of month: 0 - 6 (Sun - Sat)
-                $last = 8 - $start;      //get last day date (Sat) of first week
-                $noweeks = ceil((($end - ($last + 1)) / 7) + 1);  //total no. weeks in month
-                $output = [];      //initialize string		
-                $monthlabel = str_pad($month, 2, '0', STR_PAD_LEFT);
-
-                for ($x = 1; $x < $noweeks + 1; $x++) {
-                    if ($x == 1) {
-                        $startdate = "01-$monthlabel-$year";
-                        $day = $last - 6;
-                    } else {
-                        $day = $last + 1 + (($x - 2) * 7);
-                        $day = str_pad($day, 2, '0', STR_PAD_LEFT);
-                        $startdate = "$day-$monthlabel-$year";
-                    }
-                    if ($x == $noweeks) {
-                        $enddate = "$end-$monthlabel-$year";
-                    } else {
-                        $dayend = $day + 6;
-                        $dayend = str_pad($dayend, 2, '0', STR_PAD_LEFT);
-                        $enddate = "$dayend-$monthlabel-$year";
-                    }
-                    $output[$x] = "Semana {$x} -> $startdate al $enddate";
-                }
-                $semanasArray = $output;
-
-                break;
-            case "Quincenal": //SI EL TIPO DE PERIODO QUE VIENE ES QUINCENAL
-                $quicena_en_curso = 3;
-                ///validamos si el mes recibido es igual al a fecha actual, en caso de ser diferentes se mostraran ambas quincenas
-                $opcion_corte_show = ["1" => "1ra. Quincena", "2" => "2da. Quincena"];
-                break;
-            default:
-                return json_encode(abort(500, "El Skill seleccionado No cuenta con el esquema de pago."));
-                break;
-        }
+        $rangoFechas = $this->ValidateEstructureRangoFechas($intMeses, $tipo_periodo, $fechaActual, $request);
+        /* [
+            0 => minDate,
+            1 => maxDate,
+            2 => opcion_corte_show,
+            3 => quicena_en_curso
+            4 => semanasArray
+            5 => semanaencurso
+        ] */
+        $quicena_en_curso = $rangoFechas[3];
+        $minDate = $rangoFechas[0];
+        $maxDate = $rangoFechas[1];
+        $opcion_corte_show = $rangoFechas[2];
+        $semanasArray = $rangoFechas[4];
+        $semanaencurso = $rangoFechas[5];
+        $type_semana = $rangoFechas[6];
 
         return json_encode([
             'tipo_periodo'      => $tipo_periodo,
