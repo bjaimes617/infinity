@@ -98,7 +98,6 @@ class ComisionesController extends Controller
     {
         switch ($tipo_periodo) {
             case "Semanal":
-
                 $skill = SkillModels::find($request->skill);
                 $autorizados = json_decode($skill->dias);
                 $diaActual = $fechaActual->copy()->dayName;
@@ -1134,22 +1133,64 @@ class ComisionesController extends Controller
 
         //validacion de permisos para cargas demoradas se mostrara 1 si no tiene permisos, y 6 si los tiene
         $intMeses = $user->hasPermission('comisiones.cargar.demoradas') == true ?  $this->Numero_meses_anteriores_permitido : $this->Numero_meses_anteriores_no_permitido;
-        $rangoFechas = $this->ValidateEstructureRangoFechas($intMeses, $tipo_periodo, $fechaActual, $request);
-        /* [
-            0 => minDate,
-            1 => maxDate,
-            2 => opcion_corte_show,
-            3 => quicena_en_curso
-            4 => semanasArray
-            5 => semanaencurso
-        ] */
-        $quicena_en_curso = $rangoFechas[3];
-        $minDate = $rangoFechas[0];
-        $maxDate = $rangoFechas[1];
-        $opcion_corte_show = $rangoFechas[2];
-        $semanasArray = $rangoFechas[4];
-        $semanaencurso = $rangoFechas[5];
-        $type_semana = $rangoFechas[6];
+
+        switch ($tipo_periodo) {
+            case "Semanal":
+                //DETERMINAMOS EN QUE SEMANA ESTAMOS DEL MES EN CURSO
+                $semanaencurso = $fecharecibida->copy()->weekOfMonth;
+                switch ($semanaencurso) {
+                    case 1:
+                        $minDate = $fecharecibida->copy()->subMonth($intMeses)->format('m/Y');
+                        $maxDate = $fecharecibida->copy()->format('m/Y');
+                        $type_semana = 1;
+                        break;
+                    default:
+                        $minDate = $fecharecibida->copy()->subMonth($intMeses)->format('m/Y');
+                        $maxDate = $fecharecibida->copy()->format('m/Y');
+                        $type_semana = 2;
+                        break;
+                }
+                $year   = $fecharecibida->copy()->format('Y');
+                $month  = $fecharecibida->copy()->format('m');
+
+                $suff = array('st', 'nd', 'rd', 'th', 'th', 'th');   //week suffixes
+                $end = date('t', mktime(0, 0, 0, $month, 1, $year));   //last date day of month: 28 - 31
+                $start = date('w', mktime(0, 0, 0, $month, 1, $year));  //1st day of month: 0 - 6 (Sun - Sat)
+                $last = 8 - $start;      //get last day date (Sat) of first week
+                $noweeks = ceil((($end - ($last + 1)) / 7) + 1);  //total no. weeks in month
+                $output = [];      //initialize string		
+                $monthlabel = str_pad($month, 2, '0', STR_PAD_LEFT);
+
+                for ($x = 1; $x < $noweeks + 1; $x++) {
+                    if ($x == 1) {
+                        $startdate = "01-$monthlabel-$year";
+                        $day = $last - 6;
+                    } else {
+                        $day = $last + 1 + (($x - 2) * 7);
+                        $day = str_pad($day, 2, '0', STR_PAD_LEFT);
+                        $startdate = "$day-$monthlabel-$year";
+                    }
+                    if ($x == $noweeks) {
+                        $enddate = "$end-$monthlabel-$year";
+                    } else {
+                        $dayend = $day + 6;
+                        $dayend = str_pad($dayend, 2, '0', STR_PAD_LEFT);
+                        $enddate = "$dayend-$monthlabel-$year";
+                    }
+                    $output[$x] = "Semana {$x} -> $startdate al $enddate";
+                }
+                $semanasArray = $output;
+
+                break;
+            case "Quincenal": //SI EL TIPO DE PERIODO QUE VIENE ES QUINCENAL
+                $quicena_en_curso = 3;
+                ///validamos si el mes recibido es igual al a fecha actual, en caso de ser diferentes se mostraran ambas quincenas
+                $opcion_corte_show = ["1" => "1ra. Quincena", "2" => "2da. Quincena"];
+                break;
+            default:
+                return json_encode(abort(500, "El Skill seleccionado No cuenta con el esquema de pago."));
+                break;
+        }
 
         return json_encode([
             'tipo_periodo'      => $tipo_periodo,
