@@ -96,8 +96,10 @@ class ComisionesController extends Controller
 
     private function ValidateEstructureRangoFechas($intMeses, $tipo_periodo, $fechaActual, $request)
     {
+
         switch ($tipo_periodo) {
             case "Semanal":
+
                 $skill = SkillModels::find($request->skill);
                 $autorizados = json_decode($skill->dias);
                 $diaActual = $fechaActual->copy()->dayName;
@@ -257,7 +259,7 @@ class ComisionesController extends Controller
         ]);
     }
 
-    ///funcion para Devolver el esquema de pagos ----> cuando el esquema es mixto
+    ///funcion para Devolver el esquema de pagos ----> cuando el esquema es Mixto
     public function getPreviousAndCurrentWeek(Request $request)
     {
 
@@ -303,8 +305,8 @@ class ComisionesController extends Controller
     public function getCorte(Request $request)
     {
 
-        $fecharecibida = Carbon::createfromFormat('m/Y', $request->mes);
-        $fechaActual = Carbon::now();
+        /// $fecharecibida = Carbon::createfromFormat('m/Y', $request->mes);
+        $fechaActual = isset($request->mes) ? Carbon::createfromFormat('m/Y', $request->mes) : Carbon::now();
 
         $tipo_periodo = isset($request->tipo_periodo) ? $request->tipo_periodo : SkillModels::find($request->skill)->tipo_periodo;
 

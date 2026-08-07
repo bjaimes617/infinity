@@ -352,7 +352,7 @@ $("#mes").on("blur", function () {
         success: function (data) {
             AplicaFiltrosPostConsultas(data);
         },
-        error: function () {
+        error: function (data) {
             var Toastr = main();
             Toastr.fire({
                 icon: "error",
