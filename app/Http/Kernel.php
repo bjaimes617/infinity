@@ -28,18 +28,19 @@ class Kernel extends HttpKernel
      */
     protected $middlewareGroups = [
         'web' => [
-            \App\Http\Middleware\EncryptCookies::class,            
-            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,            
-            \Illuminate\Session\Middleware\StartSession::class,            
-            \Illuminate\View\Middleware\ShareErrorsFromSession::class,            
+            \App\Http\Middleware\EncryptCookies::class,
+            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+            \Illuminate\Session\Middleware\StartSession::class,
+            \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
-            \App\Http\Middleware\VerifyCsrfToken::class,          
+            \App\Http\Middleware\VerifyCsrfToken::class,
         ],
 
         'api' => [
-        \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
-        //'throttle:api',
-        \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \App\Http\Middleware\ForceJsonResponse::class,
+            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+            //'throttle:api',
+            \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
     ];
 
@@ -61,14 +62,14 @@ class Kernel extends HttpKernel
         'signed'            => \Illuminate\Routing\Middleware\ValidateSignature::class,
         'throttle'          => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified'          => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-        
+
         'check.password'    => \App\Http\Middleware\CheckPassword::class,
-        'BlockRegistedPersonal' => \App\Http\Middleware\BlockRegistredPersonal::class,      
-        
+        'BlockRegistedPersonal' => \App\Http\Middleware\BlockRegistredPersonal::class,
+
         'role'              => \jeremykenedy\LaravelRoles\App\Http\Middleware\VerifyRole::class,
         'permission'        => \jeremykenedy\LaravelRoles\App\Http\Middleware\VerifyPermission::class,
         'level'             => \jeremykenedy\LaravelRoles\App\Http\Middleware\VerifyLevel::class,
-        
+
         'abilities' => \Laravel\Sanctum\Http\Middleware\CheckAbilities::class,
         'ability' => \Laravel\Sanctum\Http\Middleware\CheckForAnyAbility::class,
     ];

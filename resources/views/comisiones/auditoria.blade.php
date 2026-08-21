@@ -25,6 +25,11 @@
             <div class="card">
                 <div class="card-header">
                     <h3 class="card-title">Auditoria de Comisiones </h3>
+                    <div class="btn-group float-right">                                
+                         @permission('comisiones.estimacion.costos')
+                        <button style="position: relative;" class="btn btn-info " data-href="{{ route('comisiones.estimate.payment') }}" data-type="auditoria"  id="gastos" data-toggle="tooltip" data-placement="top" title="Gastos Estimados del Mes" ><i class="fa fa-calculator"></i></button>
+                        @endpermission
+                    </div>   
                 </div>
                 <div class="card-body">   
                     <form action="{{route('comisiones.auditoria.list')}}" method="POST" id="comision_payment" class="form-horizontal form-label-left" enctype ='multipart/form-data'>
@@ -102,6 +107,27 @@
                         </div>
                     </form>
                 </div>
+            </div>
+
+            <div class="modal fade" id="gastos-modal">
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h4 class="modal-title">Estimación de Costos Cargadas </h4>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                        <table id="datatable-gatos" class="table compact table-sm text-sm table-bordered table-striped text-center">                                    
+                        </table> 
+                        </div>
+                        <div class="modal-footer justify-content-between">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>                            
+                        </div>
+                    </div>
+                    <!-- /.modal-content -->
+                </div>         
             </div>
         </div>
     </section>

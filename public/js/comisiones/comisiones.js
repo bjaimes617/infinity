@@ -1168,3 +1168,315 @@ $("#showreporteincidencias").validate({
         });
     },
 });
+
+$("#gastos").on("click", function () {
+    selectmes = $(this).data("type");
+    url = $(this).data("href");
+
+    switch (selectmes) {
+        case "auditoria":
+            var mes = $("#auditmes").val();
+            break;
+        case "procesar":
+            var mes = $("#paymentmes").val();
+            break;
+    }
+
+    var data = {
+        _token: $('input[name="_token"]').val(),
+        mes: mes,
+    };
+
+    $.ajax({
+        type: "POST",
+        url: url,
+        data: data,
+        dataType: "json",
+        success: function (response) {
+            let tableDataQuincenal = [];
+            let tableDataSemanal = [];
+
+            // Procesar Quincenal (response[0])
+            $.each(response[0], function (gerenciaId, gerenciaData) {
+                let gerenciaName = gerenciaData.gerencia;
+                $.each(gerenciaData, function (skillId, skillData) {
+                    if (skillId === "gerencia") return;
+
+                    tableDataQuincenal.push({
+                        gerencia: gerenciaName,
+                        skill: skillData.skill,
+                        pq1:
+                            skillData.Quincenal && skillData.Quincenal[1]
+                                ? "$" +
+                                  parseFloat(skillData.Quincenal[1]).toFixed(2)
+                                : "$ 0.0",
+                        p1:
+                            skillData.Quincenal && skillData.Quincenal[1]
+                                ? parseFloat(skillData.Quincenal[1])
+                                : 0,
+                        p2:
+                            skillData.Quincenal && skillData.Quincenal[2]
+                                ? parseFloat(skillData.Quincenal[2])
+                                : 0,
+                        pq2:
+                            skillData.Quincenal && skillData.Quincenal[2]
+                                ? "$" +
+                                  parseFloat(skillData.Quincenal[2]).toFixed(2)
+                                : "$ 0.0",
+                        totalskill:
+                            "$" + parseFloat(skillData.total).toFixed(2),
+                        total: parseFloat(skillData.total || 0),
+
+                        total_num: parseFloat(skillData.total || 0),
+                    });
+                });
+            });
+
+            // Procesar Semanal (response[1])
+            $.each(response[1], function (gerenciaId, gerenciaData) {
+                let gerenciaName = gerenciaData.gerencia;
+                $.each(gerenciaData, function (skillId, skillData) {
+                    if (skillId === "gerencia") return;
+
+                    tableDataSemanal.push({
+                        gerencia: gerenciaName,
+                        skill: skillData.skill,
+                        pt1:
+                            skillData.Semanal && skillData.Semanal[1]
+                                ? parseFloat(skillData.Semanal[1])
+                                : 0,
+                        p1:
+                            skillData.Semanal && skillData.Semanal[1]
+                                ? "$ " +
+                                  parseFloat(skillData.Semanal[1]).toFixed(2)
+                                : "$ 0.00",
+                        pt2:
+                            skillData.Semanal && skillData.Semanal[2]
+                                ? parseFloat(skillData.Semanal[2])
+                                : 0,
+                        p2:
+                            skillData.Semanal && skillData.Semanal[2]
+                                ? "$ " +
+                                  parseFloat(skillData.Semanal[2]).toFixed(2)
+                                : "$ 0.00",
+                        pt3:
+                            skillData.Semanal && skillData.Semanal[3]
+                                ? parseFloat(skillData.Semanal[3])
+                                : 0,
+                        p3:
+                            skillData.Semanal && skillData.Semanal[3]
+                                ? "$ " +
+                                  parseFloat(skillData.Semanal[3]).toFixed(2)
+                                : "$ 0.00",
+                        pt4:
+                            skillData.Semanal && skillData.Semanal[4]
+                                ? parseFloat(skillData.Semanal[4])
+                                : 0,
+                        p4:
+                            skillData.Semanal && skillData.Semanal[4]
+                                ? "$ " +
+                                  parseFloat(skillData.Semanal[4]).toFixed(2)
+                                : "$ 0.00",
+                        pt5:
+                            skillData.Semanal && skillData.Semanal[5]
+                                ? parseFloat(skillData.Semanal[5])
+                                : 0,
+                        p5:
+                            skillData.Semanal && skillData.Semanal[5]
+                                ? "$ " +
+                                  parseFloat(skillData.Semanal[5]).toFixed(2)
+                                : "$ 0.00",
+                        total: skillData.total
+                            ? "$ " + parseFloat(skillData.total).toFixed(2)
+                            : "$ 0.00",
+                        total_num: parseFloat(skillData.total || 0),
+                    });
+                });
+            });
+
+            if ($.fn.dataTable.isDataTable("#datatable-quincenal")) {
+                $("#datatable-quincenal").DataTable().destroy();
+            }
+            if ($.fn.dataTable.isDataTable("#datatable-semanal")) {
+                $("#datatable-semanal").DataTable().destroy();
+            }
+
+            $("#gastos-modal .modal-body").empty();
+
+            let theadQuincenal = `
+                <h5 class="text-primary">Costo Estimado Quincenal</h5>
+                <table id="datatable-quincenal" class="table compact table-sm text-sm table-bordered table-striped text-center w-100">
+                    <thead>
+                        <tr>
+                            <th>Gerencia</th>
+                            <th>Segmento/Skill</th>
+                            <th>1ra Quincena</th>
+                            <th>2da Quincena</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="2" style="text-align:right">Total Costo Estimado por quincena:</th>    
+                            <th id="totalquincena1"></th>
+                            <th id="totalquincena2"></th>                                            
+                            <th id="totalgasto"></th>
+                        </tr>
+                    </tfoot>
+                </table>
+                <hr class="my-4">
+                <h5 class="mb-3 text-primary">Costo Estimado Semanal</h5>
+                <table id="datatable-semanal" class="table compact table-sm text-sm table-bordered table-striped text-center w-100">
+                    <thead>
+                        <tr>
+                            <th>Gerencia</th>
+                            <th>Segmento/Skill</th>
+                            <th>Semana 1</th>
+                            <th>Semana 2</th>
+                            <th>Semana 3</th>
+                            <th>Semana 4</th>
+                            <th>Semana 5</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>                    
+                    <tfoot>
+                        <tr>
+                            <th colspan="2" style="text-align:right">Total Costo por Semana:</th>
+                            <th id="totalsem1"></th>
+                            <th id="totalsem2"></th>
+                            <th id="totalsem3"></th>
+                            <th id="totalsem4"></th>
+                            <th id="totalsem5"></th>
+                            <th id="totalgastosem"></th>
+                        </tr>
+                    </tfoot>
+                </table>
+            `;
+            $("#gastos-modal .modal-body").html(theadQuincenal);
+
+            // Tabla Quincenal
+            $("#datatable-quincenal").DataTable({
+                data: tableDataQuincenal,
+                responsive: true,
+                ordering: true,
+                autoWidth: false,
+                bPaginate: false,
+                columns: [
+                    { data: "gerencia", visible: false },
+                    { data: "skill" },
+                    { data: "pq1" },
+                    { data: "pq2" },
+                    { data: "totalskill" },
+                ],
+                order: [[0, "asc"]],
+                drawCallback: function (settings) {
+                    var api = this.api();
+                    var rows = api.rows({ page: "current" }).nodes();
+                    var last = null;
+
+                    api.column(0, { page: "current" })
+                        .data()
+                        .each(function (group, i) {
+                            if (last !== group) {
+                                $(rows)
+                                    .eq(i)
+                                    .before(
+                                        '<tr class="group"><td colspan="4" style="background-color:#1B3155; color:white; font-weight:bold; text-align:left;">' +
+                                            group +
+                                            "</td></tr>"
+                                    );
+                                last = group;
+                            }
+                        });
+                },
+                footerCallback: function (row, data, start, end, display) {
+                    var api = this.api();
+                    var sumTotal = 0;
+                    var sumTotalp1 = 0;
+                    var sumTotalp2 = 0;
+                    api.rows({ search: "applied" }).every(function () {
+                        sumTotal += this.data().total_num || 0;
+                        sumTotalp1 += this.data().p1 || 0;
+                        sumTotalp2 += this.data().p2 || 0;
+                    });
+                    $("#totalgasto").html("$" + sumTotal.toFixed(2));
+                    $("#totalquincena1").html("$" + sumTotalp1.toFixed(2));
+                    $("#totalquincena2").html("$" + sumTotalp2.toFixed(2));
+                },
+            });
+
+            // Tabla Semanal
+            $("#datatable-semanal").DataTable({
+                data: tableDataSemanal,
+                responsive: true,
+                ordering: true,
+                autoWidth: false,
+                bPaginate: false,
+                columns: [
+                    { data: "gerencia", visible: false },
+                    { data: "skill" },
+                    { data: "p1" },
+                    { data: "p2" },
+                    { data: "p3" },
+                    { data: "p4" },
+                    { data: "p5" },
+                    { data: "total" },
+                ],
+                order: [[0, "asc"]],
+                drawCallback: function (settings) {
+                    var api = this.api();
+                    var rows = api.rows({ page: "current" }).nodes();
+                    var last = null;
+                    api.column(0, { page: "current" })
+                        .data()
+                        .each(function (group, i) {
+                            if (last !== group) {
+                                $(rows)
+                                    .eq(i)
+                                    .before(
+                                        '<tr class="group"><td colspan="7" style="background-color:#1B3155; color:white; font-weight:bold; text-align:left;">' +
+                                            group +
+                                            "</td></tr>"
+                                    );
+                                last = group;
+                            }
+                        });
+                },
+                footerCallback: function (row, data, start, end, display) {
+                    var api = this.api();
+                    var semana1 = 0;
+                    var semana2 = 0;
+                    var semana3 = 0;
+                    var semana4 = 0;
+                    var semana5 = 0;
+                    var total_num = 0;
+                    api.rows({ search: "applied" }).every(function () {
+                        semana1 += this.data().pt1 || 0;
+                        semana2 += this.data().pt2 || 0;
+                        semana3 += this.data().pt3 || 0;
+                        semana4 += this.data().pt4 || 0;
+                        semana5 += this.data().pt5 || 0;
+                        total_num += this.data().total_num || 0;
+                    });
+                    $("#totalsem1").html("$ " + semana1.toFixed(2));
+                    $("#totalsem2").html("$ " + semana2.toFixed(2));
+                    $("#totalsem3").html("$ " + semana3.toFixed(2));
+                    $("#totalsem4").html("$ " + semana4.toFixed(2));
+                    $("#totalsem5").html("$ " + semana5.toFixed(2));
+                    $("#totalgastosem").html("$ " + total_num.toFixed(2));
+                },
+            });
+
+            $("#gastos-modal").modal("show");
+        },
+        error: function (data) {
+            var Toastr = main();
+            Toastr.fire({
+                icon: "error",
+                title: data.responseJSON.message,
+            });
+        },
+    });
+});

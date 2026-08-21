@@ -38,6 +38,7 @@ class VerifyCsrfToken extends Middleware
         '/api/reclutamientoSimple/preseleccion/storage',
         '/api/reclutamiento/validate/candidato',
         '/api/reclutamientoSimple/Storage',
-        '/api/listado/personal/general/dg',       
+        '/api/listado/personal/general/dg',
+        '/api/listado/personal/exports/users/intelix',
     ];
 }

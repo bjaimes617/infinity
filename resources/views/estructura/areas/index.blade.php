@@ -271,7 +271,7 @@
                                                     <select id="dias" name="dias[]" class="form-control select2" multiple="multiple" style="width: 100%;">
                                                         <option value="lunes">Lunes</option>
                                                         <option value="martes">Martes</option>
-                                                        <option value="miercoles">Miercoles</option>
+                                                        <option value="miércoles">Miercoles</option>
                                                         <option value="jueves">Jueves</option>
                                                         <option value="viernes">Viernes</option>
                                                         <option value="sabado">Sabado</option>

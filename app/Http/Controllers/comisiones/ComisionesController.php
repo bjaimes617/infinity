@@ -99,14 +99,16 @@ class ComisionesController extends Controller
 
         switch ($tipo_periodo) {
             case "Semanal":
+                if (isset($request->skill)) {
+                    $skill = SkillModels::find($request->skill);
+                    $autorizados = json_decode($skill->dias);
+                    $diaActual = $fechaActual->copy()->dayName;
 
-                $skill = SkillModels::find($request->skill);
-                $autorizados = json_decode($skill->dias);
-                $diaActual = $fechaActual->copy()->dayName;
-
-                if ($autorizados === null || array_search($diaActual, $autorizados, true) === false) {
-                    return json_encode(abort(500, "El Skill no esta autorizado a cargar Hoy " . $diaActual . " o no Esta habilitado para cargar."));
+                    if ($autorizados === null || array_search($diaActual, $autorizados, true) === false) {
+                        return json_encode(abort(500, "El Skill no esta autorizado a cargar Hoy " . $diaActual . " o no Esta habilitado para cargar."));
+                    }
                 }
+
                 //DETERMINAMOS EN QUE SEMANA ESTAMOS DEL MES EN CURSO
                 $semanaencurso = $fechaActual->copy()->weekOfMonth;
 
@@ -157,7 +159,6 @@ class ComisionesController extends Controller
 
                 break;
             case "Quincenal": //SI EL TIPO DE PERIODO QUE VIENE ES QUINCENAL
-
                 $rangos = SkillRangoQuincenal::where('skill_id', $request->skill)->first();
                 $diaDelMes = $fechaActual->day; // Obtiene el día del mes  
 
@@ -175,23 +176,28 @@ class ComisionesController extends Controller
                         return json_encode(abort(500, "No se encuentra dentro del rango permitido de carga"));
                     }
                 } else if ($diaDelMes >= $rangos->desde1 && $diaDelMes <= $rangos->hasta1) {
-
                     $quicena_en_curso = 2; // Segunda quincena
                     //DE LO CONTRARIO MOSTRAMOS SOLO EL MES ACTUAL
                     $minDate = $fechaActual->copy()->subMonth($intMeses)->format('m/Y');
                     $maxDate = Carbon::now()->format('m/Y');
-                    //MOSTRAMOS PRIMERA QUINCENA EN EL SELECTOR DE CORTES                   
-                    $opcion_corte_show = ["1" => "1ra. Quincena"];
-
+                    //MOSTRAMOS PRIMERA QUINCENA EN EL SELECTOR DE CORTES si el mes en curso es igual al mes recibido
+                    //entonces solo mostramos un corte, en caso de que el mes sea diferente al en curso mostramos ambas opciones
+                    if ($maxDate === $fechaActual->copy()->format('m/Y')) {
+                        $opcion_corte_show = ["1" => "1ra. Quincena"];
+                    } else {
+                        $opcion_corte_show = ["1" => "1ra. Quincena", "2" => "2da. Quincena"];
+                    }
                     return [$minDate, $maxDate, $opcion_corte_show, $quicena_en_curso, null, null, null];
                 } else if ($diaDelMes >= $rangos->desde2 && $diaDelMes <= $rangos->hasta2) {
 
                     $quicena_en_curso = 1; // Primera quincena
                     $minDate = $fechaActual->copy()->subMonth($intMeses)->format('m/Y');
-                    $maxDate = $fechaActual->copy()->format('m/Y');
-
-                    //MOSTRAMOS SOLO LA SEGUNDA QUINCENA DEL MES ANTERIOR                   
-                    $opcion_corte_show = ["2" => "2da. Quincena"];
+                    $maxDate = Carbon::now()->format('m/Y');
+                    if ($maxDate === $fechaActual->copy()->format('m/Y')) {
+                        $opcion_corte_show = ["2" => "2da. Quincena"];
+                    } else {
+                        $opcion_corte_show = ["1" => "1ra. Quincena", "2" => "2da. Quincena"];
+                    }
 
                     return [$minDate, $maxDate, $opcion_corte_show, $quicena_en_curso, null, null, null];
                 } else {
@@ -808,7 +814,6 @@ class ComisionesController extends Controller
         }
     }
 
-
     public function bank()
     {
         $bancos = BancosModels::whereIn('id', [9, 19])->get();
@@ -1124,10 +1129,8 @@ class ComisionesController extends Controller
     {
 
         $fecharecibida = Carbon::createfromFormat('m/Y', $request->mes);
-        $fechaActual = Carbon::now();
 
         $tipo_periodo = isset($request->tipo_periodo) ? $request->tipo_periodo : SkillModels::find($request->skill)->tipo_periodo;
-
 
         $user = ENV('DEV_USER_CHANGE', false) ?
             \Auth::loginUsingId(ENV('OTHER_USER_ID'), true) :
@@ -1504,5 +1507,57 @@ class ComisionesController extends Controller
         }
 
         return json_encode($data);
+    }
+
+    public function EstimatePayments(Request $request)
+    {
+
+        $gerencias  = AreaTrabajoModel::pluck('nombre_campana', 'id')->toArray();
+        $skills     = SkillModels::pluck('nombre_skill', 'id')->toArray();
+
+        $fechaCarbon = Carbon::createFromFormat('m/Y', $request->mes)->startOfMonth();
+        $anio = $fechaCarbon->copy()->format('Y'); // Año seleccionado
+        $mes = $fechaCarbon->copy()->format('F');
+
+        //MANDAMOS LOS LOTES CON EL ESTATUS SELECCIONADO A LA VISTA
+        $sql = LoteModel::select('id', 'skill_id', 'tipo_periodo')
+            ->where('anio', $anio)
+            ->where('mes', $mes);
+
+        $lotesQuincenales = (clone $sql)->where('tipo_periodo', 'Quincenal')->groupby('skill_id', 'periodo')->get();
+
+        $lotesSemanales = (clone $sql)->where('tipo_periodo', 'Semanal')->groupby('skill_id', 'periodo')->get();
+
+        $TableQuincenal = array();
+        $TableSemanal = array();
+
+        #lectura quincenal
+        $totales = OperacionesComisiones::selectraw('sum(total_usd) as totalpago, skill_id, gerencia_id, tipo_periodo,periodo')
+            ->wherein('lote_id', $lotesQuincenales->pluck('id'))->groupby('skill_id', 'periodo')->get();
+
+
+        foreach ($totales as $key => $quincenal) {
+            $montoAnterior = 0;
+            $TableQuincenal[$quincenal->gerencia_id]["gerencia"] = $gerencias[$quincenal->gerencia_id];
+            $TableQuincenal[$quincenal->gerencia_id][$quincenal->skill_id]["total"] = 0;
+            $TableQuincenal[$quincenal->gerencia_id][$quincenal->skill_id]["skill"] = $skills[$quincenal->skill_id];
+            $TableQuincenal[$quincenal->gerencia_id][$quincenal->skill_id][$quincenal->tipo_periodo][$quincenal->periodo] = $quincenal->totalpago;
+            $TableQuincenal[$quincenal->gerencia_id][$quincenal->skill_id]["total"] = $totales->where('skill_id', $quincenal->skill_id)->sum('totalpago');
+        }
+
+        ##lectura tabla Semanal
+        $totalessem = OperacionesComisiones::selectraw('sum(total_usd) as totalpago, skill_id, gerencia_id, tipo_periodo,periodo')
+            ->wherein('lote_id', $lotesSemanales->pluck('id'))->groupby('skill_id', 'periodo')->get();
+
+        foreach ($totalessem as $key => $semanal) {
+            $montoAnterior = 0;
+            $TableSemanal[$semanal->gerencia_id]["gerencia"] = $gerencias[$semanal->gerencia_id];
+            $TableSemanal[$semanal->gerencia_id][$semanal->skill_id]["total"] = 0;
+            $TableSemanal[$semanal->gerencia_id][$semanal->skill_id]["skill"] = $skills[$semanal->skill_id];
+            $TableSemanal[$semanal->gerencia_id][$semanal->skill_id][$semanal->tipo_periodo][$semanal->periodo] = $semanal->totalpago;
+            $TableSemanal[$semanal->gerencia_id][$semanal->skill_id]["total"] = $totalessem->where('skill_id', $semanal->skill_id)->sum('totalpago');
+        }
+
+        return json_encode([$TableQuincenal, $TableSemanal]);
     }
 }

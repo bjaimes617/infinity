@@ -473,6 +473,8 @@ Route::middleware(['auth', 'activity'])->group(function () {
     Route::delete('lote/delete/{id}/',                          [ComisionesController::class, 'loteDestroy'])->middleware(['permission:comisiones.auditoria.pagos'])->name('lote.destroy');
     Route::put('lote/reverse/{id}/',                            [ComisionesController::class, 'loteReverse'])->middleware(['permission:comisiones.auditoria.pagos'])->name('lote.reverse');
 
+    ///Estimacion de gastos
+    Route::post('comisiones/payments/estimate/all',            [ComisionesController::class, 'EstimatePayments'])->middleware(['permission:comisiones.estimacion.costos'])->name('comisiones.estimate.payment');
     ///genera el consolidado de bancos
     Route::get('comisiones/payment/',                           [ComisionesController::class, 'payment'])->middleware(['permission:comisiones.consolidado.bancario'])->name('comisiones.payment');
     Route::post('comisiones/payment/list',                      [ComisionesController::class, 'paymentList'])->middleware(['permission:comisiones.consolidado.bancario'])->name('comisiones.payment.list');
@@ -488,7 +490,7 @@ Route::middleware(['auth', 'activity'])->group(function () {
     //pestaña Cargar incidencias   
     Route::post('comisiones/bank/consult/',                     [ComisionesController::class, 'bankConsultIncidencias'])->name('comisiones.bank.consult');
     Route::get('comisiones/bank/observaciones/{id}',            [ComisionesController::class, 'observacionesExport'])->name('comisiones.bank.observaciones');
-    Route::put('lote/discard/{id}/',                         [ComisionesController::class, 'loteBankIncidenciasDiscard'])->middleware(['permission:comisiones.consolidado.observaciones'])->name('lote.banco.discard');
+    Route::put('lote/discard/{id}/',                            [ComisionesController::class, 'loteBankIncidenciasDiscard'])->middleware(['permission:comisiones.consolidado.observaciones'])->name('lote.banco.discard');
     Route::get('comisiones/estatus/incidencia/{id}',            [ComisionesController::class, 'personalIncidencia'])->middleware(['permission:comisiones.consolidado.observaciones'])->name('personal.incidencia');
     Route::put('comisiones/estatus/incidencia/change/',         [ComisionesController::class, 'changeIncidencia'])->middleware(['permission:comisiones.consolidado.observaciones'])->name('change.incidencia');
     Route::post('comisiones/bank/process/',                     [ComisionesController::class, 'bankProcessIncidencias'])->middleware(['permission:comisiones.consolidado.observaciones'])->name('comisiones.bank.incidencias');
