@@ -97,9 +97,13 @@ class ComisionesController extends Controller
     private function ValidateEstructureRangoFechas($intMeses, $tipo_periodo, $fechaActual, $request)
     {
 
+        $user = ENV('DEV_USER_CHANGE', false) ?
+            \Auth::loginUsingId(ENV('OTHER_USER_ID'), true) :
+            \Auth::user();
+
         switch ($tipo_periodo) {
             case "Semanal":
-                if (isset($request->skill)) {
+                if (isset($request->skill) || $user->hasPermission('comisiones.cargar.demoradas') == false) {
                     $skill = SkillModels::find($request->skill);
                     $autorizados = json_decode($skill->dias);
                     $diaActual = $fechaActual->copy()->dayName;
@@ -162,8 +166,8 @@ class ComisionesController extends Controller
                 $rangos = SkillRangoQuincenal::where('skill_id', $request->skill)->first();
                 $diaDelMes = $fechaActual->day; // Obtiene el día del mes  
 
-                if ($rangos->desde1 == $rangos->desde2 && $rangos->hasta1 == $rangos->hasta2) {
-                    if ($diaDelMes >= $rangos->desde1 && $diaDelMes <= $rangos->hasta1) {
+                if (($rangos->desde1 == $rangos->desde2 && $rangos->hasta1 == $rangos->hasta2) || $user->hasPermission('comisiones.cargar.demoradas') == true) {
+                    if ($diaDelMes >= $rangos->desde1 && $diaDelMes <= $rangos->hasta1 || $user->hasPermission('comisiones.cargar.demoradas') == true) {
                         //mostrara ambos cortes
                         $quicena_en_curso = 3; // Primera quincena
                         $minDate = $fechaActual->copy()->subMonth($intMeses)->format('m/Y');
@@ -188,7 +192,7 @@ class ComisionesController extends Controller
                         $opcion_corte_show = ["1" => "1ra. Quincena", "2" => "2da. Quincena"];
                     }
                     return [$minDate, $maxDate, $opcion_corte_show, $quicena_en_curso, null, null, null];
-                } else if ($diaDelMes >= $rangos->desde2 && $diaDelMes <= $rangos->hasta2) {
+                } else if (($diaDelMes >= $rangos->desde2 && $diaDelMes <= $rangos->hasta2) || $user->hasPermission('comisiones.cargar.demoradas') == true) {
 
                     $quicena_en_curso = 1; // Primera quincena
                     $minDate = $fechaActual->copy()->subMonth($intMeses)->format('m/Y');
@@ -313,7 +317,7 @@ class ComisionesController extends Controller
 
         /// $fecharecibida = Carbon::createfromFormat('m/Y', $request->mes);
         $fechaActual = isset($request->mes) ? Carbon::createfromFormat('m/Y', $request->mes) : Carbon::now();
-
+        $fechaActual = $fechaActual->addWeekday();
         $tipo_periodo = isset($request->tipo_periodo) ? $request->tipo_periodo : SkillModels::find($request->skill)->tipo_periodo;
 
         $user = ENV('DEV_USER_CHANGE', false) ?
@@ -1520,13 +1524,13 @@ class ComisionesController extends Controller
         $mes = $fechaCarbon->copy()->format('F');
 
         //MANDAMOS LOS LOTES CON EL ESTATUS SELECCIONADO A LA VISTA
-        $sql = LoteModel::select('id', 'skill_id', 'tipo_periodo')
+        $sql = LoteModel::select('id', 'skill_id', 'tipo_periodo', 'periodo')
             ->where('anio', $anio)
             ->where('mes', $mes);
 
-        $lotesQuincenales = (clone $sql)->where('tipo_periodo', 'Quincenal')->groupby('skill_id', 'periodo')->get();
+        $lotesQuincenales = (clone $sql)->where('tipo_periodo', 'Quincenal')->get();
 
-        $lotesSemanales = (clone $sql)->where('tipo_periodo', 'Semanal')->groupby('skill_id', 'periodo')->get();
+        $lotesSemanales = (clone $sql)->where('tipo_periodo', 'Semanal')->get();
 
         $TableQuincenal = array();
         $TableSemanal = array();

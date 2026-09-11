@@ -27,7 +27,7 @@
                     <h3 class="card-title">Auditoria de Comisiones </h3>
                     <div class="btn-group float-right">                                
                          @permission('comisiones.estimacion.costos')
-                        <button style="position: relative;" class="btn btn-info " data-href="{{ route('comisiones.estimate.payment') }}" data-type="auditoria"  id="gastos" data-toggle="tooltip" data-placement="top" title="Gastos Estimados del Mes" ><i class="fa fa-calculator"></i></button>
+                        <button style="position: relative;" class="btn btn-info " data-href="{{ route('comisiones.estimate.payment') }}" data-type="auditoria"  id="gastos" data-toggle="tooltip" data-placement="top" title=" Estimados de costos del Mes" ><i class="fa fa-calculator"></i></button>
                         @endpermission
                     </div>   
                 </div>

@@ -157,7 +157,7 @@ Route::middleware('activity')->post(
 Route::middleware(['auth:sanctum', 'activity'])->post('/listado/personal/general/dg', 'Api\PersonalApiController@ApiListadoGeneral');
 
 ////API CONEXION EXTRAER USERS_PORTABILIDAD_TO_DISCOVERY
-Route::middleware(['activity'])->post('/listado/personal/exports/users/intelix', 'Api\PersonalApiController@UsersConcentra');
+Route::middleware(['activity'])->post('/listado/personal/users/intelix', 'Api\PersonalApiController@UsersConcentra');
 
 /*
 Route::middleware(['auth:sanctum','activity'])->post('/listado/personal/general/dg','Api\PersonalApiController@ApiListadoGeneral',      

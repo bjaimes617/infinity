@@ -18,7 +18,7 @@ class VerifyCsrfToken extends Middleware
      *
      * @var array
      */
-    protected $except = [        
+    protected $except = [
         '/api/arc/generate/data',
         '/api/Personal/active/DG/*',
         '/api/Personal/review/lp/external',
@@ -39,6 +39,6 @@ class VerifyCsrfToken extends Middleware
         '/api/reclutamiento/validate/candidato',
         '/api/reclutamientoSimple/Storage',
         '/api/listado/personal/general/dg',
-        '/api/listado/personal/exports/users/intelix',
+        '/api/listado/personal/users/intelix',
     ];
 }
