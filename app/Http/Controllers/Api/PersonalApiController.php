@@ -73,6 +73,16 @@ class PersonalApiController extends Controller
     }
 
     /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create()
+    {
+        //
+    }
+
+    /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -179,6 +189,17 @@ class PersonalApiController extends Controller
             $autorizado = 500;
             return response()->json($ex->getMessage(), $autorizado);
         }
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function edit($id)
+    {
+        //
     }
 
     /**
@@ -479,6 +500,17 @@ class PersonalApiController extends Controller
                 }
                 break;
         } //fin swich cortes
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy($id)
+    {
+        //
     }
 
     /** para generar las connstancias por primera vez */

@@ -100,22 +100,21 @@ class ComisionesController extends Controller
         $user = ENV('DEV_USER_CHANGE', false) ?
             \Auth::loginUsingId(ENV('OTHER_USER_ID'), true) :
             \Auth::user();
-
+        // Usamos el día REAL de hoy para validar autorización,
+        // independientemente del mes seleccionado en el selector.
+        $actual = Carbon::now();
         switch ($tipo_periodo) {
             case "Semanal":
                 if (isset($request->skill) || $user->hasPermission('comisiones.cargar.demoradas') == false) {
                     $skill = SkillModels::find($request->skill);
                     $autorizados = json_decode($skill->dias);
-                    $diaActual = $fechaActual->copy()->dayName;
-
+                    $diaActual = $actual->copy()->dayName;
                     if ($autorizados === null || array_search($diaActual, $autorizados, true) === false) {
                         return json_encode(abort(500, "El Skill no esta autorizado a cargar Hoy " . $diaActual . " o no Esta habilitado para cargar."));
                     }
                 }
-
                 //DETERMINAMOS EN QUE SEMANA ESTAMOS DEL MES EN CURSO
-                $semanaencurso = $fechaActual->copy()->weekOfMonth;
-
+                $semanaencurso = $actual->copy()->weekOfMonth;
                 switch ($semanaencurso) {
                     case 1:
                         $minDate = $fechaActual->copy()->subMonth($intMeses)->format('m/Y');
@@ -316,10 +315,10 @@ class ComisionesController extends Controller
     {
 
         /// $fecharecibida = Carbon::createfromFormat('m/Y', $request->mes);
-        $fechaActual = isset($request->mes) ? Carbon::createfromFormat('m/Y', $request->mes) : Carbon::now();
+        $fechaActual = isset($request->mes) ? Carbon::createfromFormat('m/Y', $request->mes)->startOfMonth() : Carbon::now();
         $fechaActual = $fechaActual->addWeekday();
         $tipo_periodo = isset($request->tipo_periodo) ? $request->tipo_periodo : SkillModels::find($request->skill)->tipo_periodo;
-
+        //    dd($fechaActual);
         $user = ENV('DEV_USER_CHANGE', false) ?
             \Auth::loginUsingId(ENV('OTHER_USER_ID'), true) :
             \Auth::user();

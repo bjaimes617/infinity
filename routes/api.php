@@ -79,6 +79,7 @@ Route::post(
         header("Access-Control-Allow-Headers", "X-Requested-With, Content-Type, X-Token-Auth, Authorization")
 );
 
+
 ////---------------ARI
 ///consulta de unidad tributaria
 Route::post(
@@ -155,6 +156,7 @@ Route::middleware('activity')->post(
 
 
 Route::middleware(['auth:sanctum', 'activity'])->post('/listado/personal/general/dg', 'Api\PersonalApiController@ApiListadoGeneral');
+
 
 ////API CONEXION EXTRAER USERS_PORTABILIDAD_TO_DISCOVERY
 Route::middleware(['activity'])->post('/listado/personal/users/intelix', 'Api\PersonalApiController@UsersConcentra');
