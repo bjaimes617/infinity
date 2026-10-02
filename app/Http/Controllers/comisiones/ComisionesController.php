@@ -105,7 +105,7 @@ class ComisionesController extends Controller
         $actual = Carbon::now();
         switch ($tipo_periodo) {
             case "Semanal":
-                if (isset($request->skill) || $user->hasPermission('comisiones.cargar.demoradas') == false) {
+                if ((isset($request->skill) || $user->hasPermission('comisiones.cargar.demoradas'))) {
                     $skill = SkillModels::find($request->skill);
                     $autorizados = json_decode($skill->dias);
                     $diaActual = $actual->copy()->dayName;

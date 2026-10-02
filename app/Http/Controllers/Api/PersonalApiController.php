@@ -831,6 +831,7 @@ class PersonalApiController extends Controller
 
     public function UsersConcentra()
     {
+
         $users = PersonalModel::select('cedula_empleado', 'usuario_crm_portabilidad', 'estatus_id')
             ->selectRaw('CONCAT(primer_nombre, " ", primer_apellido) AS name')
             ->where('usuario_crm_portabilidad', '!=', 'No asignado')
