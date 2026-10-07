@@ -166,6 +166,12 @@ class CursosController extends Controller
             $end = Carbon::createfromFormat('d/m/Y', trim($arrays[1]));
             $sala = $request->sala;
 
+            //SI LA SALA ES OPERACIONES HABILITAMOS LA VALIDACION EFECTIVA
+
+            if ($sala == "Operaciones") {
+                return json_encode(true);
+            }
+
             $cursos = CursosModel::where('sala_asignada', $sala)
                 ->where('inicio', '<=', $end->format('Y-m-d'))
                 ->where('finaliza', '>=', $init->format('Y-m-d'));
