@@ -7,6 +7,10 @@ $.validator.addMethod(
 );
 
 $(function () {
+    $(document).on("input", ".input-number", function () {
+        this.value = this.value.replace(/[^0-9]/g, "");
+    });
+
     if ($(".select2").length != 0) {
         $(".select2").select2({ theme: "bootstrap4" });
     }
@@ -978,68 +982,70 @@ $("#area_trabajo_report").on("change", function () {
 $("#tipo_periodo_report").on("change", function () {
     ///siempre mantenemos lso botones desactivados
     var url = $(this).data("href");
-    var tipo_periodo = $(this).val();
+    if (url !== undefined) {
+        var tipo_periodo = $(this).val();
 
-    var data = {
-        tipo_periodo: tipo_periodo,
-        mes: $("#mes_report").val(),
-        _token: $("input[name=_token]").val(),
-    };
-    $.ajax({
-        type: "POST",
-        url: url,
-        data: data,
-        dataType: "json",
-        success: function (data) {
-            switch (tipo_periodo) {
-                case "Quincenal":
-                    $("#corte_report").empty();
-                    $("#corte_report").append(
-                        $("<option></option>")
-                            .attr("value", "0")
-                            .text("[TODO EL MES]")
-                    );
-
-                    //el datatimepicjker se inicializa mediante la cantidad de meses segun el permisos otorgado
-                    $("#mes_report").attr("disabled", false);
-
-                    $.each(data.opcion_corte_show, function (key, value) {
+        var data = {
+            tipo_periodo: tipo_periodo,
+            mes: $("#mes_report").val(),
+            _token: $("input[name=_token]").val(),
+        };
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: data,
+            dataType: "json",
+            success: function (data) {
+                switch (tipo_periodo) {
+                    case "Quincenal":
+                        $("#corte_report").empty();
                         $("#corte_report").append(
                             $("<option></option>")
-                                .attr("value", key)
-                                .text(value)
-                                .prop("selected", false) // Marca como seleccionada la única opción
+                                .attr("value", "0")
+                                .text("[TODO EL MES]")
                         );
-                    });
-                    break;
-                case "Semanal":
-                    $("#corte_report").empty();
-                    $("#corte_report").append(
-                        $("<option></option>")
-                            .attr("value", "0")
-                            .text("[TODO EL MES]")
-                    );
 
-                    $("#mes_report").attr("disabled", false);
+                        //el datatimepicjker se inicializa mediante la cantidad de meses segun el permisos otorgado
+                        $("#mes_report").attr("disabled", false);
 
-                    $.each(data.arreglo_semanal, function (key, value) {
+                        $.each(data.opcion_corte_show, function (key, value) {
+                            $("#corte_report").append(
+                                $("<option></option>")
+                                    .attr("value", key)
+                                    .text(value)
+                                    .prop("selected", false) // Marca como seleccionada la única opción
+                            );
+                        });
+                        break;
+                    case "Semanal":
+                        $("#corte_report").empty();
                         $("#corte_report").append(
                             $("<option></option>")
-                                .attr("value", key)
-                                .text(value)
+                                .attr("value", "0")
+                                .text("[TODO EL MES]")
                         );
-                    });
-                    break;
-            }
-        },
-        error: function (data) {
-            var Toastr = main();
-            Toastr.fire({
-                icon: "error",
-                title: data.responseJSON.message,
-            });
-        },
-    });
+
+                        $("#mes_report").attr("disabled", false);
+
+                        $.each(data.arreglo_semanal, function (key, value) {
+                            $("#corte_report").append(
+                                $("<option></option>")
+                                    .attr("value", key)
+                                    .text(value)
+                            );
+                        });
+                        break;
+                }
+            },
+            error: function (data) {
+                var Toastr = main();
+                Toastr.fire({
+                    icon: "error",
+                    title: data.responseJSON.message,
+                });
+            },
+        });
+    }
 });
 $("#mes_report").on("blur", function () {
     ///siempre mantenemos lso botones desactivados

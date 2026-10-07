@@ -85,13 +85,13 @@
                                     <br />                                  
                                     <h5 Style="color: red;"> Recomendaciones a considerar al momento de subir el archivo:</h5>
                                     <p><h6>Tenga en cuenta, que podra asignar participantes a los cursos que aun no esten aperturados y hasta 2 día despues de iniciar.</h6></p>
-                                    <p><h6>Utilice el formato suministrado para cargar los datos basicos de  los participantes, si no lo tienes Descarga <a href="{{ \Storage::disk('public')->url('Formato Participantes Cursos.xlsx')}}">Aqui</a></h6></p>
+                                    <p><h6>Utilice el formato suministrado para cargar los datos basicos de  los participantes, si no lo tienes Descarga <a href="{{ \Storage::disk('public')->url('Formato Participantes Cursos.xlsx') }}">Aqui</a></h6></p>
                                     <p><h6>No realice ninguna modificación en las cabeceras de las columnas.</h6></p> 
                                 </div> 
                             </div>
-                            </form                            
+                        </form>                          
                         </div>
-                        <!-- /.card-body -->
+                        <!-- /.card-body Storage::disk('public')->url('Formato Participantes Cursos.xlsx')-->
                     </div>
                     <!-- /.card -->
                 </div>

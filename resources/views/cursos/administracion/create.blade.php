@@ -49,7 +49,7 @@
                                     </div> 
                                 </div>
                             </div>                                 
-                            <div class="col-sm-6">
+                            <div class="col-sm-4">
                                 <div class="form-group">
                                     <label class="col-sm-12 col-form-label" for="carteras">Unidad/Campaña <span style="color:red">*</span></label>                                 
                                     <div class="input-group">
@@ -65,7 +65,7 @@
                                     </div> 
                                 </div>
                             </div>
-                            <div class="col-sm-6">
+                            <div class="col-sm-4">
                                 <div class="form-group">
                                     <label class="col-sm-12 col-form-label" for="skill">Segmento/Skill <span style="color:red">*</span></label>  
                                     <div class="input-group">
@@ -78,7 +78,7 @@
                                     </div> 
                                 </div>
                             </div>
-                            <div class="col-sm-6">
+                            <div class="col-sm-4">
                                 <div class="form-group">
                                     <label class="col-sm-12 col-form-label" for="horario">Horario <span style="color:red">*</span></label>  
                                     <div class="input-group">
@@ -96,12 +96,12 @@
                             </div>
                             <div class="col-sm-6">
                                 <div class="form-group">
-                                    <label class="col-sm-12 col-form-label" for="sede">Sede <span style="color:red">*</span></label>  
+                                    <label class="col-sm-6 col-form-label" for="sede">Sede <span style="color:red">*</span></label>  
                                     <div class="input-group">
                                         <div class="input-group-prepend">
                                             <span class="input-group-text"><i class="fa fa-building"></i></span>
                                         </div>
-                                        <select name="sede" id="sede" required class="form-control select2">                                                   
+                                        <select name="sede" id="sede" required class="form-control select2" data-href="{{ route('cursos.search.salas') }}">                                                   
                                             <option value="">[SELECCIONE]</option>    
                                             @foreach($sedes as $key => $sedes)
                                             <option value="{{$sedes->nombre_sede}}">{{$sedes->real_name}}</option>   
@@ -109,10 +109,25 @@
                                         </select>                                              
                                     </div> 
                                 </div>
-                            </div>                           
-                            <div class="col-md-12 region-estado" style="display: none;">
+                            </div>   
+                            <div class="col-sm-6 sala-input" style="display: none;">
                                 <div class="form-group">
-                                    <label class="col-sm-12 col-form-label" for="region">Region <span style="color:red">*</span></label>  
+                                    <label class="col-sm-12 col-form-label" for="sala">Sala <span style="color:red">*</span></label>  
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text"><i class="fa fa-building"></i></span>
+                                        </div>
+                                        <select name="sala" id="sala" required class="form-control select2" 
+                                        data-href="{{ route('cursos.search.validate') }}">                                                   
+                                            <option value="">[SELECCIONE]</option>    
+                                         
+                                        </select>                                              
+                                    </div> 
+                                </div>
+                            </div>                             
+                            <div class="col-md-6 region-estado" style="display: none;">
+                                <div class="form-group">
+                                    <label class="col-sm-6 col-form-label" for="region">Region <span style="color:red">*</span></label>  
                                     <div class="input-group">
                                         <div class="input-group-prepend">
                                             <span class="input-group-text"><i class="fa fa-globe"></i></span>

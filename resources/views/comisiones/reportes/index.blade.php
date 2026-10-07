@@ -28,6 +28,11 @@
             <div class="card">
                 <div class="card-header">
                     <h3 class="card-title">Exportar Comisiones / Variables </h3>
+                    <div class="btn-group float-right">                                
+                       @permission('comisiones.search.personalunique')
+                        <a style="position: relative;" class="btn btn-primary " data-toggle="tooltip" data-placement="top" title="Consultar Pagos Por Personal" href="{{ route('comisiones.search.empleado.unique') }}"><i class="fa fa-search"></i></a>
+                        @endpermission
+                    </div> 
                 </div>
                 <div class="card-body">
                     <form action="{{route('comisiones.export.process')}}" method="POST" id="donwloadreportes" class="form-horizontal form-label-left" enctype ='multipart/form-data'>

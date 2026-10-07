@@ -91,6 +91,7 @@
                                                         <th>Segmento/Skill</th>
                                                         <th>Facilitador</th>                                                                                                                                    
                                                         <th>Sede</th> 
+                                                        <th>Sala</th> 
                                                         <th>Acciones</th>
                                                     </tr>
                                                 </thead>                                     

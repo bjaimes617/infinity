@@ -135,9 +135,14 @@ $("#searchcursos").validate({
                         { data: "skill" },
                         { data: "facilitador" },
                         { data: "sede" },
+                        { data: "sala" },
                         { data: "estatus" },
                         { data: "acciones" },
                     ],
+                    language: {
+                        processing:
+                            " <i class='fa fa-spinner fa-spin fa-2x'></i> Procesando, por favor espere...",
+                    },
                 });
                 ///aplica a elementos visibles
                 $(".estatuscursos").bootstrapSwitch({
@@ -180,18 +185,90 @@ $("#searchcursos").validate({
 
 // aplicable ->create cursos
 $("#sede").on("change", function () {
-    console.log("ejecuta");
     var sede = $(this).val();
     if (sede == "STV" || sede == "ATENAS") {
         $(".region-estado").show();
         $("#region").prop("required", true);
         $("#estado").prop("required", true);
+        $("#ciudad").prop("required", true);
+
+        $(".sala-input").hide();
+        $("#sala").prop("required", false).val("").trigger("change.select2");
+        $("#sala").removeClass("is-invalid").removeData("previousValue");
+        $("#sala")
+            .closest(".form-group")
+            .find("span.error, span.is-invalid")
+            .remove();
     } else {
         $(".region-estado").hide();
         $("#region").prop("required", false);
         $("#estado").prop("required", false);
+        $("#ciudad").prop("required", false);
+
+        $(".sala-input").show();
+        $("#sala").prop("required", true);
+        $.ajax({
+            type: "POST",
+            url: $(this).data("href"),
+            data: {
+                sede: sede,
+                periodo: $("#fechacurso").val(),
+                _token: $("input[name='_token']").val(),
+            },
+            dataType: "json",
+            success: function (data) {
+                $("#sala").empty();
+                $("#sala").append(
+                    $("<option></option>")
+                        .attr("value", "")
+                        .text("[SELECCIONE]")
+                );
+                for (i = 0; i < data.length; i++) {
+                    $("#sala").append(
+                        $("<option></option>")
+                            .attr("value", data[i].sala)
+                            .text(data[i].sala)
+                    );
+                }
+                $("#sala").val("").trigger("change.select2");
+                $("#sala")
+                    .removeClass("is-invalid")
+                    .removeData("previousValue");
+                $("#sala")
+                    .closest(".form-group")
+                    .find("span.error, span.is-invalid")
+                    .remove();
+            },
+            error: function (data) {
+                var Toastr = main();
+                Toastr.fire({
+                    icon: "error",
+                    title: data.responseJSON
+                        ? data.responseJSON.message
+                        : "Error al cargar salas",
+                });
+            },
+        });
     }
 });
+
+// Validar sala al cambiar si está visible
+$("#sala").on("change", function () {
+    if ($(".sala-input").is(":visible")) {
+        console.log("dispara este change", $("#sala").data("href"));
+        $(this).removeData("previousValue");
+        $(this).valid();
+    }
+});
+
+// Revalidar sala si cambia el periodo (rango de fechas)
+$("#fechacurso").on("change apply.daterangepicker", function () {
+    if ($(".sala-input").is(":visible") && $("#sala").val()) {
+        $("#sala").removeData("previousValue");
+        $("#sala").valid();
+    }
+});
+
 // aplicable ->create cursos
 $("#region").on("change", function () {
     var region = $(this).val();
@@ -247,6 +324,63 @@ $("#cursos_store").validate({
     lang: "es",
     errorElement: "span",
     validClass: "is-valid",
+    ignore: function (index, element) {
+        if (
+            $(element).closest(".sala-input:hidden, .region-estado:hidden")
+                .length > 0
+        ) {
+            return true;
+        }
+        if (
+            $(element).hasClass("select2-hidden-accessible") ||
+            $(element).hasClass("select2")
+        ) {
+            return false;
+        }
+        return $(element).is(":hidden");
+    },
+    rules: {
+        sala: {
+            required: {
+                depends: function () {
+                    return $(".sala-input").is(":visible");
+                },
+            },
+            remote: {
+                depends: function () {
+                    return (
+                        $(".sala-input").is(":visible") &&
+                        $("#sala").val() !== "" &&
+                        $("#fechacurso").val() !== ""
+                    );
+                },
+                param: {
+                    url: $("#sala").data("href"),
+                    type: "POST",
+                    data: {
+                        curso_id: function () {
+                            return $("#curso_id").val();
+                        },
+                        sala: function () {
+                            return $("#sala").val();
+                        },
+                        periodo: function () {
+                            return $("#fechacurso").val();
+                        },
+                        _token: function () {
+                            return $("input[name='_token']").val();
+                        },
+                    },
+                },
+            },
+        },
+    },
+    messages: {
+        sala: {
+            required: "Por favor, seleccione una Opcion",
+            remote: "La sala ya esta ocupada para los días seleccionados",
+        },
+    },
     errorPlacement: function (error, element) {
         error.addClass("is-invalid text-sm");
         element.closest(".form-group").append(error);
@@ -332,6 +466,7 @@ $("#SearchParticipantescursos").validate({
                         { data: "skill" },
                         { data: "facilitador" },
                         { data: "sede" },
+                        { data: "sala" },
                         { data: "acciones" },
                     ],
                 });

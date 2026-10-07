@@ -247,6 +247,9 @@ Route::middleware(['auth', 'activity'])->group(function () {
     Route::get('cursos/creacion',                   [CursosController::class, 'create'])->middleware(['permission:cursos.create'])->name('cursos.create');
 
     Route::post('cursos/creacion',                  [CursosController::class, 'store'])->middleware(['permission:cursos.create'])->name('cursos.store');
+    Route::post('cursos/search/salas',              [CursosController::class, 'SearchSalas'])->middleware(['permission:cursos.create'])->name('cursos.search.salas');
+    Route::post('cursos/search/salas/validate',     [CursosController::class, 'SearchSalasValidate'])->middleware(['permission:cursos.create'])->name('cursos.search.validate');
+
     Route::put('change/cursos/estatus/{id}',        [CursosController::class, 'changeEstatusCursos'])->name('cursos.change.status');
     Route::get('cursos/creacion/editar/{idcurso}',  [CursosController::class, 'edit'])->middleware(['permission:cursos.edit'])->name('cursos.edit');
     Route::put('cursos/creacion/update/{idcurso}',  [CursosController::class, 'update'])->middleware(['permission:cursos.edit'])->name('cursos.update');
@@ -502,11 +505,13 @@ Route::middleware(['auth', 'activity'])->group(function () {
     Route::post('comisiones/selector/tipoperiodo/',             [ComisionesController::class, 'selectorPeriodos'])->name('selector.tipoperiodo');
     Route::post('comisiones/export/process',                    [ComisionesController::class, 'exportProcess'])->middleware(['permission:comisiones.import.export'])->name('comisiones.export.process');
 
+    Route::get('comisiones/search/empleado/unique',             [ComisionesController::class, 'SearchEmpleadoUnique'])->middleware('permission:comisiones.search.personalunique')->name('comisiones.search.empleado.unique');
+
     Route::get('comisiones/reporte/incidencias/cargadas',       [ComisionesController::class, 'Incidencias'])->middleware(['permission:comisiones.incidencia.reporte'])->name('comisiones.incidencias.reporte');
     Route::post('comisiones/reporte/incidencias/cargadas/show', [ComisionesController::class, 'IncidenciasShow'])->middleware(['permission:comisiones.incidencia.reporte'])->name('comisiones.incidencias.show');
 
 
-    ///////////////////////--------------------------------TALENTO HUMANO -> HABILIDADES BLANDAS -------------------------///     
+    ///////////////////////-------------------------------- TALENTO HUMANO -> HABILIDADES BLANDAS -------------------------///     
     Route::get('habilidades/evaluaciones/create',           [HabilidadController::class, 'createEvaluacion'])->middleware(['permission:habilidades.blandas.create'])->name('habilidades.evaluacion.create');
     Route::post('habilidades/evaluaciones/create/save',     [HabilidadController::class, 'storeEvaluacion'])->name('habilidades.evaluacion.store');
     Route::get('habilidades/evaluaciones/edit',             [HabilidadController::class, 'editEvaluacion'])->middleware(['permission:habilidades.blandas.edit'])->name('habilidades.evaluacion.edit');

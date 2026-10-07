@@ -46,19 +46,22 @@ class AsistenciaController extends Controller
         } else {
             $cursos = array();
         }
-
         return view('cursos.asistencia.index')->with(["cursos" => $cursos]);
     }
 
     public function create()
     {
 
+        $today = Carbon::today();
         $initPersonal = PersonalModel::where('cedula_empleado', \Auth::user()->cedula)->first();
+
         if ($initPersonal) {
-            $cursos = CursosModel::where('personal_id', $initPersonal->id)->get();
+            $cursos = CursosModel::where('personal_id', $initPersonal->id)
+                ->whereDate('inicio', '<=', $today)->where('active', 1)->get();
         } else {
             $cursos = array();
         }
+
 
         return view('cursos.asistencia.list')->with(["cursos" => $cursos]);
     }

@@ -1237,18 +1237,35 @@ class ComisionesController extends Controller
             \Auth::user();
 
         $nivel  = PoliceEstructure::VerifiedNivelPermissions($user);
+        #validamos si esta declaro el campo de cedula empleado en el request
+        if (isset($request->cedula_empleado)) {
+            $nombre_archivo = "";
+            $data   = null;
+            $fechareporte   = "";
 
-        $fecha  = carbon::createfromformat('m/Y', $request->mes_report)->startofmonth();
-        $anio   = $fecha->copy()->format('Y');
-        $mes    = $fecha->copy()->format('F');
+            $sql = OperacionesComisiones::where('cedula', $request->cedula_empleado);
+            if ($request->tipo_periodo_report !== "todos") {
+                $sql = $sql->where('tipo_periodo', $request->tipo_periodo_report);
+            } else {
+                $request->tipo_periodo_report = "Periodo General {$request->cedula_empleado}";
+            }
+        } else {
+            $fecha  = carbon::createfromformat('m/Y', $request->mes_report)->startofmonth();
+            $anio   = $fecha->copy()->format('Y');
+            $mes    = $fecha->copy()->format('F');
 
-        $fechareporte   = $fecha->copy()->format('m-Y');
-        $nombre_archivo = "";
+            $fechareporte   = $fecha->copy()->format('m-Y');
+            $nombre_archivo = "";
 
-        $data   = null;
-        $sql = OperacionesComisiones::where('tipo_periodo', $request->tipo_periodo_report)
-            ->where('mes', $mes)
-            ->where('anio', $anio);
+            $data   = null;
+            $sql = OperacionesComisiones::where('tipo_periodo', $request->tipo_periodo_report)
+                ->where('mes', $mes)
+                ->where('anio', $anio);
+
+            if ($request->corte_report !== "0") {
+                $sql = $sql->where('periodo', $request->corte_report);
+            }
+        }
 
         switch ($nivel) {
             case 4:
@@ -1278,11 +1295,6 @@ class ComisionesController extends Controller
                     $sql = $sql->where('gerencia_id', $request->area_trabajo_report)
                         ->whereIn('skill_id', $skillPermisado)
                         ->wherein('personal_id', $idPersonals);
-
-                    ///SI VIENE EL TIPO DE CORTE CON DATOS  
-                    if ($request->corte_report !== "0") {
-                        $sql = $sql->where('periodo', $request->corte_report);
-                    }
                 }
                 ///SI GERENCIA Y CARTERA TIENEN DATOS
                 if ($request->area_trabajo_report != "0" && $request->carteras_report != "0") {
@@ -1297,11 +1309,6 @@ class ComisionesController extends Controller
                         ->where('campana_id', $request->carteras_report)
                         ->whereIn('skill_id', $skillPermisado)
                         ->wherein('personal_id', $idPersonals);
-
-                    ///SI VIENE EL TIPO DE CORTE CON DATOS  
-                    if ($request->corte_report !== "0") {
-                        $sql = $sql->where('periodo', $request->corte_report);
-                    }
                 }
 
                 $data = $sql->get();
@@ -1316,10 +1323,6 @@ class ComisionesController extends Controller
                     $nombre_archivo = "Comisiones Generales " . $request->tipo_periodo_report . " " . $fechareporte;
 
                     $sql = $sql->whereIn('skill_id', $skillsautorize);
-                    ///SI VIENE EL TIPO DE CORTE CON DATOS
-                    if ($request->corte_report !== "0") {
-                        $sql = $sql->where('periodo', $request->corte_report);
-                    }
                 }
 
                 if ($request->area_trabajo_report != "0" && $request->carteras_report == "0") {
@@ -1330,11 +1333,6 @@ class ComisionesController extends Controller
                     $nombre_archivo = "Comisiones Generales de" . $gerencia . " " . $request->tipo_periodo_report . " del " . $fechareporte;
 
                     $sql = $sql->where('gerencia_id', $request->area_trabajo_report)->whereIn('skill_id', $skillsautorize);
-
-                    ///SI VIENE EL TIPO DE CORTE CON DATOS  
-                    if ($request->corte_report !== "0") {
-                        $sql = $sql->where('periodo', $request->corte_report);
-                    }
                 }
                 ///SI GERENCIA Y CARTERA TIENEN DATOS
                 if ($request->area_trabajo_report != "0" && $request->carteras_report != "0") {
@@ -1348,11 +1346,6 @@ class ComisionesController extends Controller
                     $sql = $sql->where('gerencia_id', $request->area_trabajo_report)
                         ->where('campana_id', $request->carteras_report)
                         ->whereIn('skill_id', $skillsautorize);
-
-                    ///SI VIENE EL TIPO DE CORTE CON DATOS  
-                    if ($request->corte_report !== "0") {
-                        $sql = $sql->where('periodo', $request->corte_report);
-                    }
                 }
 
                 $data = $sql->get();
@@ -1369,10 +1362,6 @@ class ComisionesController extends Controller
                     ///SI VIENE EL TIPO DE CORTE CON DATOS
 
                     $sql = $sql->whereIn('personal_id', $personal);
-
-                    if ($request->corte_report !== "0") {
-                        $sql = $sql->where('periodo', $request->corte_report);
-                    }
                 }
 
                 if ($request->area_trabajo_report != "0" && $request->carteras_report == "0") {
@@ -1383,11 +1372,6 @@ class ComisionesController extends Controller
                     $nombre_archivo = "Comisiones Generales de" . $gerencia . " " . $request->tipo_periodo_report . " del " . $fechareporte;
 
                     $sql = $sql->where('gerencia_id', $request->area_trabajo_report)->whereIn('personal_id', $personal);
-
-                    ///SI VIENE EL TIPO DE CORTE CON DATOS  
-                    if ($request->corte_report !== "0") {
-                        $sql = $sql->where('periodo', $request->corte_report);
-                    }
                 }
                 ///SI GERENCIA Y CARTERA TIENEN DATOS
                 if ($request->area_trabajo_report != "0" && $request->carteras_report != "0") {
@@ -1401,11 +1385,6 @@ class ComisionesController extends Controller
                     $sql = $sql->where('gerencia_id', $request->area_trabajo_report)
                         ->where('campana_id', $request->carteras_report)
                         ->whereIn('personal_id', $personal);
-
-                    ///SI VIENE EL TIPO DE CORTE CON DATOS  
-                    if ($request->corte_report !== "0") {
-                        $sql = $sql->where('periodo', $request->corte_report);
-                    }
                 }
 
                 $data = $sql->get();
@@ -1417,10 +1396,7 @@ class ComisionesController extends Controller
                 if ($request->area_trabajo_report == "0" && $request->carteras_report == "0") {
 
                     $nombre_archivo = "Comisiones Generales " . $request->tipo_periodo_report . " " . $fechareporte;
-                    ///SI VIENE EL TIPO DE CORTE CON DATOS
-                    if ($request->corte_report !== "0") {
-                        $sql = $sql->where('periodo', $request->corte_report);
-                    }
+                    ///SI VIENE EL TIPO DE CORTE CON DATOS                   
                 }
                 ///SI GERENCIA Y CARTERA TIENEN DATOS
                 if ($request->area_trabajo_report != "0" && $request->carteras_report == "0") {
@@ -1430,11 +1406,6 @@ class ComisionesController extends Controller
 
                     $nombre_archivo = "Comisiones Generales de" . $gerencia . " " . $request->tipo_periodo_report . " del " . $fechareporte;
                     $sql = $sql->where('gerencia_id', $request->area_trabajo_report);
-
-                    ///SI VIENE EL TIPO DE CORTE CON DATOS  
-                    if ($request->corte_report !== "0") {
-                        $sql = $sql->where('periodo', $request->corte_report);
-                    }
                 }
 
                 if ($request->area_trabajo_report != "0" && $request->carteras_report != "0") {
@@ -1446,11 +1417,6 @@ class ComisionesController extends Controller
 
                     $sql = $sql->where('gerencia_id', $request->area_trabajo_report)
                         ->where('campana_id', $request->carteras_report);
-
-                    ///SI VIENE EL TIPO DE CORTE CON DATOS  
-                    if ($request->corte_report !== "0") {
-                        $sql = $sql->where('periodo', $request->corte_report);
-                    }
                 }
 
                 $data = $sql->get();
@@ -1469,9 +1435,9 @@ class ComisionesController extends Controller
     ///REPORTE DE INCIDENCIAS BANCARIAS
     public function Incidencias()
     {
-
         return view('comisiones.reportes.incidencias');
     }
+
     public function IncidenciasShow(Request $request)
     {
 
@@ -1562,5 +1528,22 @@ class ComisionesController extends Controller
         }
 
         return json_encode([$TableQuincenal, $TableSemanal]);
+    }
+
+    public function SearchEmpleadoUnique()
+    {
+        $user = ENV('DEV_USER_CHANGE', false) ?
+            \Auth::loginUsingId(ENV('OTHER_USER_ID'), true) :
+            \Auth::user();
+
+        $nivel = PoliceEstructure::VerifiedNivelPermissions($user);
+
+        if ($nivel) {
+            $areas = PoliceEstructure::VerifiedGerenciasPermissions($nivel, $user);
+        } else {
+            return abort(403, "No cuenta con los Nivel necesario para acceder a estos recursos.");
+        }
+
+        return view('comisiones.reportes.SearchUnique')->with(["areas" => $areas, "esquema" => $this->esquema]);
     }
 }

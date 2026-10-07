@@ -20,23 +20,28 @@ use App\Models\personal\SkillModels;
 use App\Models\personal\PermisosCarteraModel;
 use App\Models\personal\PersonalModel;
 
-class ComisionesGeneralExport implements ShouldAutoSize, FromCollection, WithHeadings, WithMapping, WithChunkReading, WithStyles, WithEvents {
+class ComisionesGeneralExport implements ShouldAutoSize, FromCollection, WithHeadings, WithMapping, WithChunkReading, WithStyles, WithEvents
+{
 
     private $comisiones;
 
-    public function __construct($comisiones) {
+    public function __construct($comisiones)
+    {
         $this->comisiones = $comisiones;
     }
 
-    public function chunkSize(): int {
+    public function chunkSize(): int
+    {
         return 20;
     }
 
-    public function startRow(): int {
+    public function startRow(): int
+    {
         return 2;
     }
 
-    public function headings(): array {
+    public function headings(): array
+    {
         $columns = [
             "CI",
             "Trabajador",
@@ -60,6 +65,7 @@ class ComisionesGeneralExport implements ShouldAutoSize, FromCollection, WithHea
             "Total Altas",
             "Periodo",
             "Mes",
+            "Año",
             "Empresa",
             "CECO",
             "Estatus",
@@ -71,7 +77,8 @@ class ComisionesGeneralExport implements ShouldAutoSize, FromCollection, WithHea
         return $columns;
     }
 
-    public function collection() {
+    public function collection()
+    {
 
         /* foreach ($this->comisiones as $key => $value) {
 
@@ -104,7 +111,8 @@ class ComisionesGeneralExport implements ShouldAutoSize, FromCollection, WithHea
         return $this->comisiones;
     }
 
-    public function prepareRows($comisiones): array {
+    public function prepareRows($comisiones): array
+    {
         return array_map(function ($change) {
 
             $change->load('relationPersonal', 'relationCartera', 'relationSkill', 'relationLote', 'relationGerencia');
@@ -271,7 +279,8 @@ class ComisionesGeneralExport implements ShouldAutoSize, FromCollection, WithHea
         }, $comisiones);
     }
 
-    public function map($comisiones): array {
+    public function map($comisiones): array
+    {
 
         $columns = [
             "CI" => $comisiones->cedula,
@@ -296,6 +305,7 @@ class ComisionesGeneralExport implements ShouldAutoSize, FromCollection, WithHea
             "Total Altas" => $comisiones->total_atlas_ar != null ? $comisiones->total_atlas_ar : null,
             "Periodo" => $comisiones->periodo_name,
             "Mes" => trans('meses.' . $comisiones->mes),
+            "Año" => $comisiones->anio,
             "Empresa" => $comisiones->nomina,
             "CECO" => $comisiones->codcecos,
             "Estatus" => $comisiones->estatus_pago,
@@ -308,17 +318,19 @@ class ComisionesGeneralExport implements ShouldAutoSize, FromCollection, WithHea
         return $columns;
     }
 
-    public function styles(Worksheet $sheet) {
+    public function styles(Worksheet $sheet)
+    {
 
-        $sheet->getStyle('A1:AC1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:AD1')->getFont()->setBold(true);
 
-        $sheet->getStyle('A:AC')->getAlignment()->setHorizontal('center');
+        $sheet->getStyle('A:AD')->getAlignment()->setHorizontal('center');
     }
 
-    public function registerEvents(): array {
+    public function registerEvents(): array
+    {
         return [
             AfterSheet::class => function (AfterSheet $event) {
-                $event->sheet->getStyle('A1:AC1')->applyFromArray([
+                $event->sheet->getStyle('A1:AD1')->applyFromArray([
                     'fill' => [
                         'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
                         'startColor' => [

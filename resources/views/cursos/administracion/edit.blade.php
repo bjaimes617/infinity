@@ -37,6 +37,7 @@
                 <form method="POST" action="{{route('cursos.update',$curso->id)}}" id="cursos_store"  class="form-horizontal form-label-left">
                     @csrf
                     @method('PUT')
+                    <input type="hidden" id="curso_id" name="curso_id" value="{{$curso->id}}">
                     <div class="card-body">                              
                         <div class="row">
                             <div class="col-sm-12">                                    
@@ -50,7 +51,7 @@
                                     </div> 
                                 </div>
                             </div>                                 
-                            <div class="col-sm-6">
+                            <div class="col-sm-4">
                                 <div class="form-group">
                                     <label class="col-sm-12 col-form-label" for="carteras">Unidad/Campaña <span style="color:red">*</span></label>                                 
                                     <div class="input-group">
@@ -66,7 +67,7 @@
                                     </div> 
                                 </div>
                             </div>
-                            <div class="col-sm-6">
+                            <div class="col-sm-4">
                                 <div class="form-group">
                                     <label class="col-sm-12 col-form-label" for="skill">Segmento/Skill <span style="color:red">*</span></label>  
                                     <div class="input-group">
@@ -82,7 +83,7 @@
                                     </div> 
                                 </div>
                             </div>
-                            <div class="col-sm-6">
+                            <div class="col-sm-4">
                                 <div class="form-group">
                                     <label class="col-sm-12 col-form-label" for="horario">Horario <span style="color:red">*</span></label>  
                                     <div class="input-group">
@@ -105,7 +106,7 @@
                                         <div class="input-group-prepend">
                                             <span class="input-group-text"><i class="fa fa-building"></i></span>
                                         </div>
-                                        <select name="sede" id="sede" required class="form-control select2"  data-href="{{route('selector.ciudades')}}">                                                    
+                                        <select name="sede" id="sede" required class="form-control select2" data-href="{{ route('cursos.search.salas') }}">                                                    
                                             <option value="">[SELECCIONE]</option>    
                                             @foreach($sedes as $key => $sede)
                                             <option value="{{$sede->nombre_sede}}" @if($sede->nombre_sede == $curso->sede) Selected @endif>{{$sede->real_name}}</option>   
@@ -115,8 +116,25 @@
                                 </div>
                             </div>                                 
 
-        
-                            <div class="col-md-12 region-estado"  @if($regionselect == null) style="display: none;" @endif>
+                            <div class="col-sm-6 sala-input" @if($curso->sala_asignada == null) style="display: none;" @endif>
+                                <div class="form-group">
+                                    <label class="col-sm-12 col-form-label" for="sala">Sala <span style="color:red">*</span></label>  
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text"><i class="fa fa-building"></i></span>
+                                        </div>
+                                        <select name="sala" id="sala" required class="form-control select2" 
+                                        data-href="{{ route('cursos.search.validate') }}">                                                   
+                                            <option value="">[SELECCIONE]</option>    
+                                            @foreach($salas as $key => $sala)
+                                            <option value="{{$sala->sala}}" @if($sala->sala == $curso->sala_asignada) Selected @endif>{{$sala->sala}}</option>   
+                                            @endforeach
+                                        </select>                                              
+                                    </div> 
+                                </div>
+                            </div> 
+
+                            <div class="col-md-6 region-estado"  @if($regionselect == null) style="display: none;" @endif>
                                 <div class="form-group">
                                     <label class="col-sm-12 col-form-label" for="region">Region <span style="color:red">*</span></label>  
                                     <div class="input-group">
@@ -140,7 +158,7 @@
                                         <div class="input-group-prepend">
                                             <span class="input-group-text"><i class="fas fa-city"></i></span>
                                         </div>
-                                        <select name="estado" id="estado" class="form-control select2">                                                   
+                                        <select name="estado" id="estado" class="form-control select2" data-href="{{route('selector.ciudades')}}">                                                   
                                             <option value="">[SELECCIONE]</option> 
                                             @if(!empty($estados))
                                             <option value="{{$estados->id}}" selected>{{$estados->nombre_estado}}</option>                                           
