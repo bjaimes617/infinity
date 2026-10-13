@@ -99,12 +99,12 @@
                                             </div>
                                         </div>
 
-                                        <div class="col-md-4">
+                                        <div class="col-md-6">
                                             <label class="col-form-label" for="gerencia">Gerencia <span style="color:red">*</span></label>
                                             <div class="form-group">
                                                 <div class="input-group">
                                                     <select name="gerencia[]" id="gerencia" required
-                                                            data-href="{{route('selector.areas.estructuras')}}" multiple="multiple" class="form-control select2">                                                           
+                                                            data-href="{{route('selector.areas.estructuras')}}" multiple="multiple" class="form-control duallistbox">                                                           
                                                         @foreach($gerencias as $gerencia)                                                     
                                                         <option value='{{$gerencia->id}}' @if(in_array($gerencia->id,$gerencias_seleccionadas)) selected @endif>
                                                             {{$gerencia->nombre_campana}}
@@ -114,12 +114,12 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="col-md-4">
+                                        <div class="col-md-6">
                                             <label class="col-form-label" for="cartera">Unidad/Campaña <span style="color:red">*</span></label>
                                             <div class="form-group">
                                                 <div class="input-group">
                                                     <select name="cartera[]" id="cartera" required  multiple="multiple"
-                                                            data-href="{{route('selector.carteras.estructuras')}}" class="form-control select2">
+                                                            data-href="{{route('selector.carteras.estructuras')}}" class="form-control duallistbox">
                                                         @foreach($carteras as $cartera)                                                     
                                                         <option value='{{$cartera->id}}'selected>
                                                             {{$cartera->nombre_cartera}} - {{$cartera->RelationGerencias->nombre_campana}}
@@ -129,12 +129,12 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="col-md-4">
+                                        <div class="col-md-6">
                                             <label class="col-form-label" for="skill">Segmento/Skill <span style="color:red">*</span></label>
                                             <div class="form-group">
                                                 <div class="input-group">
                                                     <select name="skill[]" id="skill" required multiple="multiple"                                                                                                                 
-                                                            class="form-control select2"  style="width: 100%;">
+                                                            class="form-control duallistbox"  style="width: 100%;">
                                                         @foreach($skills as $skill)                                                     
                                                         <option value='{{$skill->id}}'selected>
                                                             {{$skill->nombre_skill}} - {{$skill->RelationCarteras->RelationGerencias->abrev}}
@@ -144,30 +144,32 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="col-md-6">                                    
-                                            <div class="form-group">
-                                                <label for="rango_eval" class="col-form-label">Rango Fecha Evaluación <span class="required" style="color:red;"> * </span> </label>      
-                                                <div class="input-group">     
-                                                    <div class="input-group-prepend">
-                                                        <span class="input-group-text"><i class="fa fa-calendar"></i></span>
-                                                    </div>                                   
-                                                    <input type="text" name="rango_eval" value="{{$rango_evaluacion}}" class="form-control daterange" id="rango_eval" placeholder="[FECHA]" required data-parsley-required-message="Este campo es obligatorio">
-                                                </div>  
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">                                    
-                                            <div class="form-group">
-                                                <label for="valor_max" class="col-form-label">Valor maximo en % <span class="required" style="color:red;"> * </span> </label>           
-                                                <div class="input-group">     
-                                                    <div class="input-group-prepend">
-                                                        <span class="input-group-text"><i class="fa fa-percent"></i></span>
-                                                    </div>                                   
-                                                    <input type="number" step="0.001" min="0.00" value="{{$evaluacion->valor_max}}" placeholder="0.000" 
-                                                           required class="form-control valor-base" id="valor_max" name="valor_max">
-                                                </div>  
-                                            </div>
-                                        </div>
-                                        <div class="col-md-12">                                    
+                                        <div class="col-md-6">     
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                     <div class="form-group">
+                                                        <label for="rango_eval" class="col-form-label">Rango Fecha Evaluación <span class="required" style="color:red;"> * </span> </label>      
+                                                        <div class="input-group">     
+                                                            <div class="input-group-prepend">
+                                                                <span class="input-group-text"><i class="fa fa-calendar"></i></span>
+                                                            </div>                                   
+                                                            <input type="text" name="rango_eval" value="{{$rango_evaluacion}}" class="form-control daterange" id="rango_eval" placeholder="[FECHA]" required data-parsley-required-message="Este campo es obligatorio">
+                                                        </div>  
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-12">                                    
+                                                    <div class="form-group">
+                                                        <label for="valor_max" class="col-form-label">Valor maximo en % <span class="required" style="color:red;"> * </span> </label>           
+                                                        <div class="input-group">     
+                                                            <div class="input-group-prepend">
+                                                                <span class="input-group-text"><i class="fa fa-percent"></i></span>
+                                                            </div>                                   
+                                                            <input type="number" step="0.001" min="0.00" value="{{$evaluacion->valor_max}}" placeholder="0.000" 
+                                                                required class="form-control valor-base" id="valor_max" name="valor_max">
+                                                        </div>  
+                                                    </div>
+                                                </div>
+                                                 <div class="col-md-12">                                    
                                             <div class="form-group">
                                                 <label for="estatus" class="col-form-label">Estatus <span class="required" style="color:red;"> * </span> </label>           
                                                 <div class="input-group">                                      
@@ -178,6 +180,8 @@
                                                 </div>  
                                             </div>
                                         </div>
+                                    </div>
+                                </div>    
                                         <div class="col-md-12">
                                             <div class="btn-group  btn-block float-right">
                                                 <button type="button"class="btn btn-primary validateNext" onclick="stepper.next()" 
@@ -377,7 +381,7 @@
                                                     id="add-range" onclick="add_range();" 
                                                     data-conteo-range="{{$rangos->count()}}" 
                                                     data-loading-text="<i class='fa fa-spinner fa-spin '></i> Procesando..." >
-                                                <i class="fas fa-plus-circle"></i> Agregar Rango de Evaluación</button>                                                                                                        
+                                                <i class="fas fa-plus-circle"></i> Agregar Rango de Descripcion de Conclusiones </button>                                                                                                        
                                         </div>
                                         <div class="col-md-8">
                                             <div class="form-group">
@@ -571,7 +575,7 @@
                     <label for="label6" class="col-form-label">Descripción</label> <span class="required" style="color:red;"> * </span>
                     <div class="input-group">
                         <input type="text" class="required form-control" id="label6" name="label6" rows="3" 
-                               placeholder="Describa el rango de puntaje especificado..." required>
+                               placeholder="Describa la Conclusion De la Nota Final" required>
                     </div>  
                 </div>
             </div>
@@ -617,6 +621,8 @@
 <link media="all" type="text/css" rel="stylesheet" href="{{asset('plugins/bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.css')}}">
 <link media="all" type="text/css" rel="stylesheet" href="{{asset('plugins/select2/css/select2.min.css')}}">
 <link media="all" type="text/css" rel="stylesheet" href="{{asset('plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css')}}">
+<link media="all" type="text/css" rel="stylesheet" href="{{asset('plugins/datatables-buttons/css/buttons.bootstrap4.min.css')}}">
+<link media="all" type="text/css" rel="stylesheet" href="{{asset('plugins/bootstrap4-duallistbox/bootstrap-duallistbox.min.css')}}">  
 
 @endpush
 @push('scripts')
@@ -628,5 +634,6 @@
 <script src="{{asset('plugins/select2/js/select2.js')}}" type="text/javascript"></script>
 <script src="{{asset('plugins/bs-stepper/js/bs-stepper.min.js')}}" type="text/javascript"></script>
 <script src="{{asset('plugins/bootstrap-switch/js/bootstrap-switch.min.js')}}" type="text/javascript"></script>
+<script src="{{asset('plugins/bootstrap4-duallistbox/jquery.bootstrap-duallistbox.min.js')}}" type="text/javascript"></script>
 <script src="{{asset('js/habilidades/plugins.js')}}"></script>
 @endpush

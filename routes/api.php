@@ -49,7 +49,7 @@ Route::post(
 );
 
 ///check datos de recibos y retorna el pdf
-Route::post(
+Route::middleware('activity')->post(
         '/Personal/generate/resource/payments/',
         'Api\PersonalApiController@ResourcePayments',
         header('Access-Control-Allow-Methods: POST'),
