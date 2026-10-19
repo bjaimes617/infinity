@@ -1744,7 +1744,7 @@ class PersonalController extends Controller
                 "estatus_lp" => $estatus_lp,
                 "zona_lp" => $zona_lp,
                 "sede_lp" => $sedelp,
-                "tipoContrato" => $this->tipoContrato,
+                "tipoContrato" => $this->contractual,
                 "nacionalidades" => $this->nacionalidades,
                 "especialidades" => $this->especialidades,
                 "horariosTransporte" => $this->horarioTransportes,

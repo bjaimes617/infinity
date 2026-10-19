@@ -801,7 +801,7 @@
                                                                 <option value='{{$key}}' @if($personal->getrawOriginal('situacion_contractual') == $key) selected @endif >{{$contractual}}</option>
                                                                 @endforeach
                                                             </select>                                                    
-                                                        </div> 
+                                                        </div>                                                      
                                                         @if(isset($cambios->situacion_contractual))
                                                         <span class="cambios">Nuevo valor: {{$tipoContrato[$cambios->situacion_contractual]}}</span>
                                                         @endif  
