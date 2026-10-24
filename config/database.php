@@ -79,35 +79,27 @@ return [
         ],
 
         'sqlsrvdg' => [
-            'driver'   => 'sqlsrv',
-            'dsn'      => 'odbc:Driver={ODBC Driver 17 for SQL Server};'
-                        . 'Server=' . env('DB_HOST2', 'localhost') . ',' . env('DB_PORT2', '1433') . ';'
-                        . 'Database=' . env('DB_DATABASEDG', 'forge') . ';'
-                        . 'Encrypt=no;'
-                        . 'TrustServerCertificate=yes;',
-            'host'     => env('DB_HOST2', 'localhost'),
-            'port'     => env('DB_PORT2', '1433'),
-            'database' => env('DB_DATABASEDG', 'forge'),
+            'driver' => 'sqlsrv',
+            'url' => env('DATABASE_URL'),
+            'host' => env('DB_HOST2', 'localhost'),
+            'port' => env('DB_PORT2', '1433'),
+            'database' => env('DB_DATABASEDG', 'forge'),            
             'username' => env('DB_USERNAME2', 'forge'),
             'password' => env('DB_PASSWORD2', ''),
-            'charset'  => 'utf8',
-            'prefix'   => '',
+            'charset' => 'utf8',
+            'prefix' => '',
             'prefix_indexes' => true,
         ],
         'sqlsrvdiga' => [
-            'driver'   => 'sqlsrv',
-            'dsn'      => 'odbc:Driver={ODBC Driver 17 for SQL Server};'
-                        . 'Server=' . env('DB_HOST2', 'localhost') . ',' . env('DB_PORT2', '1433') . ';'
-                        . 'Database=' . env('DB_DATABASEDIGA') . ';'
-                        . 'Encrypt=no;'
-                        . 'TrustServerCertificate=yes;',
-            'host'     => env('DB_HOST2', 'localhost'),
-            'port'     => env('DB_PORT2', '1433'),
-            'database' => env('DB_DATABASEDIGA'),
+            'driver' => 'sqlsrv',
+            'url' => env('DATABASE_URL'),
+            'host' => env('DB_HOST2','localhost'),
+            'port' => env('DB_PORT2', '1433'),
+            'database' => env('DB_DATABASEDIGA'),            
             'username' => env('DB_USERNAME2'),
             'password' => env('DB_PASSWORD2'),
-            'charset'  => 'utf8',
-            'prefix'   => '',
+            'charset' => 'utf8',
+            'prefix' => '',
             'prefix_indexes' => true,
         ],
 
@@ -143,7 +135,7 @@ return [
 
         'options' => [
             'cluster' => env('REDIS_CLUSTER', 'predis'),
-            'prefix' => env('REDIS_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_') . '_database_'),
+            'prefix' => env('REDIS_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_database_'),
         ],
 
         'default' => [

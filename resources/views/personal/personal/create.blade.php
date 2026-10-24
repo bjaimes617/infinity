@@ -507,11 +507,11 @@
                                         <div class="col-md-4">
                                             <label class="col-form-label" for="horario">Horario Laboral <span style="color:red">*</span></label>
                                             <div class="form-group">
-                                                <div class="input-group ">
+                                                <div class="input-group">
                                                     <div class="input-group-prepend">
                                                         <span class="input-group-text"><i class="fas fa-user-clock"></i></span>
                                                     </div>
-                                                    <select name="horario" id="horario" required class="form-control">
+                                                    <select name="horario" id="horario" required class="select2 form-control">
                                                         <option value=''> [SELECCIONE]</option>
                                                         @foreach($horariolab as $key => $horario)
                                                         <option value='{{$key}}'> {{$horario}}</option>
@@ -522,15 +522,13 @@
                                         </div>
                                         <div class="col-md-4">
                                             <label class="col-form-label" for="libranza">Esquema de Libranzas <span style="color:red">*</span></label>
-                                            <div class="form-group">
-                                                <div class="input-group ">
-                                                    <select name="libranza" id="libranza" required class="form-control">
-                                                        <option value=''> [SELECCIONE]</option>
-                                                        @foreach($libranza as $key => $libranzas)
-                                                        <option value='{{$libranzas->id}}'>{{$libranzas->cod_libranza}} | {{$libranzas->libranzas}}</option>
-                                                        @endforeach
-                                                    </select>
-                                                </div>
+                                            <div class="form-group">                                               
+                                                <select name="libranza" id="libranza" required class="select2 form-control">
+                                                    <option value=''> [SELECCIONE]</option>
+                                                    @foreach($libranza as $key => $libranzas)
+                                                    <option value='{{$libranzas->id}}'>{{$libranzas->cod_libranza}} | {{$libranzas->libranzas}}</option>
+                                                    @endforeach
+                                                </select>                                                                             
                                             </div>
                                         </div>
                                         <div class='col-md-12'>

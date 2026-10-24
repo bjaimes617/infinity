@@ -1103,6 +1103,7 @@ class PersonalController extends Controller
                 $objPersonal->finalizacion_2 = Carbon::createFromFormat('d/m/Y', $request->finalcontrato2)->format('Y-m-d');
             } else {
                 $objPersonal->contrato_2 = null;
+                $objPersonal->finalizacion_2 = null;
             }
 
             $objPersonal->situacion_contractual = $request->scontrato;

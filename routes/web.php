@@ -78,7 +78,9 @@ Route::post("/password/reset",                  [ResetPasswordController::class,
 
 Route::middleware(['auth', 'activity'])->group(function () {
 
-    Route::get('/home',          [HomeController::class, 'index'])->name('home');
+    Route::get('/home',                     [HomeController::class, 'index'])->name('home');
+    Route::get('/dashboard/personal',       [HomeController::class, 'DashboardPersonal'])->name('dashboard.personal');
+
     ///Permission
     Route::get('permissions/',                  [PermissionsController::class, 'index'])->middleware('permission:permissions.show')->name('permissions.index');
     Route::get('permissions/create',            [PermissionsController::class, 'create'])->middleware('permission:permissions.create')->name('permissions.create');
