@@ -677,7 +677,7 @@ class PersonalController extends Controller
             }
 
             $objeto_personal = json_encode($objPersonal);
-            ActivityLogger::activity("Personal registrado " . $objPersonal->cedula_empleado, $objeto_personal);
+            $this->activity("Personal registrado " . $objPersonal->cedula_empleado, $objeto_personal);
 
             \Session::flash('success', 'El Expediente personal fue almacenado exitosamente.');
             return redirect(route('personal.add'));
@@ -1352,7 +1352,7 @@ class PersonalController extends Controller
                             $asistencia->save();
                         }
                         $objeto_asistencia = json_encode(["Fecha Inicio:" => $startDate, "fecha Final: " => $enddate]);
-                        ActivityLogger::activity("Registro de Vacaciones Cedula: " . $objPersonal->cedula_empleado, $objeto_asistencia);
+                        $this->activity("Registro de Vacaciones Cedula: " . $objPersonal->cedula_empleado, $objeto_asistencia);
                         break;
                     case 1:
                         $startDate  = Carbon::createFromFormat('d/m/Y', $request->vacaciones_init)->format('Y-m-d');
@@ -1402,7 +1402,7 @@ class PersonalController extends Controller
                                     $asistencia->save();
                                 }
                                 $objeto_asistencia = json_encode(["Fecha Inicio:" => $startDate, "fecha Final: " => $enddate]);
-                                ActivityLogger::activity("Registro de Vacaciones Cedula: " . $objPersonal->cedula_empleado, $objeto_asistencia);
+                                $this->activity("Registro de Vacaciones Cedula: " . $objPersonal->cedula_empleado, $objeto_asistencia);
                             }
                         }
                         break;
@@ -1424,7 +1424,7 @@ class PersonalController extends Controller
                         break;
                 }
                 $objeto_personal = json_encode($objPersonal);
-                ActivityLogger::activity("Expediente Web Actualizado " . $objPersonal->cedula_empleado, $objeto_personal);
+                $this->activity("Expediente Web Actualizado " . $objPersonal->cedula_empleado, $objeto_personal);
                 return Redirect()->route('personal.index');
             } else {
                 \Session::flash('error', "Ocurrio un error al actualizar");

@@ -580,7 +580,7 @@ class UpdatePersonalImport implements ToCollection, WithHeadingRow, WithValidati
                 $objPersonal->save();
                 $objeto_personal = json_encode([$objPersonal, $row]);
 
-                ActivityLogger::activity($mensaje_log, $objeto_personal);
+                $this->activity($mensaje_log, $objeto_personal);
             }
             \Session::flash('success', 'Un total de ' . $cantidad . ' Expedientes fueron actualizados exitosamente, por favor valide los datos.');
             return true;

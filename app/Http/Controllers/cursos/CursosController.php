@@ -31,6 +31,8 @@ use jeremykenedy\LaravelLogger\App\Http\Traits\ActivityLogger;
 class CursosController extends Controller
 {
 
+    use ActivityLogger;
+
     public function __construct()
     {
         $this->middleware(['auth', 'verified', 'check.password']);
@@ -356,7 +358,7 @@ class CursosController extends Controller
 
                 $participantes_cursos = json_encode($participantes);
 
-                ActivityLogger::activity("Curso eliminado - DGC" . $curso->id . " - " . $curso->Relationskill->nombre_skill . " - " . $curso->inicio . " - " . $curso->finaliza, $participantes_cursos);
+                $this->activity("Curso eliminado - DGC" . $curso->id . " - " . $curso->Relationskill->nombre_skill . " - " . $curso->inicio . " - " . $curso->finaliza, $participantes_cursos);
             }
 
             $curso->delete();

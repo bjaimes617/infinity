@@ -15,37 +15,39 @@ use DateInterval;
 use jeremykenedy\LaravelLogger\App\Http\Traits\ActivityLogger;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 
-class AsistenciaImport implements ToCollection, WithHeadingRow, WithValidation {
+class AsistenciaImport implements ToCollection, WithHeadingRow, WithValidation
+{
 
     use ActivityLogger;
     use Importable;
 
-    public function collection(Collection $rows) {
-       /// validacion de los valores de fecha desde y hasta, que hasta no sea menor que desde
-        $error = array();        
-        foreach($rows as $key => $row){
+    public function collection(Collection $rows)
+    {
+        /// validacion de los valores de fecha desde y hasta, que hasta no sea menor que desde
+        $error = array();
+        foreach ($rows as $key => $row) {
             $stardate   = Date::excelToDateTimeObject(trim($row['desde']))->format('Y-m-d');
             $enddate    = Date::excelToDateTimeObject(trim($row['hasta']))->format('Y-m-d');
-            
+
             $fila = $key + 2;
-            if($enddate < $stardate){
-                $error[] = " fila ".$fila." fecha HASTA no puede ser menor que fecha DESDE";
-            }            
-        }      
-        if($error != []){
+            if ($enddate < $stardate) {
+                $error[] = " fila " . $fila . " fecha HASTA no puede ser menor que fecha DESDE";
+            }
+        }
+        if ($error != []) {
             return back()->withErrors($error);
         }
-        
+
         foreach ($rows as $row) {
             $mensaje_log = "Carga Masiva AsistenciaOp.";
             $personal = PersonalModel::where('cedula_empleado', $row["cedula"])->first();
 
             $stardate   = Date::excelToDateTimeObject(trim($row['desde']))->format('y-m-d');
             $enddate    = Date::excelToDateTimeObject(trim($row['hasta']))->format('y-m-d');
-           
-            
+
+
             ///solo se aplica cambio de estatus si se reciben sso y VACs
-            switch ($row["tipo"]){
+            switch ($row["tipo"]) {
                 case "SSO":
                     $personal->estatus_id = 7; ///estatus reposo
                     $tipo = "Reposos";
@@ -55,19 +57,21 @@ class AsistenciaImport implements ToCollection, WithHeadingRow, WithValidation {
                     $personal->vacaciones_init = $stardate;
                     $personal->vacaciones_end  = $enddate;
                     $tipo = "Vacaciones";
-                    break; 
+                    break;
                 default:
                     $tipo = "Cargado RRHH";
                     break;
-            }     
+            }
             $personal->save();
 
             $end = new DateTime($enddate);
             $end->modify('+ 1 day');
 
             $period = new DatePeriod(
-                    new DateTime($stardate),
-                    new DateInterval('P1D'), $end);
+                new DateTime($stardate),
+                new DateInterval('P1D'),
+                $end
+            );
 
             foreach ($period as $key => $value) {
 
@@ -86,7 +90,7 @@ class AsistenciaImport implements ToCollection, WithHeadingRow, WithValidation {
                 } else {
 
                     $asistencia = new AsistenciaOperativaModel();
-                    $asistencia->tipo_asistencia    = $tipo;                    
+                    $asistencia->tipo_asistencia    = $tipo;
                     $asistencia->gerente_id         = $personal->gerente_area_id;
                     $asistencia->supervisor_id      = $personal->jefe_inmediato;
                     $asistencia->coordinador_id     = $personal->jefe_inmediato_segundo;
@@ -104,15 +108,16 @@ class AsistenciaImport implements ToCollection, WithHeadingRow, WithValidation {
                 }
             }
             $objeto_asistencia = json_encode($asistencia);
-                       
-            ActivityLogger::activity($mensaje_log . " " . $row["cedula"], $objeto_asistencia);
+
+            $this->activity($mensaje_log . " " . $row["cedula"], $objeto_asistencia);
         }
-        
+
         \Session::flash('success', 'Registros en la asistencia Procesado con exito. Recuerde cambiar el estatus del personal al finalizar el periodo');
         return back();
     }
 
-    public function rules(): array {
+    public function rules(): array
+    {
         return [
             'cedula' => function ($attribute, $value, $onFailure) {
                 if (trim($value) == "") {
@@ -137,7 +142,7 @@ class AsistenciaImport implements ToCollection, WithHeadingRow, WithValidation {
                     $onFailure('La fecha de Final es Obligatoria');
                 }
             },
-            'tipo' => function ($attribute, $value, $onFailure) {                           
+            'tipo' => function ($attribute, $value, $onFailure) {
                 if (trim($value) == "") {
                     $onFailure('el tipo de prefijo es obligatorio.');
                 } else if (strlen($value) > 3 || (strlen($value) < 2)) {

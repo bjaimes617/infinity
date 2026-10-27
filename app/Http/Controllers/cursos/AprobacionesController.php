@@ -13,11 +13,13 @@ use App\Models\personal\CentroCostoAsignadoModel;
 use Illuminate\Support\Facades\DB;
 use App\Models\personal\ChangeCampaingModels;
 use Carbon\Carbon;
-use jeremykenedy\LaravelLogger\App\Http\Traits\ActivityLogger;
 use App\Models\cursos\HistorialModel;
+
+use jeremykenedy\LaravelLogger\App\Http\Traits\ActivityLogger;
 
 class AprobacionesController extends Controller
 {
+    use ActivityLogger;
 
     public function __construct()
     {
@@ -73,7 +75,7 @@ class AprobacionesController extends Controller
 
                 $estatus = EstatusModel::where('id', $request->input('listado' . $participante))->first()->estatus;
 
-                ActivityLogger::activity("Participante - " . $parts->primer_nombre . " " . $parts->primer_apellido . " - " . $parts->cedula_empleado . " - " . $estatus);
+                $this->activity("Participante - " . $parts->primer_nombre . " " . $parts->primer_apellido . " - " . $parts->cedula_empleado . " - " . $estatus);
 
                 if (HistorialModel::where('cedula_participante', $parts->cedula_empleado)->where('id_curso', $id)->exists()) {
 
@@ -245,7 +247,7 @@ class AprobacionesController extends Controller
                     }
 
                     $objeto_personal = json_encode($objPersonal);
-                    ActivityLogger::activity("Migracion Curso - LP " . $objPersonal->cedula_empleado, $objeto_personal);
+                    $this->activity("Migracion Curso - LP " . $objPersonal->cedula_empleado, $objeto_personal);
                 }
 
                 if ($contador == $conteototal) {

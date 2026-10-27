@@ -17,12 +17,14 @@ use \jeremykenedy\LaravelLogger\App\Http\Traits\ActivityLogger;
 use App\Exceptions\ValidateAditionals;
 use Carbon\Carbon;
 
-class ComisionesQuincenalesImport implements ToCollection, WithHeadingRow, WithValidation {
+class ComisionesQuincenalesImport implements ToCollection, WithHeadingRow, WithValidation
+{
 
     use Importable,
         ActivityLogger;
 
-    public function __construct($valores) {
+    public function __construct($valores)
+    {
 
         $this->gerencia_id = $valores[0];
         $this->campana_id = $valores[1];
@@ -35,7 +37,8 @@ class ComisionesQuincenalesImport implements ToCollection, WithHeadingRow, WithV
         $this->path = $valores[8];
     }
 
-    public function collection(Collection $rows) {
+    public function collection(Collection $rows)
+    {
 
         $validateAdd = array();
         $montos = [];
@@ -58,14 +61,15 @@ class ComisionesQuincenalesImport implements ToCollection, WithHeadingRow, WithV
         ///validaciones en caso de que se inente cargar un perioro que ya ha sido pagado
         if (!\Auth::user()->hasPermission('comisiones.demoradas')) {
             if (OperacionesComisiones::where('gerencia_id', $this->gerencia_id)
-                            ->where('campana_id', $this->campana_id)->where('skill_id', $this->skill_id)
-                            ->where('tipo_periodo', $this->tipo_periodo)->where('periodo', $this->periodo)
-                            ->where('anio', $this->anio)->where('mes', $monthInEnglish)->where('incidencia', 0)->exists()) {
+                ->where('campana_id', $this->campana_id)->where('skill_id', $this->skill_id)
+                ->where('tipo_periodo', $this->tipo_periodo)->where('periodo', $this->periodo)
+                ->where('anio', $this->anio)->where('mes', $monthInEnglish)->where('incidencia', 0)->exists()
+            ) {
 
                 $estatus_per = OperacionesComisiones::select('incidencia')->where('gerencia_id', $this->gerencia_id)
-                                ->where('campana_id', $this->campana_id)->where('skill_id', $this->skill_id)
-                                ->where('tipo_periodo', $this->tipo_periodo)->where('periodo', $this->periodo)
-                                ->where('anio', $this->anio)->where('mes', $monthInEnglish)->first();
+                    ->where('campana_id', $this->campana_id)->where('skill_id', $this->skill_id)
+                    ->where('tipo_periodo', $this->tipo_periodo)->where('periodo', $this->periodo)
+                    ->where('anio', $this->anio)->where('mes', $monthInEnglish)->first();
                 $incidencia = $estatus_per->incidencia;
                 if ($incidencia == 0) {
                     array_push($validateAdd, "Las comisiones para este periodo ya han sido canceladas");
@@ -75,13 +79,14 @@ class ComisionesQuincenalesImport implements ToCollection, WithHeadingRow, WithV
 
         ///validacion devuelve error si se inenta cargar otro archivo y el mismo lote esta auditado
         if (OperacionesComisiones::where('gerencia_id', $this->gerencia_id)->where('campana_id', $this->campana_id)->where('skill_id', $this->skill_id)
-                        ->where('tipo_periodo', $this->tipo_periodo)->where('periodo', $this->periodo)->where('anio', $this->anio)
-                        ->where('mes', $monthInEnglish)->where('incidencia', 3)->exists()) {
+            ->where('tipo_periodo', $this->tipo_periodo)->where('periodo', $this->periodo)->where('anio', $this->anio)
+            ->where('mes', $monthInEnglish)->where('incidencia', 3)->exists()
+        ) {
 
             $estatus_per = OperacionesComisiones::select('incidencia')->where('gerencia_id', $this->gerencia_id)
-                            ->where('campana_id', $this->campana_id)->where('skill_id', $this->skill_id)
-                            ->where('tipo_periodo', $this->tipo_periodo)->where('periodo', $this->periodo)
-                            ->where('anio', $this->anio)->where('mes', $monthInEnglish)->first();
+                ->where('campana_id', $this->campana_id)->where('skill_id', $this->skill_id)
+                ->where('tipo_periodo', $this->tipo_periodo)->where('periodo', $this->periodo)
+                ->where('anio', $this->anio)->where('mes', $monthInEnglish)->first();
             $incidencia = $estatus_per->incidencia;
             if ($incidencia == 3) {
                 array_push($validateAdd, "Las comisiones para este periodo ya han sido auditadas");
@@ -134,12 +139,12 @@ class ComisionesQuincenalesImport implements ToCollection, WithHeadingRow, WithV
             $descuentos_usd_ar = str_replace(",", ".", $row['descuentos_usd']);
 
             $total_usd_ar = (floatval($comision_usd_ar) +
-                    floatval($variable_usd_ar) +
-                    floatval($bonificacion_usd_ar) +
-                    floatval($bono_nocturno_usd_ar) +
-                    floatval($he_usd_com_ar) +
-                    floatval($jornada_fin_de_semana_usd_ar)) -
-                    floatval($descuentos_usd_ar);
+                floatval($variable_usd_ar) +
+                floatval($bonificacion_usd_ar) +
+                floatval($bono_nocturno_usd_ar) +
+                floatval($he_usd_com_ar) +
+                floatval($jornada_fin_de_semana_usd_ar)) -
+                floatval($descuentos_usd_ar);
 
             $montos[] = [
                 'cedula' => $objDatosPersonal->cedula_empleado,
@@ -173,9 +178,9 @@ class ComisionesQuincenalesImport implements ToCollection, WithHeadingRow, WithV
         }
 
         ///RETORNO DE TODOS LOS ERRORES REFERENTE A LAS VALIDACIONES ADICIONALES
-        if (!empty($validateAdd)) {           
+        if (!empty($validateAdd)) {
             throw new ValidateAditionals($validateAdd);
-        }       
+        }
 
         try {
             ///INICIAMOS REGISTRO O ACTUALIZACION
@@ -186,25 +191,25 @@ class ComisionesQuincenalesImport implements ToCollection, WithHeadingRow, WithV
                     //SACAMOS EL LOTE_ID PARA ACTUALIZAR EL REGISTRO Y NO ACTUALIZAR OTRO LOTE QUE CONTENGA LOS MISMOS DATOS
 
                     $bring_lote = OperacionesComisiones::select('lote_id')->where('cedula', $operacion['cedula'])
-                                    ->where('anio', $operacion['anio'])
-                                    ->where('mes', $operacion['mes'])
-                                    ->where('periodo', $operacion['periodo'])
-                                    ->where('tipo_periodo', $operacion['tipo_periodo'])
-                                    ->where('gerencia_id', $operacion['gerencia_id'])
-                                    ->where('campana_id', $operacion['campana_id'])
-                                    ->where('skill_id', $operacion['skill_id'])->first();
+                        ->where('anio', $operacion['anio'])
+                        ->where('mes', $operacion['mes'])
+                        ->where('periodo', $operacion['periodo'])
+                        ->where('tipo_periodo', $operacion['tipo_periodo'])
+                        ->where('gerencia_id', $operacion['gerencia_id'])
+                        ->where('campana_id', $operacion['campana_id'])
+                        ->where('skill_id', $operacion['skill_id'])->first();
 
                     $lote_ex = $bring_lote->lote_id;
                     $update_register = true;
 
                     $update_op = OperacionesComisiones::where('cedula', trim($operacion['cedula']))
-                                    ->where('anio', $operacion['anio'])->where('mes', $operacion['mes'])
-                                    ->where('periodo', $operacion['periodo'])
-                                    ->where('tipo_periodo', $operacion['tipo_periodo'])
-                                    ->where('gerencia_id', $operacion['gerencia_id'])
-                                    ->where('campana_id', $operacion['campana_id'])
-                                    ->where('skill_id', $operacion['skill_id'])
-                                    ->where('lote_id', $lote_ex)->first();
+                        ->where('anio', $operacion['anio'])->where('mes', $operacion['mes'])
+                        ->where('periodo', $operacion['periodo'])
+                        ->where('tipo_periodo', $operacion['tipo_periodo'])
+                        ->where('gerencia_id', $operacion['gerencia_id'])
+                        ->where('campana_id', $operacion['campana_id'])
+                        ->where('skill_id', $operacion['skill_id'])
+                        ->where('lote_id', $lote_ex)->first();
 
                     $comision_usd_com = $operacion['comision_usd'];
                     $variable_usd_com = $operacion['variable_usd'];
@@ -277,38 +282,39 @@ class ComisionesQuincenalesImport implements ToCollection, WithHeadingRow, WithV
 
                     $objeto_comision = json_encode($comision);
 
-                    ActivityLogger::activity($mensaje_log . " " . $comision->cedula, $objeto_comision);
+                    $this->activity($mensaje_log . " " . $comision->cedula, $objeto_comision);
                 }
             }
 
             ///COMPROBACION DE EXISTENCIA ACTUALIZACION DE REGISTROS, DE SER TRUE, CAMBIAMOS EL ID DEL LOTE VIEJO POR LE NUEVO
             if ($update_register) {
                 $operacion = OperacionesComisiones::select('lote_id')
-                        ->where('anio', $this->anio)
-                        ->where('mes', $monthInEnglish)
-                        ->where('periodo', $this->periodo)
-                        ->where('tipo_periodo', $this->tipo_periodo)
-                        ->where('gerencia_id', $this->gerencia_id)
-                        ->where('campana_id', $this->campana_id)
-                        ->where('skill_id', $this->skill_id)
-                        ->wherenotIn('lote_id', [$this->lote_id])
-                        ->update(['lote_id' => $this->lote_id]);
+                    ->where('anio', $this->anio)
+                    ->where('mes', $monthInEnglish)
+                    ->where('periodo', $this->periodo)
+                    ->where('tipo_periodo', $this->tipo_periodo)
+                    ->where('gerencia_id', $this->gerencia_id)
+                    ->where('campana_id', $this->campana_id)
+                    ->where('skill_id', $this->skill_id)
+                    ->wherenotIn('lote_id', [$this->lote_id])
+                    ->update(['lote_id' => $this->lote_id]);
 
                 LoteModel::find($lote_ex)->delete();
                 $objeto_comision = json_encode($update_op);
 
-                ActivityLogger::activity($mensaje_log . " " . $update_op->cedula, $objeto_comision);
+                $this->activity($mensaje_log . " " . $update_op->cedula, $objeto_comision);
             }
 
             \Session::flash('success', 'Comisiones y/o variables cargadas exitosamente');
             return true;
         } catch (\Exception $e) {
-            
+
             throw new ValidateAditionals([$e->getMessage()]);
         }
     }
 
-    public function rules(): array {
+    public function rules(): array
+    {
         return [
             'cedula' => function ($attribute, $value, $onFailure) {
                 if (trim($value) == "") {

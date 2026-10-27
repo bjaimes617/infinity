@@ -137,7 +137,7 @@ class AsistenciaImport implements ToCollection, WithHeadingRow
                 $part->save();
                 $sistencia->save();
 
-                ActivityLogger::activity("Curso - Registro de asistencia: " . $row["cedula"] . " Curso " . $this->curso . " " . json_encode($row));
+                $this->activity("Curso - Registro de asistencia: " . $row["cedula"] . " Curso " . $this->curso . " " . json_encode($row));
             } else {
                 continue;
             }

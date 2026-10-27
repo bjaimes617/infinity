@@ -347,7 +347,7 @@ class PersonalApiController extends Controller
                                 $activesummonto = true;
                                 $tipocorte = $request->corte;
 
-                                ActivityLogger::activity("Descarga de Recibo : " . $cedula->cedula_empleado . " Recibo :" .  $tipoPago->codigo . 'Mes : ' . $this->mes . "Año : " . $this->anio);
+                                $this->activity("Descarga de Recibo : " . $cedula->cedula_empleado . " Recibo :" .  $tipoPago->codigo . 'Mes : ' . $this->mes . "Año : " . $this->anio);
                                 if ($sql->active === 1) {
                                     return response()->json([
                                         "active" => true,
@@ -411,7 +411,7 @@ class PersonalApiController extends Controller
                                 }
                                 $activesummonto = true;
                                 $tipocorte = $request->corte;
-                                ActivityLogger::activity("Descarga de Recibo : " . $cedula->cedula_empleado . " Recibo :" .  $tipoPago->codigo . 'Mes : ' . $this->mes . "Año : " . $this->anio);
+                                $this->activity("Descarga de Recibo : " . $cedula->cedula_empleado . " Recibo :" .  $tipoPago->codigo . 'Mes : ' . $this->mes . "Año : " . $this->anio);
                                 return response()->json([
                                     "active" => true,
                                     "cedula" => $cedula,
@@ -466,7 +466,7 @@ class PersonalApiController extends Controller
                                 }
                                 $activesummonto = true;
                                 $tipocorte = $request->corte;
-                                ActivityLogger::activity("Descarga de Recibo : " . $cedula->cedula_empleado . " Recibo :" .  $tipoPago->codigo . 'Mes : ' . $this->mes . "Año : " . $this->anio);
+                                $this->activity("Descarga de Recibo : " . $cedula->cedula_empleado . " Recibo :" .  $tipoPago->codigo . 'Mes : ' . $this->mes . "Año : " . $this->anio);
                                 if ($sql->active === 1) {
                                     return response()->json([
                                         "active" => true,

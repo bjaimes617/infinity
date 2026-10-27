@@ -27,22 +27,25 @@ use Carbon\Carbon;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 use jeremykenedy\LaravelLogger\App\Http\Traits\ActivityLogger;
 
-class PersonalImport implements ToCollection, WithHeadingRow, WithValidation {
+class PersonalImport implements ToCollection, WithHeadingRow, WithValidation
+{
 
     use Importable;
     use ActivityLogger;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->nacademicos = config('app.especialidad');
         $this->horariolab = config('app.horariolaboral');
         $this->contractual = config('app.contractual');
     }
 
-    public function collection(Collection $rows) {       
+    public function collection(Collection $rows)
+    {
 
         try {
             foreach ($rows as $row) {
-                 /*if (PersonalModel::where('cedula_empleado', '=', trim($row['cedula_empleado']))->exists()) {
+                /*if (PersonalModel::where('cedula_empleado', '=', trim($row['cedula_empleado']))->exists()) {
                    $objPersonal = PersonalModel::where('cedula_empleado', '=', trim($row['cedula_empleado']))->first();
                     CentroCostoAsignadoModel::where('personal_id', $objPersonal->id)->forcedelete();
                     $objPersonal->fecha_egreso = null;
@@ -67,21 +70,29 @@ class PersonalImport implements ToCollection, WithHeadingRow, WithValidation {
                 $objPersonal->email = trim($row['email']);
                 $nivelAcademico = "";
                 switch ($row['nivel_academico']) {
-                    case 'BACHILLER': $nivelAcademico = 1;
+                    case 'BACHILLER':
+                        $nivelAcademico = 1;
                         break;
-                    case 'T.S.U': $nivelAcademico = 2;
+                    case 'T.S.U':
+                        $nivelAcademico = 2;
                         break;
-                    case 'LIC.': $nivelAcademico = 3;
+                    case 'LIC.':
+                        $nivelAcademico = 3;
                         break;
-                    case 'ING.': $nivelAcademico = 4;
+                    case 'ING.':
+                        $nivelAcademico = 4;
                         break;
-                    case 'TECNICO MEDIO': $nivelAcademico = 6;
+                    case 'TECNICO MEDIO':
+                        $nivelAcademico = 6;
                         break;
-                    case 'MAGISTER': $nivelAcademico = 7;
+                    case 'MAGISTER':
+                        $nivelAcademico = 7;
                         break;
-                    case 'ESTUDIANTE': $nivelAcademico = 8;
+                    case 'ESTUDIANTE':
+                        $nivelAcademico = 8;
                         break;
-                    case 'OTRO': $nivelAcademico = 5;
+                    case 'OTRO':
+                        $nivelAcademico = 5;
                         break;
                 }
                 $objPersonal->nivel_academico = $nivelAcademico;
@@ -98,11 +109,14 @@ class PersonalImport implements ToCollection, WithHeadingRow, WithValidation {
                     $objPersonal->activetransporte = 1;
 
                     switch ($row['horario_transporte']) {
-                        case 'AM': $horariotrans = 1;
+                        case 'AM':
+                            $horariotrans = 1;
                             break;
-                        case 'PM': $horariotrans = 2;
+                        case 'PM':
+                            $horariotrans = 2;
                             break;
-                        case 'AMBOS': $horariotrans = 3;
+                        case 'AMBOS':
+                            $horariotrans = 3;
                             break;
                     }
                     $objPersonal->htransporte = $horariotrans;
@@ -116,11 +130,14 @@ class PersonalImport implements ToCollection, WithHeadingRow, WithValidation {
                 $objPersonal->nomina_id = NominaModel::where('nombre_nomina', '=', trim($row['nomina']))->where('estatus_id', '=', 1)->first()->id;
 
                 switch (strtolower($row["estatus_cargo"])):
-                    case "periodo de prueba" : $estatuscargo = 1;
+                    case "periodo de prueba":
+                        $estatuscargo = 1;
                         break;
-                    case "encargado" : $estatuscargo = 2;
+                    case "encargado":
+                        $estatuscargo = 2;
                         break;
-                    case "titular" : $estatuscargo = 3;
+                    case "titular":
+                        $estatuscargo = 3;
                         break;
                 endswitch;
                 $objPersonal->estatuscargo = $estatuscargo;
@@ -129,14 +146,16 @@ class PersonalImport implements ToCollection, WithHeadingRow, WithValidation {
                 $horarioOperativo = array_search($row['horario_operativo'], config('app.horariolaboral'));
 
                 $objPersonal->horario_operativo = $horarioOperativo;
-              
+
                 switch ($row['jornada']) {
-                    case '8 Horas': $jornada = 1;
+                    case '8 Horas':
+                        $jornada = 1;
                         break;
-                    case '6 Horas': $jornada = 2;
+                    case '6 Horas':
+                        $jornada = 2;
                         break;
                 }
-                
+
                 $objPersonal->jornada = $jornada;
                 $objPersonal->turno = trim($row['turno']);
                 $objPersonal->nacionalidad = $row['nacionalidad_cuenta'];
@@ -170,30 +189,38 @@ class PersonalImport implements ToCollection, WithHeadingRow, WithValidation {
                 $objPersonal->finalizacion_1 = $finalizacion->copy()->format('Y-m-d');
 
                 switch ($row['situacion_contractual']) {
-                    case 'Contratado': $situacionContractual = 1;
+                    case 'Contratado':
+                        $situacionContractual = 1;
                         break;
-                    case 'Fijo': $situacionContractual = 2;
+                    case 'Fijo':
+                        $situacionContractual = 2;
                         break;
-                    case 'Freelance': $situacionContractual = 3;
+                    case 'Freelance':
+                        $situacionContractual = 3;
                         break;
-                    case 'Honorarios': $situacionContractual = 4;
+                    case 'Honorarios':
+                        $situacionContractual = 4;
                         break;
-                    case 'Finalizado': $situacionContractual = 5;
+                    case 'Finalizado':
+                        $situacionContractual = 5;
                         break;
-                    case 'Abandono': $situacionContractual = 6;
+                    case 'Abandono':
+                        $situacionContractual = 6;
                         break;
-                    case 'Pendiente Por Contrato': $situacionContractual = 7;
+                    case 'Pendiente Por Contrato':
+                        $situacionContractual = 7;
                         break;
-                    case "Pendiente Por Documentacion" : $situacionContractual = 9;
+                    case "Pendiente Por Documentacion":
+                        $situacionContractual = 9;
                         break;
                 }
 
                 $objPersonal->estado_id = in_array($row['sede_laboral'], ['STV', 'ATENAS']) ?
-                        EstadosModel::where('nombre_estado', 'like', '%' . $row['estado'] . '%')->first()->id :
-                        3;
+                    EstadosModel::where('nombre_estado', 'like', '%' . $row['estado'] . '%')->first()->id :
+                    3;
                 $objPersonal->ciudad_id = in_array($row['sede_laboral'], ['STV', 'ATENAS']) ?
-                        CiudadesModel::where('ciudad', 'like', '%' . $row['ciudad'] . '%')->first()->id :
-                        149;
+                    CiudadesModel::where('ciudad', 'like', '%' . $row['ciudad'] . '%')->first()->id :
+                    149;
 
                 $objPersonal->situacion_contractual = $situacionContractual;
                 $objPersonal->status_carnet = 3;
@@ -202,7 +229,7 @@ class PersonalImport implements ToCollection, WithHeadingRow, WithValidation {
 
                 $objeto_personal = json_encode($objPersonal);
 
-                ActivityLogger::activity($mensaje_log, $objeto_personal);
+                $this->activity($mensaje_log, $objeto_personal);
 
                 $areas = new CentroCostoAsignadoModel();
                 $areas->personal_id = $objPersonal->id;
@@ -218,7 +245,8 @@ class PersonalImport implements ToCollection, WithHeadingRow, WithValidation {
         }
     }
 
-    public function rules(): array {
+    public function rules(): array
+    {
         return [
             'nacionalidad' => function ($attribute, $value, $onFailure) {
                 if (trim($value) == "") {
@@ -235,12 +263,12 @@ class PersonalImport implements ToCollection, WithHeadingRow, WithValidation {
                 } else {
                     if (BlacklistModel::where('cedula_empleado', '=', trim($value))->exists()) {
                         $onFailure('Esta Persona Se encuentra en Lista Negra. No se puede registrar.');
-                    } 
-                    
+                    }
+
                     if (!ctype_digit($value)) {
                         $onFailure('La Cedula de Identidad debe ser solo númerico');
                     }
-                    
+
                     if (PersonalModel::where('cedula_empleado', '=', trim($value))->exists()) {
                         $onFailure('La cedula Ingresada Ya se encuentra Registrada.');
                     }

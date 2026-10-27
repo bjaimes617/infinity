@@ -130,7 +130,7 @@ class Participantesimport implements ToCollection, WithHeadingRow, WithValidatio
                         break;
                 }
 
-                ActivityLogger::activity("Curso - Registro de Participante: " . $row["cedula"] . " Curso " . $this->curso . " " . json_encode($row));
+                $this->activity("Curso - Registro de Participante: " . $row["cedula"] . " Curso " . $this->curso . " " . json_encode($row));
             }
 
             \Session::flash('success', 'Los participantes han sido asignados correctamente');
