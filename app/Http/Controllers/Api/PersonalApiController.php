@@ -545,7 +545,8 @@ class PersonalApiController extends Controller
                 $fegaegreso = $cedula->finalizacion_2;
             }
 
-            $gerenterrhh = PersonalModel::select('id', 'primer_nombre', 'primer_apellido', 'cedula_empleado',)->where('cargo_id', 71)->first();
+            //$gerenterrhh = PersonalModel::select('id', 'primer_nombre', 'primer_apellido', 'cedula_empleado',)->where('cargo_id', 71)->first();
+            $gerenterrhh = PersonalModel::select('id', 'primer_nombre', 'primer_apellido', 'cedula_empleado',)->where('cargo_id', 75)->first();
 
             $nomina = $cedula->RelationNomina != null ? $cedula->RelationNomina->nombre_nomina : null;
             $cargo = $cedula->RelationCargos != null ? $cedula->RelationCargos->nombre_cargo : null;
@@ -838,6 +839,7 @@ class PersonalApiController extends Controller
         $users = PersonalModel::select('cedula_empleado', 'usuario_crm_portabilidad', 'estatus_id')
             ->selectRaw('CONCAT(primer_nombre, " ", primer_apellido) AS name')
             ->where('usuario_crm_portabilidad', '!=', 'No asignado')
+            ->where('cartera_id', 20)
             ->get();
 
         return response()->json($users, 200, [

@@ -31,7 +31,7 @@ return [
     ],
 
     //// recursos para los modulos personal y cursos generales.
-    //ultimo valor 17
+    //ultimo valor 18
     'horariolaboral' => [
         '1'     => '7:00 AM a 1:00 PM',
         '2'     => '8:00 AM a 2:00 PM',
@@ -41,6 +41,7 @@ return [
         '4'     => '9:00 AM a 3:00 PM',
         '9'     => '9:00 AM a 6:00 PM',
         '11'    => '9:00 AM a 5:00 PM',
+        '18'    => '9:30 AM a 5:30 PM',
         '5'     => '10:00 AM a 4:00 PM',
         '16'    => "10:00 AM a 6:00 PM",
         '12'    => '11:00 AM a 7:00 PM',

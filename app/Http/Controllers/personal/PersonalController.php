@@ -33,7 +33,7 @@ use jeremykenedy\LaravelRoles\Models\Role;
 use App\Imports\personal\PersonalImport;
 use App\Imports\personal\UpdatePersonalImport;
 use Maatwebsite\Excel\Facades\Excel;
-use \jeremykenedy\LaravelLogger\App\Http\Traits\ActivityLogger;
+use jeremykenedy\LaravelLogger\App\Http\Traits\ActivityLogger;
 use Carbon\Carbon;
 use DatePeriod;
 use DateTime;

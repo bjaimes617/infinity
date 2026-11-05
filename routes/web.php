@@ -78,8 +78,10 @@ Route::post("/password/reset",                  [ResetPasswordController::class,
 
 Route::middleware(['auth', 'activity'])->group(function () {
 
-    Route::get('/home',                     [HomeController::class, 'index'])->name('home');
-    Route::get('/dashboard/personal',       [HomeController::class, 'DashboardPersonal'])->name('dashboard.personal');
+    Route::get('/home',                      [HomeController::class, 'index'])->name('home');
+    Route::post('/update/dashboard/required', [HomeController::class, 'UpdateDashboardRequired'])->name('update.dashboard.required');
+    Route::get('/dashboard/personal',        [HomeController::class, 'DashboardPersonal'])->name('dashboard.personal');
+    Route::post('/dashboard/personal',       [HomeController::class, 'DashboardPersonal'])->name('dashboard.personal.update');
 
     ///Permission
     Route::get('permissions/',                  [PermissionsController::class, 'index'])->middleware('permission:permissions.show')->name('permissions.index');

@@ -51,6 +51,8 @@ class ReplicaExpedientesDiarios extends Command
 
         $result = PersonalModel::where('area_trabajo_id', '2')->orderby('primer_nombre', 'ASC')->get();
 
+        
+
         if (!Storage::disk('replicalp')->exists($anio.'/'.$mes.'/'.$anio.'_'.$mes.'_'.$dia.'_ReplicaExpedientesDiarios.csv')) {            
             Excel::store(new PersonalCecosExport($result), $anio.'/'.$mes.'/'.$anio.'_'.$mes.'_'.$dia.'_ReplicaExpedientesDiarios.csv', 'replicalp');
             $this->info('Replica de expedientes diarios finalizada');

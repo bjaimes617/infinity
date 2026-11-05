@@ -38,11 +38,11 @@ class DeleteVisitantes extends Command
      */
     public function handle()
     {
-        
-        $begin = date('Y-m', strtotime(now()."- 1 month"));          
+
+        $begin = date('Y-m', strtotime(now() . "- 1 month"));
         //a la fecha actual se le quita un mes para buscar los registros inactivos         
-        if(VisitantesModel::where('active',0)->whereBetween('expiracion',array("$begin-01", "$begin-31"))->exists()){
-            $this->line('EXISTEN REGISTROS DE VISITANTES QUE SUPERAN EL MES '.$begin);
+        if (VisitantesModel::where('active', 0)->whereBetween('created_At', array("$begin-01", "$begin-31"))->exists()) {
+            $this->line('EXISTEN REGISTROS DE VISITANTES QUE SUPERAN EL MES ' . $begin);
             sleep(1);
             $this->line('.');
             sleep(1);
@@ -50,11 +50,11 @@ class DeleteVisitantes extends Command
             sleep(1);
             $this->line('...');
             $this->line('[===========ELIMINANDO VISITANTES DE LA PLATAFORMA===========]');
-            sleep(1);            
-            VisitantesModel::where('active',0)->whereBetween('expiracion',array("$begin-01", "$begin-31"))->delete();
+            sleep(1);
+            VisitantesModel::where('active', 0)->whereBetween('created_at', array("$begin-01", "$begin-31"))->delete();
             $this->line('[===================REGISTROS ELIMINADOS======================]');
-        }else {
-            $this->line('No Existen Registros con Fecha de Expiracion : '.$begin);
+        } else {
+            $this->line('No Existen Registros con Fecha de Expiracion : ' . $begin);
             sleep(1);
             $this->line('[===========TODO EN ORDEN===========]');
         }

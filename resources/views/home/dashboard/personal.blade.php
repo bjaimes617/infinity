@@ -13,439 +13,354 @@
 
                     </ol>
                 </div>
-            </div>
-        </div><!-- /.container-fluid -->
-    </section>
-    <!-- Main content -->
-    <section class="content row">        
-            <div class="col-12 col-sm-3 col-md-3 connectedSortable">
-                <div class="card card-primary card-outline mb-4">               
-                    <div class="card-body">
-                        <div class="form-group">
-                            <label>Mes y Año</label>
-                            <div class='input-group' id='fechar'>
-                                <div class="input-group-append">
-                                    <span class="input-group-text"><i class="fas fa-calendar"></i></span>
+            </div>       
+            <!--CONTENCT PRINCIPAL-->
+            <div class="row">
+                <div class="col-3 col-sm-3 col-md-3">
+                    <div class="info-box">
+                        <span class="info-box-icon bg-primary elevation-0"><i class="fas fa-calendar"></i></span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">Mes y Año</span>
+                            <span class="info-box-number">
+                                <div class="form-group">
+                                    <div class='input-group' id='fechar'>
+                                        <div class="input-group-append">
+                                            <span class="input-group-text"><i class="fas fa-calendar"></i></span>
+                                        </div>
+                                        <input type='text' class="form-control" autocomplete="off" data-href="{{ route('dashboard.personal.update') }}" value="{{ date('m/Y') }}" required name="mes" id="mes"/>
+                                    </div>
                                 </div>
-                                <input type='text' class="form-control" autocomplete="off" required name="mes" id="mes"/>
+                            </span>
+                        </div>                
+                    </div>        
+                </div> 
+                <div class="col-9 col-sm-9 col-md-9">
+                    <form action="{{route('update.dashboard.required')}}" method="POST" id="update-dashboard-required" class="form-horizontal form-label-left" enctype='multipart/form-data'>                            
+                        @csrf
+                        <div class="info-box">
+                            <span class="info-box-icon bg-info elevation-0"><i class="fas fa-upload"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Requeridos del Mes | <small><b>Descargue el Formato de Carga de los Requeridos <a href="{{\Storage::disk('public')->url('formato_carga_requeridos.xlsx') }}" class="text-danger" target="_blank">(aqui)</a></small></b></span>
+                                <span class="info-box-number">
+                                    <div class="form-group">                                   
+                                        <div class="input-group">
+                                            <div class="custom-file">
+                                                <input type="file" class="custom-file-input" required id="archivo" name="archivo">
+                                                <label class="custom-file-label" for="exampleInputFile">Buscar Archivo en...</label>
+                                            </div>
+                                            <div class="input-group-append">
+                                                <button type="submit"  class="btn btn-primary cargamasiva"><i class="fa fa-upload"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>  
+                                </span>
+                            </div>                
+                        </div>
+                    </form>     
+                </div>                  
+                <div class="col-4 col-sm-4 col-md-4">
+                    <div class="info-box">
+                        <span class="info-box-icon bg-info elevation-1"><i class="fas fa-users"></i></span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">Total Personal Requerido</span>
+                            <span class="info-box-number" id="total-requeridos">
+                                {{ $totalrequeridos}}
+                                <small>Requeridos</small>
+                            </span>
+                        </div>                
+                    </div>        
+                </div> 
+                <div class="col-4 col-sm-4 col-md-4">
+                    <div class="info-box">
+                        <span class="info-box-icon bg-success elevation-1"><i class="fas fa-user-plus"></i></span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">Total Personal Activo</span>
+                            <span class="info-box-number" id="total-activos">
+                                {{ $totalactivos}}
+                                <small>Activos</small>
+                            </span>
+                        </div>                
+                    </div>        
+                </div> 
+                <div class="col-4 col-sm-4 col-md-4">
+                    <div class="info-box">
+                        <span class="info-box-icon bg-warning elevation-1"><i class="fas fa-people-arrows"></i></span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">Total Diferencial</span>
+                            <span class="info-box-number" id="total-diferencial">
+                                {!! $totaldiferencial!!}
+                                <small>Diferencia</small>
+                            </span>
+                        </div>                
+                    </div>        
+                </div>                    
+                <!--BARCHAT-->          
+                <section class="col-lg-12 connectedSortable">       
+                    <!--apartado apra los grafica-->
+                    <div class="card card-outline card-primary">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-chart-bar"></i>
+                                Personal Activo Vs Requerido                        
+                            </h3>
+                            <div class="card-tools">  
+                                <button type="button" class="btn btn-info btn-sm" 
+                                        data-toggle="modal" data-target="#modal-grafico-personal"
+                                        data-toggle="tooltip" data-placement="top" title="Detalles Por Campaña">
+                                    <i class="fa fa-table"></i> 
+                                </button>       
+
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                    <i class="fas fa-minus"></i>
+                                </button>                  
+                                <button type="button" class="btn btn-tool" data-card-widget="remove">
+                                    <i class="fas fa-times"></i>
+                                </button>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </div>      
-            <div class="col-12 col-sm-3 col-md-3 connectedSortable">
-                <div class="info-box">
-                    <span class="info-box-icon bg-info elevation-1"><i class="fas fa-users"></i></span>
-                    <div class="info-box-content">
-                    <span class="info-box-text">Total Personal Requerido</span>
-                        <span class="info-box-number">
-                            10
-                            <small>%</small>
-                        </span>
-                    </div>                
-                </div>        
-            </div> 
-            <div class="col-12 col-sm-3 col-md-3 connectedSortable">
-                <div class="info-box">
-                    <span class="info-box-icon bg-success elevation-1"><i class="fas fa-user-plus"></i></span>
-                    <div class="info-box-content">
-                    <span class="info-box-text">Total Personal Activo</span>
-                        <span class="info-box-number">
-                            10
-                            <small>%</small>
-                        </span>
-                    </div>                
-                </div>        
-            </div> 
-            <div class="col-12 col-sm-3 col-md-3 connectedSortable">
-                <div class="info-box">
-                    <span class="info-box-icon bg-warning elevation-1"><i class="fas fa-people-arrows"></i></span>
-                    <div class="info-box-content">
-                    <span class="info-box-text">Total Diferencial</span>
-                        <span class="info-box-number">
-                            10
-                            <small>%</small>
-                        </span>
-                    </div>                
-                </div>        
-            </div>       
-    </section>    
-    
-     <section class="col-lg-7 connectedSortable">
-            <!-- Custom tabs (Charts with tabs)-->
-            <div class="card">
-              <div class="card-header">
-                <h3 class="card-title">
-                  <i class="fas fa-chart-pie mr-1"></i>
-                  Sales
-                </h3>
-                <div class="card-tools">
-                  <ul class="nav nav-pills ml-auto">
-                    <li class="nav-item">
-                      <a class="nav-link active" href="#revenue-chart" data-toggle="tab">Area</a>
-                    </li>
-                    <li class="nav-item">
-                      <a class="nav-link" href="#sales-chart" data-toggle="tab">Donut</a>
-                    </li>
-                  </ul>
-                </div>
-              </div><!-- /.card-header -->
-              <div class="card-body">
-                <div class="tab-content p-0">
-                  <!-- Morris chart - Sales -->
-                  <div class="chart tab-pane active" id="revenue-chart"
-                       style="position: relative; height: 300px;">
-                      <canvas id="revenue-chart-canvas" height="300" style="height: 300px;"></canvas>
-                   </div>
-                  <div class="chart tab-pane" id="sales-chart" style="position: relative; height: 300px;">
-                    <canvas id="sales-chart-canvas" height="300" style="height: 300px;"></canvas>
-                  </div>
-                </div>
-              </div><!-- /.card-body -->
+                        <div class="card-body">
+                            <div class="chart">
+                                <canvas id="barChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                            </div>
+                        </div>
+                    </div> 
+                </section>  
+                <!--PIECHART-->          
+                <section class="col-lg-8 connectedSortable">       
+                    <!--apartado apra los grafica-->
+                    <div class="card card-outline card-danger">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-chart-bar"></i>
+                                Motivos de Egresos Global                       
+                            </h3>
+                            <div class="card-tools">   
+
+                                <button type="button" class="btn btn-info btn-sm" 
+                                        data-toggle="modal" data-target="#modal-motivos-egresos"
+                                        data-toggle="tooltip" data-placement="top" title="Detalles Por Campaña">
+                                    <i class="fa fa-table"></i> 
+                                </button>  
+
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                    <i class="fas fa-minus"></i>
+                                </button>                  
+                                <button type="button" class="btn btn-tool" data-card-widget="remove">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart">
+                                <canvas id="pieChartAbsentismo" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                            </div>
+                        </div>
+                    </div> 
+                </section>
+                <!--INFOABSTENCION-->          
+                <section class="col-lg-4 connectedSortable">       
+                    <!--apartado apra los grafica-->
+                    <div class="card card-outline card-warning">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-chart-bar"></i>
+                                Absentismo y Rotación General                       
+                            </h3>
+                            <div class="card-tools"> 
+                                 <button type="button" class="btn btn-info btn-sm" 
+                                        data-toggle="modal" data-target="#modal-indicadores"
+                                        data-toggle="tooltip" data-placement="top" title="Indicadores por Campaña">
+                                    <i class="fa fa-table"></i> 
+                                </button>  
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                    <i class="fas fa-minus"></i>
+                                </button>                  
+                                <button type="button" class="btn btn-tool" data-card-widget="remove">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="info-box mb-2 bg-danger">
+                                <span class="info-box-icon"><i class="fas fa-sync"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Porcentaje de Rotacion </span>
+                                    <span class="info-box-number"><h4>{{round($rotacionIndiceAbsGeneral["rotacion"],2)}} %</h4></span>
+                                </div>             
+                            </div>
+                            <div class="info-box mb-2 bg-warning">
+                                <span class="info-box-icon"><i class="fas fa-hand-point-up"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Indice de Rotación</span>
+                                    <span class="info-box-number"><h4>{{round($rotacionIndiceAbsGeneral["indice"],2)}} %</h4></span>
+                                </div>              
+                            </div>
+                            <div class="info-box mb-2 bg-info">
+                                <span class="info-box-icon"><i class="fas fa-hands"></i></span>
+
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Absentismo</span>
+                                    <span class="info-box-number"><h4>{{round($rotacionIndiceAbsGeneral["absentismo"],2)}} %</h4></span>
+                                </div>
+                                <!-- /.info-box-content -->
+                            </div>
+                        </div>
+                    </div> 
+                </section>             
             </div>
-            <!-- /.card -->
 
-            <!-- DIRECT CHAT -->
-            <div class="card direct-chat direct-chat-primary">
-              <div class="card-header">
-                <h3 class="card-title">Direct Chat</h3>
-
-                <div class="card-tools">
-                  <span title="3 New Messages" class="badge badge-primary">3</span>
-                  <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                    <i class="fas fa-minus"></i>
-                  </button>
-                  <button type="button" class="btn btn-tool" title="Contacts" data-widget="chat-pane-toggle">
-                    <i class="fas fa-comments"></i>
-                  </button>
-                  <button type="button" class="btn btn-tool" data-card-widget="remove">
-                    <i class="fas fa-times"></i>
-                  </button>
+            <!--MODAL INFORMATIVO PERSONAL REQUERIDO VS ACTIVOS-->
+            <div class="modal fade" id="modal-grafico-personal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-xl modal-dialog-scrollable">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title"><i class="fas fa-users"></i> Detalles Por Campaña del Personal Activo</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <table class="table table-sm compact text-sm table-bordered table-striped text-center" id="datatable-skills"> 
+                                <thead style="background-color:#BE3A8D; color:white; font-weight:bold; text-align:left;">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Unidad</th>
+                                        <th>Requerido</th>
+                                        <th>Activos</th>
+                                        <th>Diferencial</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($datos as $dato)
+                                    <tr>
+                                        <td>
+                                            <div class="custom-control custom-checkbox">
+                                                <input class="custom-control-input" type="checkbox" id="{{'customCheckbox'.$dato["cartera"]}}" value="{{$dato["cartera"]}}">
+                                                <label for="{{'customCheckbox'.$dato["cartera"]}}" class="custom-control-label"></label>
+                                            </div>
+                                        </td>
+                                        <td>{{$dato["cartera"]}}</td>
+                                        <td>{{$dato["requerido"]}}</td>
+                                        <td>{{$dato["activos"]}}</td>                       
+                                        <td>{!!$dato["diferencial"]!!}</td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                        </div>
+                    </div>
                 </div>
-              </div>
-              <!-- /.card-header -->
-              <div class="card-body">
-                <!-- Conversations are loaded here -->
-                <div class="direct-chat-messages">
-                  <!-- Message. Default to the left -->
-                  <div class="direct-chat-msg">
-                    <div class="direct-chat-infos clearfix">
-                      <span class="direct-chat-name float-left">Alexander Pierce</span>
-                      <span class="direct-chat-timestamp float-right">23 Jan 2:00 pm</span>
-                    </div>
-                    <!-- /.direct-chat-infos -->
-                    <img class="direct-chat-img" src="dist/img/user1-128x128.jpg" alt="message user image">
-                    <!-- /.direct-chat-img -->
-                    <div class="direct-chat-text">
-                      Is this template really for free? That's unbelievable!
-                    </div>
-                    <!-- /.direct-chat-text -->
-                  </div>
-                  <!-- /.direct-chat-msg -->
-
-                  <!-- Message to the right -->
-                  <div class="direct-chat-msg right">
-                    <div class="direct-chat-infos clearfix">
-                      <span class="direct-chat-name float-right">Sarah Bullock</span>
-                      <span class="direct-chat-timestamp float-left">23 Jan 2:05 pm</span>
-                    </div>
-                    <!-- /.direct-chat-infos -->
-                    <img class="direct-chat-img" src="dist/img/user3-128x128.jpg" alt="message user image">
-                    <!-- /.direct-chat-img -->
-                    <div class="direct-chat-text">
-                      You better believe it!
-                    </div>
-                    <!-- /.direct-chat-text -->
-                  </div>
-                  <!-- /.direct-chat-msg -->
-
-                  <!-- Message. Default to the left -->
-                  <div class="direct-chat-msg">
-                    <div class="direct-chat-infos clearfix">
-                      <span class="direct-chat-name float-left">Alexander Pierce</span>
-                      <span class="direct-chat-timestamp float-right">23 Jan 5:37 pm</span>
-                    </div>
-                    <!-- /.direct-chat-infos -->
-                    <img class="direct-chat-img" src="dist/img/user1-128x128.jpg" alt="message user image">
-                    <!-- /.direct-chat-img -->
-                    <div class="direct-chat-text">
-                      Working with AdminLTE on a great new app! Wanna join?
-                    </div>
-                    <!-- /.direct-chat-text -->
-                  </div>
-                  <!-- /.direct-chat-msg -->
-
-                  <!-- Message to the right -->
-                  <div class="direct-chat-msg right">
-                    <div class="direct-chat-infos clearfix">
-                      <span class="direct-chat-name float-right">Sarah Bullock</span>
-                      <span class="direct-chat-timestamp float-left">23 Jan 6:10 pm</span>
-                    </div>
-                    <!-- /.direct-chat-infos -->
-                    <img class="direct-chat-img" src="dist/img/user3-128x128.jpg" alt="message user image">
-                    <!-- /.direct-chat-img -->
-                    <div class="direct-chat-text">
-                      I would love to.
-                    </div>
-                    <!-- /.direct-chat-text -->
-                  </div>
-                  <!-- /.direct-chat-msg -->
-
-                </div>
-                <!--/.direct-chat-messages-->
-
-                <!-- Contacts are loaded here -->
-                <div class="direct-chat-contacts">
-                  <ul class="contacts-list">
-                    <li>
-                      <a href="#">
-                        <img class="contacts-list-img" src="dist/img/user1-128x128.jpg" alt="User Avatar">
-
-                        <div class="contacts-list-info">
-                          <span class="contacts-list-name">
-                            Count Dracula
-                            <small class="contacts-list-date float-right">2/28/2015</small>
-                          </span>
-                          <span class="contacts-list-msg">How have you been? I was...</span>
-                        </div>
-                        <!-- /.contacts-list-info -->
-                      </a>
-                    </li>
-                    <!-- End Contact Item -->
-                    <li>
-                      <a href="#">
-                        <img class="contacts-list-img" src="dist/img/user7-128x128.jpg" alt="User Avatar">
-
-                        <div class="contacts-list-info">
-                          <span class="contacts-list-name">
-                            Sarah Doe
-                            <small class="contacts-list-date float-right">2/23/2015</small>
-                          </span>
-                          <span class="contacts-list-msg">I will be waiting for...</span>
-                        </div>
-                        <!-- /.contacts-list-info -->
-                      </a>
-                    </li>
-                    <!-- End Contact Item -->
-                    <li>
-                      <a href="#">
-                        <img class="contacts-list-img" src="dist/img/user3-128x128.jpg" alt="User Avatar">
-
-                        <div class="contacts-list-info">
-                          <span class="contacts-list-name">
-                            Nadia Jolie
-                            <small class="contacts-list-date float-right">2/20/2015</small>
-                          </span>
-                          <span class="contacts-list-msg">I'll call you back at...</span>
-                        </div>
-                        <!-- /.contacts-list-info -->
-                      </a>
-                    </li>
-                    <!-- End Contact Item -->
-                    <li>
-                      <a href="#">
-                        <img class="contacts-list-img" src="dist/img/user5-128x128.jpg" alt="User Avatar">
-
-                        <div class="contacts-list-info">
-                          <span class="contacts-list-name">
-                            Nora S. Vans
-                            <small class="contacts-list-date float-right">2/10/2015</small>
-                          </span>
-                          <span class="contacts-list-msg">Where is your new...</span>
-                        </div>
-                        <!-- /.contacts-list-info -->
-                      </a>
-                    </li>
-                    <!-- End Contact Item -->
-                    <li>
-                      <a href="#">
-                        <img class="contacts-list-img" src="dist/img/user6-128x128.jpg" alt="User Avatar">
-
-                        <div class="contacts-list-info">
-                          <span class="contacts-list-name">
-                            John K.
-                            <small class="contacts-list-date float-right">1/27/2015</small>
-                          </span>
-                          <span class="contacts-list-msg">Can I take a look at...</span>
-                        </div>
-                        <!-- /.contacts-list-info -->
-                      </a>
-                    </li>
-                    <!-- End Contact Item -->
-                    <li>
-                      <a href="#">
-                        <img class="contacts-list-img" src="dist/img/user8-128x128.jpg" alt="User Avatar">
-
-                        <div class="contacts-list-info">
-                          <span class="contacts-list-name">
-                            Kenneth M.
-                            <small class="contacts-list-date float-right">1/4/2015</small>
-                          </span>
-                          <span class="contacts-list-msg">Never mind I found...</span>
-                        </div>
-                        <!-- /.contacts-list-info -->
-                      </a>
-                    </li>
-                    <!-- End Contact Item -->
-                  </ul>
-                  <!-- /.contacts-list -->
-                </div>
-                <!-- /.direct-chat-pane -->
-              </div>
-              <!-- /.card-body -->
-              <div class="card-footer">
-                <form action="#" method="post">
-                  <div class="input-group">
-                    <input type="text" name="message" placeholder="Type Message ..." class="form-control">
-                    <span class="input-group-append">
-                      <button type="button" class="btn btn-primary">Send</button>
-                    </span>
-                  </div>
-                </form>
-              </div>
-              <!-- /.card-footer-->
             </div>
-            <!--/.direct-chat -->
 
-            <!-- TO DO List -->
-            <div class="card">
-              <div class="card-header">
-                <h3 class="card-title">
-                  <i class="ion ion-clipboard mr-1"></i>
-                  To Do List
-                </h3>
-
-                <div class="card-tools">
-                  <ul class="pagination pagination-sm">
-                    <li class="page-item"><a href="#" class="page-link">&laquo;</a></li>
-                    <li class="page-item"><a href="#" class="page-link">1</a></li>
-                    <li class="page-item"><a href="#" class="page-link">2</a></li>
-                    <li class="page-item"><a href="#" class="page-link">3</a></li>
-                    <li class="page-item"><a href="#" class="page-link">&raquo;</a></li>
-                  </ul>
+            <!--MODAL INFORMATIVO DETALLES DE LOS MOTIVOS DE EGRESOS-->
+            <div class="modal fade" id="modal-motivos-egresos" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-xl modal-dialog-scrollable">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title"><i class="fas fa-users"></i> Detalles de los motivos de Egresos</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <table class="table table-sm compact text-sm table-bordered table-striped text-center" id="datatable-motivosEgresos"> 
+                                <thead style="background-color:#1B3155; color:white; font-weight:bold; text-align:left;">
+                                    <tr>
+                                        <th>Cartera</th>
+                                        <th>Motivo de Egreso</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($datos as $dato)
+                                    @if($dato['motivos']!= null)
+                                        <tr class="{{ $dato['clase_bg'] }}">
+                                            <td>{{ $dato['cartera'] }}</td>
+                                            @foreach ($dato['motivos'] as $key => $motivo)
+                                                <td><b>{{ $key }}</b></td>
+                                                <td>{{ $motivo }}</td>
+                                            @endforeach      
+                                        </tr>
+                                    @endif
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                        </div>
+                    </div>
                 </div>
-              </div>
-              <!-- /.card-header -->
-              <div class="card-body">
-                <ul class="todo-list" data-widget="todo-list">
-                  <li>
-                    <!-- drag handle -->
-                    <span class="handle">
-                      <i class="fas fa-ellipsis-v"></i>
-                      <i class="fas fa-ellipsis-v"></i>
-                    </span>
-                    <!-- checkbox -->
-                    <div  class="icheck-primary d-inline ml-2">
-                      <input type="checkbox" value="" name="todo1" id="todoCheck1">
-                      <label for="todoCheck1"></label>
-                    </div>
-                    <!-- todo text -->
-                    <span class="text">Design a nice theme</span>
-                    <!-- Emphasis label -->
-                    <small class="badge badge-danger"><i class="far fa-clock"></i> 2 mins</small>
-                    <!-- General tools such as edit or delete-->
-                    <div class="tools">
-                      <i class="fas fa-edit"></i>
-                      <i class="fas fa-trash-o"></i>
-                    </div>
-                  </li>
-                  <li>
-                    <span class="handle">
-                      <i class="fas fa-ellipsis-v"></i>
-                      <i class="fas fa-ellipsis-v"></i>
-                    </span>
-                    <div  class="icheck-primary d-inline ml-2">
-                      <input type="checkbox" value="" name="todo2" id="todoCheck2" checked>
-                      <label for="todoCheck2"></label>
-                    </div>
-                    <span class="text">Make the theme responsive</span>
-                    <small class="badge badge-info"><i class="far fa-clock"></i> 4 hours</small>
-                    <div class="tools">
-                      <i class="fas fa-edit"></i>
-                      <i class="fas fa-trash-o"></i>
-                    </div>
-                  </li>
-                  <li>
-                    <span class="handle">
-                      <i class="fas fa-ellipsis-v"></i>
-                      <i class="fas fa-ellipsis-v"></i>
-                    </span>
-                    <div  class="icheck-primary d-inline ml-2">
-                      <input type="checkbox" value="" name="todo3" id="todoCheck3">
-                      <label for="todoCheck3"></label>
-                    </div>
-                    <span class="text">Let theme shine like a star</span>
-                    <small class="badge badge-warning"><i class="far fa-clock"></i> 1 day</small>
-                    <div class="tools">
-                      <i class="fas fa-edit"></i>
-                      <i class="fas fa-trash-o"></i>
-                    </div>
-                  </li>
-                  <li>
-                    <span class="handle">
-                      <i class="fas fa-ellipsis-v"></i>
-                      <i class="fas fa-ellipsis-v"></i>
-                    </span>
-                    <div  class="icheck-primary d-inline ml-2">
-                      <input type="checkbox" value="" name="todo4" id="todoCheck4">
-                      <label for="todoCheck4"></label>
-                    </div>
-                    <span class="text">Let theme shine like a star</span>
-                    <small class="badge badge-success"><i class="far fa-clock"></i> 3 days</small>
-                    <div class="tools">
-                      <i class="fas fa-edit"></i>
-                      <i class="fas fa-trash-o"></i>
-                    </div>
-                  </li>
-                  <li>
-                    <span class="handle">
-                      <i class="fas fa-ellipsis-v"></i>
-                      <i class="fas fa-ellipsis-v"></i>
-                    </span>
-                    <div  class="icheck-primary d-inline ml-2">
-                      <input type="checkbox" value="" name="todo5" id="todoCheck5">
-                      <label for="todoCheck5"></label>
-                    </div>
-                    <span class="text">Check your messages and notifications</span>
-                    <small class="badge badge-primary"><i class="far fa-clock"></i> 1 week</small>
-                    <div class="tools">
-                      <i class="fas fa-edit"></i>
-                      <i class="fas fa-trash-o"></i>
-                    </div>
-                  </li>
-                  <li>
-                    <span class="handle">
-                      <i class="fas fa-ellipsis-v"></i>
-                      <i class="fas fa-ellipsis-v"></i>
-                    </span>
-                    <div  class="icheck-primary d-inline ml-2">
-                      <input type="checkbox" value="" name="todo6" id="todoCheck6">
-                      <label for="todoCheck6"></label>
-                    </div>
-                    <span class="text">Let theme shine like a star</span>
-                    <small class="badge badge-secondary"><i class="far fa-clock"></i> 1 month</small>
-                    <div class="tools">
-                      <i class="fas fa-edit"></i>
-                      <i class="fas fa-trash-o"></i>
-                    </div>
-                  </li>
-                </ul>
-              </div>
-              <!-- /.card-body -->
-              <div class="card-footer clearfix">
-                <button type="button" class="btn btn-primary float-right"><i class="fas fa-plus"></i> Add item</button>
-              </div>
             </div>
-            <!-- /.card -->
-          </section>
+
+             <!--MODAL INFORMATIVO DETALLES DE LOS MOTIVOS DE EGRESOS-->
+            <div class="modal fade" id="modal-indicadores" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-xl modal-dialog-scrollable">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title"><i class="fas fa-users"></i> Indicadores Por Campaña</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <table class="table table-sm compact text-sm table-bordered table-striped text-center" id="datatable-indicadores"> 
+                                <thead style="background-color:#BE3A8D; color:white; font-weight:bold; text-align:left;">
+                                    <tr>
+                                        <th>Cartera</th>
+                                        <th>Rotacion</th>
+                                        <th>Indice Rotacion</th>
+                                        <th>Absentismo</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($datos as $dato)
+                                        <tr>
+                                            <td>{{ $dato['cartera'] }} </td>
+                                            <td>{{ $dato['rotacion'] }}%</td>
+                                            <td>{{ $dato['indice'] }} %</td>   
+                                            <td class="text-danger"><b >{{ $dato['absentismo'] }} %</b></td>   
+                                        </tr>                                    
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div><!-- /.container-fluid -->
+    </section>       
 </div>
-@endsection 
+@endsection
 
 @push('styles')
 <link media="all" type="text/css" rel="stylesheet" href="{{asset('plugins/select2/css/select2.min.css')}}">
 <link media="all" type="text/css" rel="stylesheet" href="{{asset('plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css')}}">
 <link media="all" type="text/css" rel="stylesheet"  href="{{asset('plugins/bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.css')}}">
 <link media="all" type="text/css" rel="stylesheet" href="{{asset('plugins/bootstrap-daterangepicker/daterangepicker.css')}}">
+<link media="all" type="text/css" rel="stylesheet" href="{{asset('plugins/datatables-bs4/css/dataTables.bootstrap4.min.css')}}">
+<link media="all" type="text/css" rel="stylesheet" href="{{asset('plugins/datatables-responsive/css/responsive.bootstrap4.min.css')}}">
+<link media="all" type="text/css" rel="stylesheet" href="{{asset('plugins/datatables-buttons/css/buttons.bootstrap4.min.css')}}">
+<style>
+    #datatable-skills_wrapper .dataTables_filter {
+        text-align: left;
+    }
+    #datatable-skills_wrapper .dataTables_filter label {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    #datatable-skills_wrapper .dataTables_filter input {
+        width: 100%;
+        margin-left: 0;
+        display: block;
+    }
+</style>
 @endpush
 
 @push('scripts')
@@ -453,6 +368,74 @@
 <script src="{{asset('plugins/inputmask/jquery.inputmask.min.js')}}" type="text/javascript"></script>
 <script src="{{asset('plugins/bootstrap-daterangepicker/daterangepicker.js')}}" type="text/javascript"></script>
 <script src="{{asset('plugins/bootstrap-datetimepicker/src/js/bootstrap-datetimepicker.js')}}"></script>
+<script src="{{asset('plugins/datatables/jquery.dataTables.js')}}" type="text/javascript"></script>
+<script src="{{asset('plugins/datatables-bs4/js/dataTables.bootstrap4.js')}}" type="text/javascript"></script>
+<script src="{{asset('plugins/datatables-responsive/js/dataTables.responsive.js')}}" type="text/javascript"></script>
+<script src="{{asset('plugins/datatables-responsive/js/responsive.bootstrap4.js')}}" type="text/javascript"></script>
+<script src="{{asset('plugins/bs-custom-file-input/bs-custom-file-input.min.js')}}" type="text/javascript"></script>
+<script src="{{asset('plugins/jquery/jquery.blockUI.js')}}" type="text/javascript"></script>
 <script src="{{asset('plugins/select2/js/select2.js')}}" type="text/javascript"></script>
+<script src="{{asset('plugins/chart.js/Chart.min.js')}}" type="text/javascript"></script>
+<script>
+var asset = '{!! asset("img/loading-icon-transparent-background-12.jpg") !!}'; // declaras la ruta que apunta a public
+
+//arreglo para el chat de barras
+var areaChartData = {
+
+labels: {!! $chartLabels !!},
+        datasets: [
+        {
+        label: "Requeridos",
+                backgroundColor: "#1B3155",
+                borderColor: "#1B3155",
+                order: 2,
+                data: {!! $chartRequeridos !!},
+        },
+        {
+        label: "Activos",
+                backgroundColor: "#BE3A8D",
+                borderColor: "#BE3A8D",
+                order: 2,
+                data: {!! $chartActivos !!},
+        },
+        {
+        label: "% Cumplimiento",
+                type: "line",
+                order:1,
+                backgroundColor: "rgba(255, 193, 7, 0.2)",
+                borderColor: "#FFC107",
+                borderWidth: 2,
+                fill: false,
+                pointBackgroundColor: "#FFC107",
+                pointBorderColor: "#FFC107",
+                pointRadius: 4,
+                data: {!! $chartcumplimiento !!},
+                yAxisID: "y-cumplimiento",
+        },
+        ],
+};
+//Arreglo para el chart de egresos
+var chartColors = [
+        "#BE3A8D",
+        "#00a65a",
+        "#8C8F93",
+        "#1B3155",
+        "#3c8dbc",
+        "#d2d6de",
+        "#BE3A8D",
+        "#6f42c1",
+        "#20c997",
+        "#e83e8c",
+];
+var chartEgresos = {
+labels: {!! $chartEgresosLabels ?? '[]' !!},
+        datasets: [
+        {
+        label: "Total Egresos",
+                backgroundColor: chartColors,
+                data: {!! $chartEgresosData ?? '[]' !!},
+        },
+        ],
+};</script>
 <script src="{{asset('js/dashboard/dashboardPersonal.js')}}" type="text/javascript"></script>
 @endpush

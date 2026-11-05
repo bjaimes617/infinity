@@ -28,22 +28,13 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        
-        //$diafinal = carbon::now()->endOfMonth()->format('d');         
-        $schedule->command('infinity:inactiveVisitantes')->dailyAt('04:00');
-        $schedule->command('infinity:convocadoscarteras')->dailyAt('04:00');
-        $schedule->command('infinity:deletevisitantes')->dailyAt('04:00');
-        $schedule->command('infinity:cursosactive')->dailyAt('04:00');        
-        //$schedule->command('infinity:sendmailscondominios')->dailyAt('04:00');        
-        $schedule->command('infinity:InsertNLAsistenciaOP')->dailyAt('04:00');
-        $schedule->command('infinity:replicaExpedientesDiarios')->dailyAt('04:20');
-        //ejecutara el 1er periodo de nominas
-        $schedule->command('RunProfit')->dailyAt('04:40');
-        //ejecutara el 2do periodo de nominas
-        //$schedule->command('RunProfit')->monthlyOn($diafinal,'04:20');
-       //->hourly();
-        //desactivar trimestres ARI
-        $schedule->command('infinity:disabletrimestre')->monthlyOn(01,'05:00');
+        // Prepara y encola la cadena de tareas diarias (General -> Asistencia/Expedientes -> Profit)
+        // Se despacha a las 04:00 AM para que la cola las procese en orden secuencial
+        $schedule->command('infinity:dispatchDailyQueue >> storage/logs/queue/dispatchDailyQueue.log 2>&1')->dailyAt('03:50');
+        $schedule->command('queue:work --stop-when-empty >> storage/logs/queue/queue.log 2>&1')->dailyAt('04:00');
+
+        // Desactivar trimestres ARI (mensual)
+        $schedule->command('infinity:disabletrimestre')->monthlyOn(1, '05:00');
     }
 
     /**
@@ -53,7 +44,7 @@ class Kernel extends ConsoleKernel
      */
     protected function commands()
     {
-        $this->load(__DIR__.'/Commands');
+        $this->load(__DIR__ . '/Commands');
 
         require base_path('routes/console.php');
     }
