@@ -10,11 +10,23 @@ on:
 
 jobs:
   build:
+  
+    strategy:
+      matrix:
+        php-versions: ['7.2', '7.3', '7.4', '8.0']
 
     runs-on: ubuntu-latest
 
+    name: PHP ${{ matrix.php }}
+    
     steps:
     - uses: actions/checkout@v2
+    
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ matrix.php-versions }}
+        tools: composer:v2
 
     - name: Validate composer.json and composer.lock
       run: composer validate

@@ -21,12 +21,8 @@ class LogLockout
 
     /**
      * Handle the event.
-     *
-     * @param Lockout $event
-     *
-     * @return void
      */
-    public function handle(Lockout $event)
+    public function handle(Lockout $event): void
     {
         if (config('LaravelLogger.logLockOut')) {
             $this->activity(trans('LaravelLogger::laravel-logger.listenerTypes.lockout'));

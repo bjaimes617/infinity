@@ -15,16 +15,18 @@ class RedirectIfAuthenticated
      * @param  string|null  $guard
      * @return mixed
      */
-    public function handle($request, Closure $next, $guard = null)
-    {       
-        if (Auth::guard($guard)->check()) {         
-            
-            if(!Auth::user()->roles()->exists()){
-                abort(403,"Perfil de Acceso no encontrado, No puede Acceder."); 
-            } else {
-               return redirect('/home');
+    public function handle($request, Closure $next, ...$guards)
+    {
+        $guards = empty($guards) ? [null] : $guards;
+
+        foreach ($guards as $guard) {
+            if (Auth::guard($guard)->check()) {
+                if(!Auth::user()->roles()->exists()){
+                    abort(403,"Perfil de Acceso no encontrado, No puede Acceder."); 
+                } else {
+                    return redirect('/home');
+                }
             }
-            
         }
 
         return $next($request);

@@ -166,9 +166,9 @@ class HomeController extends Controller
             );
 
             /// insertamos los calculos de rotacion indice y absentismo por campaña
-            $data[$pr->cartera_id]["rotacion"]     = round($rotaciones["rotacion"], 2);
-            $data[$pr->cartera_id]["indice"]       = round($rotaciones["indice"], 2);
-            $data[$pr->cartera_id]["absentismo"]   = round($rotaciones["absentismo"], 2);
+            $data[$pr->cartera_id]["rotacion"]     = $rotaciones["rotacion"];
+            $data[$pr->cartera_id]["indice"]       = $rotaciones["indice"];
+            $data[$pr->cartera_id]["absentismo"]   = $rotaciones["absentismo"];
 
             $pr->diferencial = $diferencial;
             ## rojo que falta  verde que sobra 
@@ -376,6 +376,7 @@ class HomeController extends Controller
         {
             //indice de rotacion
             $rotacion  = ($sumaIngreyEgres / $promedioPersonal) * 100;
+            $rotacion = round($rotacion, 2) . "%";
         }
         catch (DivisionByZeroError)
         {
@@ -385,6 +386,7 @@ class HomeController extends Controller
         {
             //INDICE DE ROTACION
             $indice  = ($TotalEgresados / $promedioPersonal) * 100;
+            $indice = round($indice, 2) . "%";
         }
         catch (DivisionByZeroError)
         {
@@ -396,6 +398,7 @@ class HomeController extends Controller
             //INDICE DE ROTACION
             $abs  = ($convocados - $asistentes);
             $absentismo = ($abs / $convocados) * 100;
+            $absentismo = round($absentismo, 2) . "%";
         }
         catch (DivisionByZeroError)
         {

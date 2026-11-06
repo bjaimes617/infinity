@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Bus;
 use App\Jobs\GeneralDailyTasksJob;
 use App\Jobs\ProcessAsistenciaExpedientesJob;
 use App\Jobs\ProcessDataProfit;
+use App\Jobs\Store_data_chats_personal;
 
 class DispatchDailyQueue extends Command
 {
@@ -41,7 +42,8 @@ class DispatchDailyQueue extends Command
      */
     public function handle()
     {
-        if ($this->option('sync')) {
+        if ($this->option('sync'))
+        {
             $this->info('[Síncrono] Iniciando ejecución secuencial de jobs diarios...');
 
             $this->line('-> Ejecutando GeneralDailyTasksJob...');
@@ -51,7 +53,10 @@ class DispatchDailyQueue extends Command
             dispatch_sync(new ProcessAsistenciaExpedientesJob());
 
             $this->line('-> Ejecutando Store_Data_profit...');
-            dispatch_sync(new Store_Data_profit());
+            dispatch_sync(new ProcessDataProfit());
+
+            $this->line('-> Actualizando metricas del personal');
+            dispatch_sync(new Store_data_chats_personal());
 
             $this->info('[Síncrono] Todos los jobs diarios finalizaron.');
             return 0;
@@ -63,6 +68,7 @@ class DispatchDailyQueue extends Command
             new GeneralDailyTasksJob(),
             new ProcessDataProfit(),
             new ProcessAsistenciaExpedientesJob(),
+            new Store_data_chats_personal()
         ])->dispatch();
 
         $this->info('[Cola] Cadena de jobs encolada exitosamente. Se procesará por el queue worker.');

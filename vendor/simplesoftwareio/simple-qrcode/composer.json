@@ -2,7 +2,7 @@
     "name": "simplesoftwareio/simple-qrcode",
     "description": "Simple QrCode is a QR code generator made for Laravel.",
     "keywords": ["qrcode", "laravel", "simple", "generator", "wrapper"],
-    "homepage": "http://www.simplesoftware.io",
+    "homepage": "https://www.simplesoftware.io/#/docs/simple-qrcode",
     "license" : "MIT",
     "authors": [
         {
@@ -11,19 +11,25 @@
         }
     ],
     "require": {
-        "php": ">=7.0",
+        "php": ">=7.2|^8.0",
       	"ext-gd": "*",
-        "bacon/bacon-qr-code": "1.0.*",
-        "illuminate/support": ">=5.0.0"
+        "bacon/bacon-qr-code": "^2.0"
     },
     "require-dev": {
-        "mockery/mockery": "0.9.*",
-        "phpunit/phpunit": "~6"
+        "mockery/mockery": "~1",
+        "phpunit/phpunit": "~9"
+    },
+    "suggest": {
+        "ext-imagick": "Allows the generation of PNG QrCodes.",
+        "illuminate/support": "Allows for use within Laravel."
     },
     "autoload": {
-        "psr-0": {
+        "psr-4": {
             "SimpleSoftwareIO\\QrCode\\": "src"
         }
+    },
+    "scripts": {
+        "test": "phpunit"
     },
     "extra": {
         "laravel": {

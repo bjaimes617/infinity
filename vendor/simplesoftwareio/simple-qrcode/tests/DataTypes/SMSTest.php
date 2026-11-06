@@ -5,7 +5,7 @@ use SimpleSoftwareIO\QrCode\DataTypes\SMS;
 
 class SMSTest extends TestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         $this->sms = new SMS();
     }
@@ -23,7 +23,7 @@ class SMSTest extends TestCase
     {
         $this->sms->create([null, 'foo']);
 
-        $properFormat = 'sms::foo';
+        $properFormat = 'sms:&body=foo';
 
         $this->assertEquals($properFormat, strval($this->sms));
     }
@@ -32,7 +32,7 @@ class SMSTest extends TestCase
     {
         $this->sms->create(['555-555-5555', 'foo']);
 
-        $properFormat = 'sms:555-555-5555:foo';
+        $properFormat = 'sms:555-555-5555&body=foo';
 
         $this->assertEquals($properFormat, strval($this->sms));
     }

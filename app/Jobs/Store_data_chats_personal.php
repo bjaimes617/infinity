@@ -17,8 +17,6 @@ use App\Models\personal\PersonalModel;
 use App\Models\personal\CarteraModel;
 use App\Models\personal\ChartsPersonalModel;
 
-
-
 use Carbon\Carbon;
 
 class Store_data_chats_personal implements ShouldQueue
@@ -180,6 +178,7 @@ class Store_data_chats_personal implements ShouldQueue
     public function extractReplicasPersonal($mes, $anio, $carterasACtives = null)
     {
         $filePath = $anio . "/" . $mes . "/" . $anio . "_" . $mes . "_" . '01_ReplicaExpedientesDiarios' . '.csv';
+
         if (!Storage::disk('replicalp')->exists($filePath))
         {
             Log::warning("[Store_data_chats_personal] No se encontró el archivo de réplica: " . $filePath);

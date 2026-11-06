@@ -31,6 +31,7 @@ class Kernel extends ConsoleKernel
         // Prepara y encola la cadena de tareas diarias (General -> Asistencia/Expedientes -> Profit)
         // Se despacha a las 04:00 AM para que la cola las procese en orden secuencial
         $schedule->command('infinity:dispatchDailyQueue >> storage/logs/queue/dispatchDailyQueue.log 2>&1')->dailyAt('03:50');
+
         $schedule->command('queue:work --stop-when-empty >> storage/logs/queue/queue.log 2>&1')->dailyAt('04:00');
 
         // Desactivar trimestres ARI (mensual)

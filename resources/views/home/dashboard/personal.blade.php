@@ -185,14 +185,14 @@
                                 <span class="info-box-icon"><i class="fas fa-sync"></i></span>
                                 <div class="info-box-content">
                                     <span class="info-box-text">Porcentaje de Rotacion </span>
-                                    <span class="info-box-number"><h4>{{round($rotacionIndiceAbsGeneral["rotacion"],2)}} %</h4></span>
+                                    <span class="info-box-number"><h4><span id="total-rotacion">{{$rotacionIndiceAbsGeneral["rotacion"]}}</span></h4></span>
                                 </div>             
                             </div>
                             <div class="info-box mb-2 bg-warning">
                                 <span class="info-box-icon"><i class="fas fa-hand-point-up"></i></span>
                                 <div class="info-box-content">
                                     <span class="info-box-text">Indice de Rotación</span>
-                                    <span class="info-box-number"><h4>{{round($rotacionIndiceAbsGeneral["indice"],2)}} %</h4></span>
+                                    <span class="info-box-number"><h4><span id="total-indice">{{$rotacionIndiceAbsGeneral["indice"]}}</span></h4></span>
                                 </div>              
                             </div>
                             <div class="info-box mb-2 bg-info">
@@ -200,7 +200,7 @@
 
                                 <div class="info-box-content">
                                     <span class="info-box-text">Absentismo</span>
-                                    <span class="info-box-number"><h4>{{round($rotacionIndiceAbsGeneral["absentismo"],2)}} %</h4></span>
+                                    <span class="info-box-number"><h4><span id="total-absentismo">{{$rotacionIndiceAbsGeneral["absentismo"]}}</span></h4></span>
                                 </div>
                                 <!-- /.info-box-content -->
                             </div>

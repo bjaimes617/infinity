@@ -137,6 +137,31 @@ $(document).ready(function () {
         }
     });
 
+    if ($("#datatable-indicadores").length != 0) {
+        $("#datatable-indicadores").DataTable({
+            responsive: true,
+            lengthChange: true,
+            autoWidth: false,
+            ordering: true,
+            columnDefs: [{ orderable: true, targets: [0] }],
+            order: [0, "ASC"],
+            dom:
+                "<'row'<'col-12'f>>" +
+                "<'row'<'col-12'tr>>" +
+                "<'row mt-2'<'col-12 d-flex justify-content-center'p>>",
+            language: {
+                search: "",
+                searchPlaceholder: "Buscador...",
+                paginate: {
+                    previous: "«",
+                    next: "»",
+                },
+                emptyTable: "No hay datos disponibles",
+                zeroRecords: "No se encontraron resultados",
+            },
+        });
+    }
+
     $("#mes")
         .datetimepicker({
             format: "MM/YYYY",
@@ -304,6 +329,23 @@ function UpdateDisplayAll(mes, url) {
             if (response.totaldiferencial !== undefined) {
                 $("#total-diferencial").html(
                     response.totaldiferencial + " <small>Diferencia</small>"
+                );
+            }
+
+            // Actualizar tarjetas de rotación, índice y absentismo
+            if (response.rotacion !== undefined) {
+                $("#total-rotacion").html(
+                    response.rotacion + " <small>Rotación</small>"
+                );
+            }
+            if (response.indice !== undefined) {
+                $("#total-indice").html(
+                    response.indice + " <small>Índice</small>"
+                );
+            }
+            if (response.absentismo !== undefined) {
+                $("#total-absentismo").html(
+                    response.absentismo + " <small>Absentismo</small>"
                 );
             }
 
@@ -498,7 +540,38 @@ function UpdateDisplayAll(mes, url) {
                         { data: "total" },
                     ],
                 });
-            }
+
+                $("#datatable-indicadores").DataTable({
+                    responsive: true,
+                    lengthChange: false,
+                    autoWidth: false,
+                    ordering: true,
+                    destroy: true,
+                    columnDefs: [{ orderable: false, targets: 0 }],
+                    dom:
+                        "<'row'<'col-12'f>>" +
+                        "<'row'<'col-12'tr>>" +
+                        "<'row mt-2'<'col-12 d-flex justify-content-center'p>>",
+                    language: {
+                        search: "",
+                        searchPlaceholder: "Buscador...",
+                        paginate: {
+                            previous: "«",
+                            next: "»",
+                        },
+                        emptyTable: "No hay datos disponibles",
+                        zeroRecords: "No se encontraron resultados",
+                    },
+                    data: response.datos || [],
+                    columns: [                        
+                        { data: "cartera" },
+                        { data: "rotacion" },
+                        { data: "indice" },
+                        { data: "absentismo" },
+                    ],
+                });         
+    }
+
         },
         error: function (xhr, status, error) {
 

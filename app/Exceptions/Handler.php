@@ -8,7 +8,8 @@ use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Response;
 use Throwable;
 
-class Handler extends ExceptionHandler {
+class Handler extends ExceptionHandler
+{
 
     /**
      * A list of the exception types that are not reported.
@@ -16,7 +17,7 @@ class Handler extends ExceptionHandler {
      * @var array<int, class-string<Throwable>>
      */
     protected $dontReport = [
-            //
+        //
     ];
 
     /**
@@ -35,39 +36,44 @@ class Handler extends ExceptionHandler {
      *
      * @return void
      */
-    public function register() {
-        
-        $this->reportable(function (Throwable $exception) {
-            
+    public function register()
+    {
+
+        $this->reportable(function (Throwable $exception)
+        {
         });
     }
 
-    public function render($request, Throwable $exception) {
+    public function render($request, Throwable $exception)
+    {
         $userLevelCheck = $exception instanceof \jeremykenedy\LaravelRoles\App\Exceptions\RoleDeniedException ||
-                $exception instanceof \jeremykenedy\LaravelRoles\App\Exceptions\RoleDeniedException ||
-                $exception instanceof \jeremykenedy\LaravelRoles\App\Exceptions\PermissionDeniedException ||
-                $exception instanceof \jeremykenedy\LaravelRoles\App\Exceptions\LevelDeniedException;
+            $exception instanceof \jeremykenedy\LaravelRoles\App\Exceptions\RoleDeniedException ||
+            $exception instanceof \jeremykenedy\LaravelRoles\App\Exceptions\PermissionDeniedException ||
+            $exception instanceof \jeremykenedy\LaravelRoles\App\Exceptions\LevelDeniedException;
 
-        if ($userLevelCheck) {
-            if ($request->expectsJson()) {
-                return Response::json(array(
-                            'error' => 403,
-                            'message' => 'Unauthorized.'
-                                ), 403);
+        if ($userLevelCheck)
+        {
+            if ($request->expectsJson())
+            {
+                return Response->json(array(
+                    'error' => 403,
+                    'message' => 'Unauthorized.'
+                ), 403);
             }
-            abort(403,$exception->getMessage());
+            abort(403, $exception->getMessage());
         }
 
         return parent::render($request, $exception);
     }
-    
-    protected function unauthenticated($request, AuthenticationException $exception)
-{
-    if ($request->expectsJson()) {
-        return response()->json(['message' => 'Token inválido o no proporcionado'], 401);
-    }
 
-    // Para peticiones no JSON, puedes redirigir o abortar
-    abort(401, 'No autorizado');
-}
+    protected function unauthenticated($request, AuthenticationException $exception)
+    {
+        if ($request->expectsJson())
+        {
+            return response()->json(['message' => 'Token inválido o no proporcionado'], 401);
+        }
+
+        // Para peticiones no JSON, puedes redirigir o abortar
+        abort(401, 'No autorizado');
+    }
 }

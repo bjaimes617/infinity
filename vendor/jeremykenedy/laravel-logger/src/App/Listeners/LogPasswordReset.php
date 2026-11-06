@@ -21,12 +21,8 @@ class LogPasswordReset
 
     /**
      * Handle the event.
-     *
-     * @param PasswordReset $event
-     *
-     * @return void
      */
-    public function handle(PasswordReset $event)
+    public function handle(PasswordReset $event): void
     {
         if (config('LaravelLogger.logPasswordReset')) {
             $this->activity(trans('LaravelLogger::laravel-logger.listenerTypes.reset'));
