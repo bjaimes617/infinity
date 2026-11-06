@@ -70,18 +70,24 @@ class PersonalController extends Controller
     public function Imagesave($file)
     {
         $name_file = time() . '_' . $file->getClientOriginalName();
-        if (\Storage::disk('personal')->put($name_file, file_get_contents($file->getRealPath()))) {
+        if (\Storage::disk('personal')->put($name_file, file_get_contents($file->getRealPath())))
+        {
             return $name_file;
-        } else {
+        }
+        else
+        {
             return false;
         }
     }
 
     public function deleteImg($nombre_imagen)
     {
-        if (\Storage::disk('personal')->delete($nombre_imagen)) {
+        if (\Storage::disk('personal')->delete($nombre_imagen))
+        {
             return true;
-        } else {
+        }
+        else
+        {
             return false;
         }
     }
@@ -97,9 +103,12 @@ class PersonalController extends Controller
         $estatus = EstatusModel::where('group_module', 'R')->get();
         $nivel = PoliceEstructure::VerifiedNivelPermissions($user);
 
-        if ($nivel) {
+        if ($nivel)
+        {
             $areas = PoliceEstructure::VerifiedGerenciasPermissions($nivel, $user);
-        } else {
+        }
+        else
+        {
 
             return abort(403, "No cuenta con los Nivel necesario para acceder a estos recursos.");
         }
@@ -113,7 +122,7 @@ class PersonalController extends Controller
         $region = RegionModel::where('active', 1)->get();
         $gerente = PersonalModel::select(DB::raw("concat(primer_nombre,' ',primer_apellido) as nombre"), "dir_personal.id")
             ->whereIn('cargo_id', $this->CargoGerentes)
-            ->whereIn('dir_personal.estatus_id', [1, 7, 8, 9, 10])
+            ->whereIn('dir_personal.estatus_id', [1, 7, 8, 9, 10, 27])
             ->orderby('primer_nombre', 'ASC')->get();
 
         $cargo = CargoModel::where('estatus_id', 1)->orderby('nombre_cargo', 'ASC')->get();
@@ -184,7 +193,8 @@ class PersonalController extends Controller
          *   2: Personal solo por asignados
          *   1: todos los registros
          */
-        switch ($nivel) {
+        switch ($nivel)
+        {
             case 4:
                 ///Ubicamos los Id de todo el personal que tiene asignado
                 $idPersonals = PoliceEstructure::PersonalAsignaded($user->cedula);
@@ -192,7 +202,8 @@ class PersonalController extends Controller
                 $carteraPermisada = $user->RelationPermisos()->groupby('cartera_id')->pluck('cartera_id');
                 $skillPermisado = $user->RelationPermisos()->groupby('skill_id')->pluck('skill_id');
 
-                if ($request->area == null && $request->cartera == null && $request->skill == null && $request->estatus == null) {
+                if ($request->area == null && $request->cartera == null && $request->skill == null && $request->estatus == null)
+                {
 
                     $result = $dato->wherein('id', $idPersonals)
                         ->whereIn('cartera_id', $carteraPermisada)
@@ -200,7 +211,8 @@ class PersonalController extends Controller
                         ->orderby('primer_nombre', 'ASC');
                 }
                 ////GERENCIA TIENE DATOS PERO ESTATUS NO
-                if ($request->area != null && $request->cartera == null && $request->skill == null && $request->estatus == null) {
+                if ($request->area != null && $request->cartera == null && $request->skill == null && $request->estatus == null)
+                {
 
                     $result = $dato->wherein('id', $idPersonals)
                         ->where('area_trabajo_id', $request->area)
@@ -209,7 +221,8 @@ class PersonalController extends Controller
                         ->orderby('primer_nombre', 'ASC');
                 }
                 ////GERENCIA CARTERA TIENEN DATOS PERO ESTATUS NO
-                if ($request->area != null && $request->cartera != null && $request->skill == null && $request->estatus == null) {
+                if ($request->area != null && $request->cartera != null && $request->skill == null && $request->estatus == null)
+                {
 
                     $result = $dato->wherein('id', $idPersonals)
                         ->where('cartera_id', $request->cartera)
@@ -217,21 +230,24 @@ class PersonalController extends Controller
                         ->orderby('primer_nombre', 'ASC');
                 }
                 ////GERENCIA CARTERA Y SKILL TIENEN DATOS PERO ESTATUS NO
-                if ($request->area != null && $request->cartera != null && $request->skill != null && $request->estatus == null) {
+                if ($request->area != null && $request->cartera != null && $request->skill != null && $request->estatus == null)
+                {
 
                     $result = $dato->wherein('id', $idPersonals)
                         ->where('skill_id', $request->skill)
                         ->orderby('primer_nombre', 'ASC');
                 }
                 ///TODOS LOS SELECTORES POSEEN DATOS
-                if ($request->area != null && $request->cartera != null && $request->skill != null && $request->estatus != null) {
+                if ($request->area != null && $request->cartera != null && $request->skill != null && $request->estatus != null)
+                {
                     $result = $dato->wherein('id', $idPersonals)
                         ->where('skill_id', $request->skill)
                         ->whereIn('estatus_id', $request->estatus)
                         ->orderby('primer_nombre', 'ASC');
                 }
                 ///ESTATUS POSEE DATOS                
-                if ($request->area == null && $request->cartera == null && $request->skill == null && $request->estatus != null) {
+                if ($request->area == null && $request->cartera == null && $request->skill == null && $request->estatus != null)
+                {
 
                     $result = $dato->wherein('id', $idPersonals)
                         ->whereIn('cartera_id', $carteraPermisada)
@@ -240,7 +256,8 @@ class PersonalController extends Controller
                         ->orderby('primer_nombre', 'ASC');
                 }
                 //// GERENCIA Y ESTATUS POSEE DATOS 
-                if ($request->area != null && $request->cartera == null && $request->skill == null && $request->estatus != null) {
+                if ($request->area != null && $request->cartera == null && $request->skill == null && $request->estatus != null)
+                {
                     $result = $dato->wherein('id', $idPersonals)
                         ->where('area_trabajo_id', $request->area)
                         ->whereIn('skill_id', $skillPermisado)
@@ -248,7 +265,8 @@ class PersonalController extends Controller
                         ->orderby('primer_nombre', 'ASC');
                 }
                 /// GERENCIA, UNIDAD Y ESTATUS POSEEN DATOS.
-                if ($request->area != null && $request->cartera != null && $request->skill == null && $request->estatus != null) {
+                if ($request->area != null && $request->cartera != null && $request->skill == null && $request->estatus != null)
+                {
 
                     $result = $dato->wherein('id', $idPersonals)
                         ->where('cartera_id', $request->cartera)
@@ -263,35 +281,43 @@ class PersonalController extends Controller
                 $skillsautorize = $user->RelationPermisos()->groupby('skill_id')->pluck('skill_id');
 
                 ///SELECTORES EN TODOS
-                if ($request->area == null && $request->cartera == null && $request->skill == null && $request->estatus == null) {
+                if ($request->area == null && $request->cartera == null && $request->skill == null && $request->estatus == null)
+                {
                     $result = $dato->WhereIn('skill_id', $skillsautorize)->orderby('primer_nombre', 'ASC');
                 }
                 /// DATOS EN GERENCIA Y SELECTORES EN TODOS
-                if ($request->area != null && $request->cartera == null && $request->skill == null && $request->estatus == null) {
+                if ($request->area != null && $request->cartera == null && $request->skill == null && $request->estatus == null)
+                {
                     $result = $dato->where('area_trabajo_id', $request->area)->WhereIn('cartera_id', $carterasautorize)->orderby('primer_nombre', 'ASC');
                 }
                 /// DATOS EN GERENCIA Y UNIDAD EL RESTO EN TODOS
-                if ($request->area != null && $request->cartera != null && $request->skill == null && $request->estatus == null) {
+                if ($request->area != null && $request->cartera != null && $request->skill == null && $request->estatus == null)
+                {
                     $result = $dato->where('cartera_id', $request->cartera)->WhereIn('skill_id', $skillsautorize)->orderby('primer_nombre', 'ASC');
                 }
                 ///DATOS ENGERENCIA, UNIDAD Y SKIL Y ESTATUS EN TODOS
-                if ($request->area != null && $request->cartera != null && $request->skill != null && $request->estatus == null) {
+                if ($request->area != null && $request->cartera != null && $request->skill != null && $request->estatus == null)
+                {
                     $result = $dato->where('cartera_id', $request->cartera)->Where('skill_id', $request->skill)->orderby('primer_nombre', 'ASC');
                 }
                 //DATOS EN TODOS LOS SELECTORES
-                if ($request->area != null && $request->cartera != null && $request->skill != null && $request->estatus != null) {
+                if ($request->area != null && $request->cartera != null && $request->skill != null && $request->estatus != null)
+                {
                     $result = $dato->where('cartera_id', $request->cartera)->Where('skill_id', $request->skill)->whereIn('estatus_id', $request->estatus)->orderby('primer_nombre', 'ASC');
                 }
                 ///DATOS SOLO EN ESTATUS
-                if ($request->area == null && $request->cartera == null && $request->skill == null && $request->estatus != null) {
+                if ($request->area == null && $request->cartera == null && $request->skill == null && $request->estatus != null)
+                {
                     $result = $dato->wherein('skill_id', $skillsautorize)->whereIn('estatus_id', $request->estatus)->orderby('primer_nombre', 'ASC');
                 }
                 ///DATOS EN GERENCIA Y ESTATUS
-                if ($request->area != null && $request->cartera == null && $request->skill == null && $request->estatus != null) {
+                if ($request->area != null && $request->cartera == null && $request->skill == null && $request->estatus != null)
+                {
                     $result = $dato->where('area_trabajo_id', $request->area)->WhereIn('cartera_id', $carterasautorize)->whereIn('estatus_id', $request->estatus)->orderby('primer_nombre', 'ASC');
                 }
                 ///DATOS EN GERENCIA Y UNIDAD Y EN ESTATUS
-                if ($request->area != null && $request->cartera != null && $request->skill == null && $request->estatus != null) {
+                if ($request->area != null && $request->cartera != null && $request->skill == null && $request->estatus != null)
+                {
                     $result = $dato->where('cartera_id', $request->cartera)->WhereIn('skill_id', $skillsautorize)->whereIn('estatus_id', $request->estatus)->orderby('primer_nombre', 'ASC');
                 }
                 //  $result = $dato->get();
@@ -303,25 +329,29 @@ class PersonalController extends Controller
                 $skills = $carterasPersonal[2];
                 $personal = $carterasPersonal[3];
 
-                if ($request->area == null && $request->cartera == null && $request->skill == null && $request->estatus == null) {
+                if ($request->area == null && $request->cartera == null && $request->skill == null && $request->estatus == null)
+                {
                     $result = $dato->whereIn('id', $personal)
                         ->wherein('skill_id', $skills)
                         ->orderby('primer_nombre', 'ASC');
                 }
-                if ($request->area != null && $request->cartera == null && $request->skill == null && $request->estatus == null) {
+                if ($request->area != null && $request->cartera == null && $request->skill == null && $request->estatus == null)
+                {
                     $result = $dato->whereIn('id', $personal)
                         ->where('area_trabajo_id', $request->area)
                         ->wherein('skill_id', $skills)
                         ->orderby('primer_nombre', 'ASC');
                 }
-                if ($request->area != null && $request->cartera != null && $request->skill == null && $request->estatus == null) {
+                if ($request->area != null && $request->cartera != null && $request->skill == null && $request->estatus == null)
+                {
                     $result = $dato->whereIn('id', $personal)
                         ->where('area_trabajo_id', $request->area)
                         ->where('cartera_id', $request->cartera)
                         ->wherein('skill_id', $skills)
                         ->orderby('primer_nombre', 'ASC');
                 }
-                if ($request->area != null && $request->cartera != null && $request->skill != null && $request->estatus == null) {
+                if ($request->area != null && $request->cartera != null && $request->skill != null && $request->estatus == null)
+                {
                     $result = $dato->whereIn('id', $personal)
                         ->where('area_trabajo_id', $request->area)
                         ->where('cartera_id', $request->cartera)
@@ -330,7 +360,8 @@ class PersonalController extends Controller
                 }
 
                 ///TODOS LOS SELECTORES POSEEN DATOS
-                if ($request->area != null && $request->cartera != null && $request->skill != null && $request->estatus != null) {
+                if ($request->area != null && $request->cartera != null && $request->skill != null && $request->estatus != null)
+                {
                     $result = $dato->whereIn('id', $personal)
                         ->where('area_trabajo_id', $request->area)
                         ->where('cartera_id', $request->cartera)
@@ -339,21 +370,24 @@ class PersonalController extends Controller
                         ->orderby('primer_nombre', 'ASC');
                 }
                 ///ESTATUS POSEE DATOS                
-                if ($request->area == null && $request->cartera == null && $request->skill == null && $request->estatus != null) {
+                if ($request->area == null && $request->cartera == null && $request->skill == null && $request->estatus != null)
+                {
                     $result = $dato->whereIn('id', $personal)
                         ->wherein('skill_id', $skills)
                         ->whereIn('estatus_id', $request->estatus)
                         ->orderby('primer_nombre', 'ASC');
                 }
                 //// GERENCIA Y ESTATUS POSEE DATOS 
-                if ($request->area != null && $request->cartera == null && $request->skill == null && $request->estatus != null) {
+                if ($request->area != null && $request->cartera == null && $request->skill == null && $request->estatus != null)
+                {
                     $result = $dato->whereIn('id', $personal)
                         ->where('area_trabajo_id', $request->area)
                         ->whereIn('estatus_id', $request->estatus)
                         ->orderby('primer_nombre', 'ASC');
                 }
                 /// GERENCIA, UNIDAD Y ESTATUS POSEEN DATOS.
-                if ($request->area != null && $request->cartera != null && $request->skill == null && $request->estatus != null) {
+                if ($request->area != null && $request->cartera != null && $request->skill == null && $request->estatus != null)
+                {
                     $result = $dato->whereIn('id', $personal)
                         ->where('area_trabajo_id', $request->area)
                         ->where('cartera_id', $request->cartera)
@@ -365,43 +399,51 @@ class PersonalController extends Controller
                 break;
             case 1:
                 ////4 SELECTORES EN TODOS
-                if ($request->area == null && $request->cartera == null && $request->skill == null && $request->estatus == null) {
+                if ($request->area == null && $request->cartera == null && $request->skill == null && $request->estatus == null)
+                {
                     $result = $dato->orderby('primer_nombre', 'ASC');
                 }
                 ////GERENCIA TIENE DATOS PERO ESTATUS NO
-                if ($request->area != null && $request->cartera == null && $request->skill == null && $request->estatus == null) {
+                if ($request->area != null && $request->cartera == null && $request->skill == null && $request->estatus == null)
+                {
                     $result = $dato->where('area_trabajo_id', $request->area)
                         ->orderby('primer_nombre', 'ASC');
                 }
                 ////GERENCIA CARTERA TIENEN DATOS PERO ESTATUS NO
-                if ($request->area != null && $request->cartera != null && $request->skill == null && $request->estatus == null) {
+                if ($request->area != null && $request->cartera != null && $request->skill == null && $request->estatus == null)
+                {
                     $result = $dato->where('cartera_id', $request->cartera)
                         ->orderby('primer_nombre', 'ASC');
                 }
                 ////GERENCIA CARTERA Y SKILL TIENEN DATOS PERO ESTATUS NO
-                if ($request->area != null && $request->cartera != null && $request->skill != null && $request->estatus == null) {
+                if ($request->area != null && $request->cartera != null && $request->skill != null && $request->estatus == null)
+                {
                     $result = $dato->where('skill_id', $request->skill)
                         ->orderby('primer_nombre', 'ASC');
                 }
                 ///TODOS LOS SELECTORES POSEEN DATOS
-                if ($request->area != null && $request->cartera != null && $request->skill != null && $request->estatus != null) {
+                if ($request->area != null && $request->cartera != null && $request->skill != null && $request->estatus != null)
+                {
                     $result = $dato->where('skill_id', $request->skill)
                         ->whereIn('estatus_id', $request->estatus)
                         ->orderby('primer_nombre', 'ASC');
                 }
                 ///ESTATUS POSEE DATOS                
-                if ($request->area == null && $request->cartera == null && $request->skill == null && $request->estatus != null) {
+                if ($request->area == null && $request->cartera == null && $request->skill == null && $request->estatus != null)
+                {
                     $result = $dato->whereIn('estatus_id', $request->estatus)
                         ->orderby('primer_nombre', 'ASC');
                 }
                 //// GERENCIA Y ESTATUS POSEE DATOS 
-                if ($request->area != null && $request->cartera == null && $request->skill == null && $request->estatus != null) {
+                if ($request->area != null && $request->cartera == null && $request->skill == null && $request->estatus != null)
+                {
                     $result = $dato->where('area_trabajo_id', $request->area)
                         ->whereIn('estatus_id', $request->estatus)
                         ->orderby('primer_nombre', 'ASC');
                 }
                 /// GERENCIA, UNIDAD Y ESTATUS POSEEN DATOS.
-                if ($request->area != null && $request->cartera != null && $request->skill == null && $request->estatus != null) {
+                if ($request->area != null && $request->cartera != null && $request->skill == null && $request->estatus != null)
+                {
                     $result = $dato->where('cartera_id', $request->cartera)
                         ->whereIn('estatus_id', $request->estatus)
                         ->orderby('primer_nombre', 'ASC');
@@ -418,13 +460,15 @@ class PersonalController extends Controller
         $permisosPersonal["historico"] = $user->hasPermission('personal.historial.actualizacion');
         $permisosPersonal["remover"] = $user->hasPermission('personal.remove');
 
-        $dato->chunk(1000, function ($result) use (&$data, &$permisosPersonal) {
+        $dato->chunk(1000, function ($result) use (&$data, &$permisosPersonal)
+        {
             $deleteHtml = '';
             $editHtml = '';
             $viewHtml = '';
             $historialHtml = '';
 
-            foreach ($result as $datos) {
+            foreach ($result as $datos)
+            {
                 $row["id"] = $datos->id;
                 $row["cedula"] = $datos->cedula_empleado;
                 $row["nombres"] = ucwords(strtolower($datos->nombre));
@@ -441,21 +485,24 @@ class PersonalController extends Controller
                       <i class="fa fa-eye"></i>  
                 </a>';
 
-                if ($permisosPersonal["edit"]) {
+                if ($permisosPersonal["edit"])
+                {
                     $editHtml = '            
                     <a href="' . route('personal.edit', $datos->id) . '" target="_blank" class="btn btn-sm btn-primary" data-toggle="tooltip" data-placement="top" title="Editar">
                         <i class="fa fa-edit"></i>
                     </a>';
                 }
 
-                if ($permisosPersonal["historico"]) {
+                if ($permisosPersonal["historico"])
+                {
                     $historialHtml = '            
                     <a href="' . route('historial.personal', $datos->id) . '" target="_blank" class="btn btn-sm btn-secondary" data-toggle="tooltip" data-placement="top" title="Ver Historial">
                         <i class="fa fa-list"></i>
                     </a>';
                 }
 
-                if ($permisosPersonal["remover"]) {
+                if ($permisosPersonal["remover"])
+                {
                     $deleteHtml = '   
                     <a href="' . route('personal.remove', $datos->id) . '" class="btn btn-sm btn-danger" data-toggle="tooltip" data-placement="top" title="Remover">
                         <i class="fa fa-trash"</i>
@@ -473,14 +520,19 @@ class PersonalController extends Controller
     public function store(Request $request)
     {
 
-        try {
+        try
+        {
             $objPersonal = new PersonalModel();
             $valid = true;
-            if (!empty($request->image)) {
+            if (!empty($request->image))
+            {
                 $name_file = $this->Imagesave($request->image);
-                if ($name_file) {
+                if ($name_file)
+                {
                     $objPersonal->image = $name_file;
-                } else {
+                }
+                else
+                {
                     $valid = false;
                 }
             }
@@ -508,7 +560,8 @@ class PersonalController extends Controller
             $objPersonal->sector = $request->sector;
             $objPersonal->direccion = $request->direccion;
 
-            switch ($request->activetransporte) {
+            switch ($request->activetransporte)
+            {
                 case "on":
                     $objPersonal->activetransporte = 1;
                     $objPersonal->htransporte = $request->htransporte;
@@ -539,9 +592,12 @@ class PersonalController extends Controller
             $objPersonal->horario_operativo = $request->horario;
             $objPersonal->jornada = $request->jornada;
 
-            if (in_array($request->horario, [1, 2, 3, 4, 5])) {
+            if (in_array($request->horario, [1, 2, 3, 4, 5]))
+            {
                 $objPersonal->turno = "AM";
-            } else {
+            }
+            else
+            {
                 $objPersonal->turno = "PM";
             }
             // date("H:i:s", strtotime($request->hentrada));
@@ -561,10 +617,13 @@ class PersonalController extends Controller
             $objPersonal->contrato_1 = Carbon::createFromFormat('d/m/Y', $request->contrato1)->format('Y-m-d');
             $objPersonal->finalizacion_1 = Carbon::createFromFormat('d/m/Y', $request->finalcontrato1)->format('Y-m-d');
 
-            if (!empty($request->contrato2)) {
+            if (!empty($request->contrato2))
+            {
                 $objPersonal->contrato_2 = Carbon::createFromFormat('d/m/Y', $request->contrato2)->format('Y-m-d');
                 $objPersonal->finalizacion_2 = Carbon::createFromFormat('d/m/Y', $request->finalcontrato2)->format('Y-m-d');
-            } else {
+            }
+            else
+            {
                 $objPersonal->contrato_2 = null;
             }
 
@@ -575,7 +634,8 @@ class PersonalController extends Controller
 
             $id = $objPersonal->id;
 
-            switch ($request->fegreso) {
+            switch ($request->fegreso)
+            {
                 case null:
                     $objPersonal->fecha_egreso = null;
                     $objPersonal->motivo_egreso = null;
@@ -587,7 +647,8 @@ class PersonalController extends Controller
                     $objPersonal->motivo_egreso = ucfirst(strtolower($request->motivoegreso));
                     $objPersonal->observaciones_egreso = ucfirst(strtolower($request->observaciones_egreso));
 
-                    if (!EgresadosModel::where('fecha', $egreso)->where('dir_personal_id', $id)->exists()) {
+                    if (!EgresadosModel::where('fecha', $egreso)->where('dir_personal_id', $id)->exists())
+                    {
                         $nuevo_egreso = new EgresadosModel();
                         $nuevo_egreso->fecha = $egreso;
                         $nuevo_egreso->motivo = ucwords(strtolower($request->motivoegreso));
@@ -602,16 +663,19 @@ class PersonalController extends Controller
                     AsistenciaOperativaModel::where('personal_id', $id)
                         ->whereBetween('created_at', array("$egreso 00:00:01", date('Y-m-d H:m:s', strtotime(now()))))->delete();
 
-                    if (env('ACTIVE_DISBLED_AUTOSERVICIOS')) {
+                    if (env('ACTIVE_DISBLED_AUTOSERVICIOS'))
+                    {
                         $bashurl = "URL_DISBLED_AUTOSERVICIOS";
                         $api = new ApiCheckautoservicios($bashurl, $objPersonal->cedula_empleado);
                         $api->CheckInfinityPersonal();
                         ///va contra autoservicios y verifica elimina el usuario si existe 
                     }
 
-                    switch ($request->recontratar) {
+                    switch ($request->recontratar)
+                    {
                         case null:
-                            if (!BlacklistModel::where('cedula_empleado', $request->cedula_empleado)->exists()) {
+                            if (!BlacklistModel::where('cedula_empleado', $request->cedula_empleado)->exists())
+                            {
                                 $blacklist = new BlacklistModel();
                                 $blacklist->cedula_empleado = $request->cedula_empleado;
                                 $blacklist->primer_nombre = ucfirst(strtolower($request->pnombre));
@@ -627,12 +691,14 @@ class PersonalController extends Controller
             }
             $objPersonal->save();
             ////SWITCH SPARA GUARDAR LOS PORCENTAJES DE LOS CECOS
-            switch (\Auth::user()->haspermission('personal.cecos.autorice')) {
+            switch (\Auth::user()->haspermission('personal.cecos.autorice'))
+            {
                 case true:
                     /// almaceno los porcentajes suministrados en un array separadado por coma
                     $porcentajes = explode(",", $request->porcentaje);
                     $i = 0;
-                    foreach ($request->ceco as $centro) {
+                    foreach ($request->ceco as $centro)
+                    {
                         $areas = new CentroCostoAsignadoModel();
                         $areas->personal_id = $objPersonal->id;
                         $areas->cartera_id = $objPersonal->cartera_id;
@@ -643,7 +709,8 @@ class PersonalController extends Controller
                     }
                     break;
                 default:
-                    foreach ($request->ceco as $centro) {
+                    foreach ($request->ceco as $centro)
+                    {
                         $areas = new CentroCostoAsignadoModel();
                         $areas->personal_id = $objPersonal->id;
                         $areas->cartera_id = $objPersonal->cartera_id;
@@ -654,9 +721,11 @@ class PersonalController extends Controller
                     break;
             }
 
-            switch ($request->useractive) {
+            switch ($request->useractive)
+            {
                 case "on":
-                    if ($objPersonal->RelationUser == null) {
+                    if ($objPersonal->RelationUser == null)
+                    {
                         $password = "directagroup";
                         $user = new User();
                         $user->name = ucfirst(strtolower($request->name));
@@ -681,7 +750,9 @@ class PersonalController extends Controller
 
             \Session::flash('success', 'El Expediente personal fue almacenado exitosamente.');
             return redirect(route('personal.add'));
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e)
+        {
             \Session::flash('error', "Ocurrio un problema " . $e->getMessage());
             return back();
         }
@@ -708,7 +779,7 @@ class PersonalController extends Controller
 
         $gerente = PersonalModel::select(DB::raw("concat(primer_nombre,' ',primer_apellido) as nombre"), "dir_personal.id")
             ->whereIn('cargo_id', $acargo)
-            ->whereIn('dir_personal.estatus_id', [1, 7, 8, 9, 10])
+            ->whereIn('dir_personal.estatus_id', [1, 7, 8, 9, 10, 27])
             ->orderby('primer_nombre', 'ASC')->get();
 
         $nomina = NominaModel::Where('estatus_id', 1)->get();
@@ -729,18 +800,26 @@ class PersonalController extends Controller
 
         $originblacklist = BlacklistModel::where('cedula_empleado', $personal->cedula_empleado)->first();
 
-        if (BlacklistModel::where('cedula_empleado', $personal->cedula_empleado)->exists()) {
+        if (BlacklistModel::where('cedula_empleado', $personal->cedula_empleado)->exists())
+        {
             $listanegra = "si"; /// true si no hay resultados
-        } else {
+        }
+        else
+        {
             $listanegra = "no"; /// false si hay registros
         }
-        if ($personal->RelationUser == null) {
+        if ($personal->RelationUser == null)
+        {
             $autorice = false; /// no tiene usuario relacionado
             $rolactive = 0;
-        } else if ($personal->RelationUser != null && in_array($personal->RelationUser->roles()->first()->id, $asisop)) {
+        }
+        else if ($personal->RelationUser != null && in_array($personal->RelationUser->roles()->first()->id, $asisop))
+        {
             $autorice = true; /// tiene usuario pero es de asistencia y curso
             $rolactive = 1;
-        } else {
+        }
+        else
+        {
             $autorice = false; /// tiene usuario pero con otro roll
             $rolactive = 2;
         }
@@ -824,18 +903,26 @@ class PersonalController extends Controller
 
         $originblacklist = BlacklistModel::where('cedula_empleado', $personal->cedula_empleado)->first();
 
-        if (BlacklistModel::where('cedula_empleado', $personal->cedula_empleado)->exists()) {
+        if (BlacklistModel::where('cedula_empleado', $personal->cedula_empleado)->exists())
+        {
             $listanegra = "si"; /// true si no hay resultados
-        } else {
+        }
+        else
+        {
             $listanegra = "no"; /// false si hay registros
         }
-        if ($personal->RelationUser == null) {
+        if ($personal->RelationUser == null)
+        {
             $autorice = false; /// no tiene usuario relacionado
             $rolactive = 0;
-        } else if ($personal->RelationUser != null && in_array($personal->RelationUser->roles()->first()->id, $asisop)) {
+        }
+        else if ($personal->RelationUser != null && in_array($personal->RelationUser->roles()->first()->id, $asisop))
+        {
             $autorice = true; /// tiene usuario pero es de asistencia y curso
             $rolactive = 1;
-        } else {
+        }
+        else
+        {
             $autorice = false; /// tiene usuario pero con otro roll
             $rolactive = 2;
         }
@@ -967,8 +1054,10 @@ class PersonalController extends Controller
         // Verificar cambios realizados
         $changedFields = $objPersonal->getDirty(); // Obtiene los campos que fueron modificados
         // Antes de guardar, puedes inspeccionar qué ha cambiado
-        if (!empty($changedFields)) {
-            foreach ($changedFields as $field => $newValue) {
+        if (!empty($changedFields))
+        {
+            foreach ($changedFields as $field => $newValue)
+            {
                 $oldValue = $oldValues[$field] ?? null;
                 $nuevos_valores[$field] = $newValue;
                 $valores_alt[] = $field;
@@ -990,11 +1079,14 @@ class PersonalController extends Controller
         $objPersonal = PersonalModel::find($id);
         //ANTES DE ACTUALIZAR EL REGISTRO GUARDAMOS UN HISTORIAL DEL MISMO
         $historico = $this->HistoricosStore($objPersonal, $request);
-        try {
-            if ($request->image != null) {
+        try
+        {
+            if ($request->image != null)
+            {
                 $this->deleteImg($objPersonal->image);
                 $name_file = $this->Imagesave($request->image);
-                if ($name_file) {
+                if ($name_file)
+                {
                     $objPersonal->image = $name_file;
                 }
             }
@@ -1019,7 +1111,8 @@ class PersonalController extends Controller
             $objPersonal->ciudad_id = in_array($request->sede, ['STV', 'ATENAS']) ? $request->ciudad : 149;
             $objPersonal->sector = $request->sector;
 
-            switch ($request->activetransporte) {
+            switch ($request->activetransporte)
+            {
                 case "on":
                     $objPersonal->activetransporte = 1;
                     $objPersonal->htransporte = $request->htransporte;
@@ -1049,7 +1142,8 @@ class PersonalController extends Controller
                     #|| $personal->todoticket_integral == '0' 
                     #|| $personal->todoticket_alimentacion == '0'
                 )
-            ) {
+            )
+            {
 
                 $objPersonal->nacionalidad_cuenta   = isset($request->nacionalidad_cuenta) ? $request->nacionalidad_cuenta : $objPersonal->nacionalidad_cuenta;
                 $objPersonal->cedula_titular        = isset($request->cedulatitular) ? $request->cedulatitular : $objPersonal->cedula_titular;
@@ -1064,9 +1158,12 @@ class PersonalController extends Controller
             $objPersonal->horario_operativo = $request->horario;
             $objPersonal->jornada           = $request->jornada;
 
-            if (in_array($request->horario, [1, 2, 3, 4, 5])) {
+            if (in_array($request->horario, [1, 2, 3, 4, 5]))
+            {
                 $objPersonal->turno = "AM";
-            } else {
+            }
+            else
+            {
                 $objPersonal->turno = "PM";
             }
 
@@ -1078,7 +1175,8 @@ class PersonalController extends Controller
             $objPersonal->jefe_inmediato_segundo = $request->jinmediato2 == "0" ? null : $request->jinmediato2;
 
             ///siempre y cuando la gerencia sea operaciones y la cartera cambie almacenamos el dato para los camibos de campaña
-            if ($request->areatrabajo == 2 && $objPersonal->cartera_id != $request->cartera) {
+            if ($request->areatrabajo == 2 && $objPersonal->cartera_id != $request->cartera)
+            {
                 $change = new ChangeCampaingModels();
                 $change->personal_id = $id;
                 $change->area_trabajo_id = $request->areatrabajo;
@@ -1098,10 +1196,13 @@ class PersonalController extends Controller
             $objPersonal->contrato_1 = Carbon::createFromFormat('d/m/Y', $request->contrato1)->format('Y-m-d');
             $objPersonal->finalizacion_1 = Carbon::createFromFormat('d/m/Y', $request->finalcontrato1)->format('Y-m-d');
 
-            if (!empty($request->contrato2)) {
+            if (!empty($request->contrato2))
+            {
                 $objPersonal->contrato_2 = Carbon::createFromFormat('d/m/Y', $request->contrato2)->format('Y-m-d');
                 $objPersonal->finalizacion_2 = Carbon::createFromFormat('d/m/Y', $request->finalcontrato2)->format('Y-m-d');
-            } else {
+            }
+            else
+            {
                 $objPersonal->contrato_2 = null;
                 $objPersonal->finalizacion_2 = null;
             }
@@ -1111,16 +1212,22 @@ class PersonalController extends Controller
 
             $rs = null;
             $nivel = 0;
-            if ($request->status == 1 && $request->fegreso != null) {
+            if ($request->status == 1 && $request->fegreso != null)
+            {
                 $nivel = 1; ///activo
-            } elseif (($request->status == 2 || $request->status == 6) && $request->fegreso != null) {
+            }
+            elseif (($request->status == 2 || $request->status == 6) && $request->fegreso != null)
+            {
                 $nivel = 2; //engresado
-            } elseif ($request->status == 1 && $request->fegreso == null) {
+            }
+            elseif ($request->status == 1 && $request->fegreso == null)
+            {
                 $nivel = 1; ///activo
             }
 
 
-            switch ($nivel) {
+            switch ($nivel)
+            {
                 case 1:
                     $objPersonal->fecha_egreso = null;
                     $objPersonal->motivo_egreso = null;
@@ -1132,7 +1239,8 @@ class PersonalController extends Controller
                     $objPersonal->motivo_egreso = ucfirst(strtolower($request->motivoegreso));
                     $objPersonal->observaciones_egreso = ucfirst(strtolower($request->observaciones_egreso));
 
-                    if (!EgresadosModel::where('fecha', $egreso)->where('dir_personal_id', $id)->exists()) {
+                    if (!EgresadosModel::where('fecha', $egreso)->where('dir_personal_id', $id)->exists())
+                    {
                         $nuevo_egreso = new EgresadosModel();
                         $nuevo_egreso->fecha = $egreso;
                         $nuevo_egreso->motivo = ucwords(strtolower($request->motivoegreso));
@@ -1148,13 +1256,15 @@ class PersonalController extends Controller
                         ->whereBetween('created_at', array("$egreso 00:00:01", date('Y-m-d H:m:s', strtotime(now()))))->delete();
 
                     ///va contra autoservicios y verifica elimina el usuario si existe 
-                    if (ENV('ACTIVE_API_AUTOSERVICIOS', false)) {
+                    if (ENV('ACTIVE_API_AUTOSERVICIOS', false))
+                    {
                         $bashurl = "URL_DISBLED_AUTOSERVICIOS";
                         $api = new ApiCheckautoservicios($bashurl, $objPersonal->cedula_empleado);
                         $rs = $api->CheckInfinityPersonal();
                     }
 
-                    switch ($request->recontratar) {
+                    switch ($request->recontratar)
+                    {
                         case null:
                             $blacklist = new BlacklistModel();
                             $blacklist->cedula_empleado = $request->cedula_empleado;
@@ -1174,28 +1284,36 @@ class PersonalController extends Controller
             //para los casos de re ingreso.            
             $estatus = [2, 3, 6];
 
-            if (in_array($objPersonal->getrawOriginal('estatus_id'), $estatus) && empty($request->fegreso)) {
+            if (in_array($objPersonal->getrawOriginal('estatus_id'), $estatus) && empty($request->fegreso))
+            {
 
                 $objPersonal->estatus_id = $request->status;
                 $objPersonal->created_at = date('Y-m-d H:i:s', strtotime(now()));
-            } else {
+            }
+            else
+            {
                 $objPersonal->estatus_id = $request->status;
             }
 
 
-            switch (\Auth::user()->haspermission('personal.cecos.autorice')) {
+            switch (\Auth::user()->haspermission('personal.cecos.autorice'))
+            {
                 case true;
                     $objPersonal->RelationCentroCosto()->delete();
                     $i = 0;
                     $porcentajes = explode(",", $request->porcentaje);
-                    foreach ($request->ceco as $centro) {
+                    foreach ($request->ceco as $centro)
+                    {
                         $areas = new CentroCostoAsignadoModel();
                         $areas->personal_id = $objPersonal->id;
                         $areas->cartera_id = $objPersonal->cartera_id;
                         $areas->skill_id = $centro;
-                        if ($porcentajes[0] != null) {
+                        if ($porcentajes[0] != null)
+                        {
                             $areas->porcentaje = $porcentajes[$i];
-                        } else {
+                        }
+                        else
+                        {
                             $areas->porcentaje = null;
                         }
                         $areas->save();
@@ -1206,7 +1324,8 @@ class PersonalController extends Controller
 
                     $objPersonal->RelationCentroCosto()->delete();
 
-                    foreach ($request->ceco as $centro) {
+                    foreach ($request->ceco as $centro)
+                    {
                         $areas = new CentroCostoAsignadoModel();
                         $areas->personal_id = $objPersonal->id;
                         $areas->cartera_id = $objPersonal->cartera_id;
@@ -1216,11 +1335,14 @@ class PersonalController extends Controller
                     break;
             }
             /// $request->rolopactive 0 no posee, 1 si tiene usuario, 2 tiene otro rol
-            switch ($request->rolopactive) {
+            switch ($request->rolopactive)
+            {
                 case 0: /// no posee rol de tipo operativo o no posee usuario
-                    if ($request->useractive == "on") {
+                    if ($request->useractive == "on")
+                    {
                         ////si el usuario no existe y no esta eliminado
-                        if (!User::where('cedula', $objPersonal->cedula_empleado)->withTrashed()->exists()) {
+                        if (!User::where('cedula', $objPersonal->cedula_empleado)->withTrashed()->exists())
+                        {
                             $password = "directagroup";
                             $user = new User();
                             $user->name = ucwords(strtolower($objPersonal->primer_nombre . " " . $objPersonal->primer_apellido));
@@ -1236,7 +1358,9 @@ class PersonalController extends Controller
                             $user->attachRole($request->roles);
                             $objPersonal->user_id = $user->id;
                             $objPersonal->save();
-                        } else {
+                        }
+                        else
+                        {
                             ///en caso que el usuario exista y este eliminado lo restauramos
                             $user = User::where('cedula', $objPersonal->cedula_empleado)->withTrashed()->first();
                             $user->deleted_at = null;
@@ -1250,23 +1374,30 @@ class PersonalController extends Controller
                     }
                     break;
                 case 1: ///  posee rol de tipo operativo y tiene usuario                          
-                    if ($request->useractive == "on") {
-                        if ($nivel === 2) { ///2 si es egresado o bandono
-                            if (User::where('cedula', $objPersonal->cedula_empleado)->exists()) {
+                    if ($request->useractive == "on")
+                    {
+                        if ($nivel === 2)
+                        { ///2 si es egresado o bandono
+                            if (User::where('cedula', $objPersonal->cedula_empleado)->exists())
+                            {
                                 ///eliminamos los historicos para poder borrar el id usuario asociado al expediente
                                 HistoricoPersonalModel::where('personal_id', $id)->delete();
-                                foreach (User::where('cedula', $objPersonal->cedula_empleado)->get() as $user) {
+                                foreach (User::where('cedula', $objPersonal->cedula_empleado)->get() as $user)
+                                {
                                     $id = $user->id;
                                     $user->delete();
                                     User::withTrashed()->find($id)->forceDelete();
                                 }
                             }
-                        } else {
+                        }
+                        else
+                        {
                             $user = User::where('cedula', $objPersonal->cedula_empleado)->withTrashed()->first();
                             $user->name = ucwords(strtolower($objPersonal->primer_nombre . " " . $objPersonal->primer_apellido));
                             $user->email = $request->useremail;
                             $user->deleted_at = null;
-                            if (isset($request->resetPasswordAsisOp) && $request->resetPasswordAsisOp == "on") {
+                            if (isset($request->resetPasswordAsisOp) && $request->resetPasswordAsisOp == "on")
+                            {
                                 $user->password = "directagroup";
                                 $user->password_updated_at = null;
                             }
@@ -1278,7 +1409,9 @@ class PersonalController extends Controller
                             //$user->detachAllPermissions();
                             $user->roles()->sync($request->roles);
                         }
-                    } else {
+                    }
+                    else
+                    {
                         $iduser = $objPersonal->user_id;
                         $objPersonal->RelationUser()->delete();
                         $objPersonal->user_id = null;
@@ -1287,9 +1420,11 @@ class PersonalController extends Controller
 
                         $user = User::where('cedula', $objPersonal->cedula_empleado)->withTrashed()->delete();
 
-                        if (User::where('cedula', $objPersonal->cedula_empleado)->exists()) {
+                        if (User::where('cedula', $objPersonal->cedula_empleado)->exists())
+                        {
                             HistoricoPersonalModel::where('personal_id', $id)->delete();
-                            foreach (User::where('cedula', $objPersonal->cedula_empleado)->get() as $user) {
+                            foreach (User::where('cedula', $objPersonal->cedula_empleado)->get() as $user)
+                            {
                                 $id = $user->id;
                                 $user->delete();
                                 User::withTrashed()->find($id)->forceDelete();
@@ -1300,19 +1435,23 @@ class PersonalController extends Controller
             }
 
             //// Condicion para el Estatus de Vacaciones.
-            if ($request->status == 8) {
+            if ($request->status == 8)
+            {
 
                 ///registro nuevo
-                if ($objPersonal->vacaciones_init == null && $objPersonal->vacaciones_end == null) {
+                if ($objPersonal->vacaciones_init == null && $objPersonal->vacaciones_end == null)
+                {
                     $casoVacaciones = 0;
                 }
 
                 #tengo valores de vacaciones ya almacenados
-                if ($objPersonal->vacaciones_init != null && $objPersonal->vacaciones_end != null) {
+                if ($objPersonal->vacaciones_init != null && $objPersonal->vacaciones_end != null)
+                {
                     $casoVacaciones = 1;
                 }
 
-                switch ($casoVacaciones) {
+                switch ($casoVacaciones)
+                {
                     case 0:
                         $startDate  = Carbon::createFromFormat('d/m/Y', $request->vacaciones_init)->format('Y-m-d');
                         $enddate    = Carbon::createFromFormat('d/m/Y', $request->vacaciones_end)->format('Y-m-d');
@@ -1330,7 +1469,8 @@ class PersonalController extends Controller
                         );
                         ///recorremos los dias respectivos del rango de vacaciones
 
-                        foreach ($period as $key => $value) {
+                        foreach ($period as $key => $value)
+                        {
                             $date = $value->format('Y-m-d');
                             $dia = date('l', strtotime($date));
 
@@ -1358,12 +1498,14 @@ class PersonalController extends Controller
                         $startDate  = Carbon::createFromFormat('d/m/Y', $request->vacaciones_init)->format('Y-m-d');
                         $enddate    = Carbon::createFromFormat('d/m/Y', $request->vacaciones_end)->format('Y-m-d');
                         /// si las fechas recibidas son diferentes a las almacenadas
-                        if ($startDate != $objPersonal->vacaciones_init || $enddate != $objPersonal->vacaciones_end) {
+                        if ($startDate != $objPersonal->vacaciones_init || $enddate != $objPersonal->vacaciones_end)
+                        {
 
                             if (AsistenciaOperativaModel::where('personal_id', $objPersonal->id)
                                 ->where('prefijo', "VAC")
                                 ->whereBetween('created_at', array($objPersonal->vacaciones_init . ' 00:00:01', $objPersonal->vacaciones_end . ' 23:59:59'))->exists()
-                            ) {
+                            )
+                            {
 
                                 AsistenciaOperativaModel::where('personal_id', $objPersonal->id)->where('prefijo', "VAC")
                                     ->whereBetween('created_at', array($objPersonal->vacaciones_init . ' 00:00:01', $objPersonal->vacaciones_end . ' 23:59:59'))->delete();
@@ -1380,7 +1522,8 @@ class PersonalController extends Controller
                                 $objPersonal->vacaciones_init = $startDate;
                                 $objPersonal->vacaciones_end = $enddate;
 
-                                foreach ($period as $key => $value) {
+                                foreach ($period as $key => $value)
+                                {
                                     $date = $value->format('Y-m-d');
                                     $dia = date('l', strtotime($date));
 
@@ -1407,15 +1550,19 @@ class PersonalController extends Controller
                         }
                         break;
                 }
-            } else {
+            }
+            else
+            {
                 $objPersonal->vacaciones_init = null;
                 $objPersonal->vacaciones_end = null;
             }
 
             $this->GetDirtyHistorico($objPersonal, $historico);
 
-            if ($objPersonal->save()) {
-                switch ($rs) {
+            if ($objPersonal->save())
+            {
+                switch ($rs)
+                {
                     case true:
                         \Session::flash('success', 'El Expediente personal fue actualizado exitosamente y Eliminado de Autoservicios.');
                         break;
@@ -1426,10 +1573,14 @@ class PersonalController extends Controller
                 $objeto_personal = json_encode($objPersonal);
                 $this->activity("Expediente Web Actualizado " . $objPersonal->cedula_empleado, $objeto_personal);
                 return Redirect()->route('personal.index');
-            } else {
+            }
+            else
+            {
                 \Session::flash('error', "Ocurrio un error al actualizar");
             }
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e)
+        {
             \Session::flash('error', $e->getMessage() . ' ' . $e->getLine());
             return back();
         }
@@ -1462,7 +1613,8 @@ class PersonalController extends Controller
     {
         $obpersonal = PersonalModel::withTrashed()->find($id);
 
-        if ($obpersonal->image != null) {
+        if ($obpersonal->image != null)
+        {
             $this->deleteImg($obpersonal->image);
         }
 
@@ -1481,16 +1633,23 @@ class PersonalController extends Controller
     {
 
 
-        try {
+        try
+        {
             Excel::import(new PersonalImport, request()->file('archivo'));
 
             return back();
-        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) { //retorno de las reglas de validacion
+        }
+        catch (\Maatwebsite\Excel\Validators\ValidationException $e)
+        { //retorno de las reglas de validacion
             return back()->withErrors($e->failures());
-        } catch (\App\Exceptions\ValidateAditionals $e) { //catch de validaciones adicionales del archivo
+        }
+        catch (\App\Exceptions\ValidateAditionals $e)
+        { //catch de validaciones adicionales del archivo
             // Errores de tus validaciones personalizadas
             return redirect()->back()->withErrors($e->getErrors());
-        } catch (\Exception $t) { //errornes comunes
+        }
+        catch (\Exception $t)
+        { //errornes comunes
             $mensaje = str_replace("\n", 'and', $t->getMessage());
             \Session::flash('error', "Error: " . $mensaje !== null ? $mensaje : $t->getMessage());
             return redirect()->route('personal.upload.masive');
@@ -1506,16 +1665,23 @@ class PersonalController extends Controller
     public function UpdateMasive(Request $request)
     {
 
-        try {
+        try
+        {
             Excel::import(new UpdatePersonalImport, request()->file('archivo'));
 
             return back();
-        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) { //retorno de las reglas de validacion
+        }
+        catch (\Maatwebsite\Excel\Validators\ValidationException $e)
+        { //retorno de las reglas de validacion
             return back()->withErrors($e->failures());
-        } catch (\App\Exceptions\ValidateAditionals $e) { //catch de validaciones adicionales del archivo
+        }
+        catch (\App\Exceptions\ValidateAditionals $e)
+        { //catch de validaciones adicionales del archivo
             // Errores de tus validaciones personalizadas
             return redirect()->back()->withErrors($e->getErrors());
-        } catch (\Exception $t) { //errornes comunes
+        }
+        catch (\Exception $t)
+        { //errornes comunes
             $mensaje = str_replace("\n", 'and', $t->getMessage());
             \Session::flash('error', "Error: " . $mensaje !== null ? $mensaje : $t->getMessage());
             return redirect()->route('personal.update.masive');
@@ -1555,7 +1721,7 @@ class PersonalController extends Controller
 
         $gerente = PersonalModel::select(DB::raw("concat(primer_nombre,' ',primer_apellido) as nombre"), "dir_personal.id")
             ->whereIn('cargo_id', $acargo)
-            ->whereIn('dir_personal.estatus_id', [1, 7, 8, 9, 10])
+            ->whereIn('dir_personal.estatus_id', [1, 7, 8, 9, 10, 27])
             ->orderby('primer_nombre', 'ASC')->get();
 
         $nomina = NominaModel::Where('estatus_id', 1)->get();
@@ -1568,138 +1734,195 @@ class PersonalController extends Controller
 
         $originblacklist = BlacklistModel::where('cedula_empleado', $personal->cedula_empleado)->first();
 
-        if (BlacklistModel::where('cedula_empleado', $personal->cedula_empleado)->exists()) {
+        if (BlacklistModel::where('cedula_empleado', $personal->cedula_empleado)->exists())
+        {
             $listanegra = "si";
-        } else {
+        }
+        else
+        {
             $listanegra = "no";
         }
 
         $cambios = json_decode($personal->valores_nuevos);
 
         /// ubicacion del contenido de los valores almacenados con relacion a otras tablas.
-        if (isset($cambios->bancos_id)) {
+        if (isset($cambios->bancos_id))
+        {
             $banco_new = BancosModels::select('bancos')->where('id', $cambios->bancos_id)->first();
             $banco_lp = $banco_new->bancos;
-        } else {
+        }
+        else
+        {
 
             $banco_lp = null;
         }
-        if (isset($cambios->nomina_id)) {
+        if (isset($cambios->nomina_id))
+        {
             $nomina_new = NominaModel::select('nombre_nomina')->where('id', $cambios->nomina_id)->first();
             $nomina_lp = $nomina_new->nombre_nomina;
-        } else {
+        }
+        else
+        {
 
             $nomina_lp = null;
         }
-        if (isset($cambios->libranza_id)) {
+        if (isset($cambios->libranza_id))
+        {
             $libranza_new = LibranzasModel::select('libranzas')->where('id', $cambios->libranza_id)->first();
             $libranza_lp = $libranza_new->libranzas;
-        } else {
+        }
+        else
+        {
 
             $libranza_lp = null;
         }
-        if (isset($cambios->cargo_id)) {
+        if (isset($cambios->cargo_id))
+        {
             $cargo_new = CargoModel::select('nombre_cargo')->where('id', $cambios->cargo_id)->first();
             $cargo_lp = $cargo_new->nombre_cargo;
-        } else {
+        }
+        else
+        {
             $cargo_lp = null;
         }
-        if (isset($cambios->gerente_area_id)) {
+        if (isset($cambios->gerente_area_id))
+        {
             $gerente_new = PersonalModel::select(DB::raw("concat(primer_nombre,' ',primer_apellido) as nombre"), "dir_personal.id")->where('id', $cambios->gerente_area_id)->first();
             $gerente_lp = $gerente_new->nombre;
-        } else {
+        }
+        else
+        {
             $gerente_lp = null;
         }
-        if (isset($cambios->jefe_inmediato)) {
+        if (isset($cambios->jefe_inmediato))
+        {
             $jefe_new = PersonalModel::select(DB::raw("concat(primer_nombre,' ',primer_apellido) as nombre"), "dir_personal.id")->where('id', $cambios->jefe_inmediato)->first();
             $jefe_lp = $jefe_new->nombre;
-        } else {
+        }
+        else
+        {
             $jefe_lp = null;
         }
-        if (isset($cambios->jefe_inmediato_segundo)) {
+        if (isset($cambios->jefe_inmediato_segundo))
+        {
             $jefe2_new = PersonalModel::select(DB::raw("concat(primer_nombre,' ',primer_apellido) as nombre"), "dir_personal.id")->where('id', $cambios->jefe_inmediato_segundo)->first();
             $jefe2_lp = $jefe2_new->nombre;
-        } else {
+        }
+        else
+        {
             $jefe2_lp = null;
         }
-        if (isset($cambios->area_trabajo_id)) {
+        if (isset($cambios->area_trabajo_id))
+        {
             $area_new = AreatrabajoModel::select('nombre_campana')->where('id', $cambios->area_trabajo_id)->first();
             $area_lp = $area_new->nombre_campana;
-        } else {
+        }
+        else
+        {
 
             $area_lp = null;
         }
-        if (isset($cambios->cartera_id)) {
+        if (isset($cambios->cartera_id))
+        {
 
             $cartera_new = CarteraModel::select('nombre_cartera')->where('id', $cambios->cartera_id)->first();
 
             $cartera_lp = $cartera_new->nombre_cartera;
-        } else {
+        }
+        else
+        {
 
             $cartera_lp = null;
         }
-        if (isset($cambios->skill_id)) {
+        if (isset($cambios->skill_id))
+        {
 
             $skill_new = SkillModels::select('nombre_skill')->where('id', $cambios->skill_id)->first();
 
             $skill_lp = $skill_new->nombre_skill;
-        } else {
+        }
+        else
+        {
             $skill_lp = null;
         }
-        if (isset($cambios->estatus_id)) {
+        if (isset($cambios->estatus_id))
+        {
 
             $estatus_new = EstatusModel::select('estatus')->where('id', $cambios->estatus_id)->first();
 
             $estatus_lp = $estatus_new->estatus;
-        } else {
+        }
+        else
+        {
 
             $estatus_lp = null;
         }
-        if (isset($cambios->zona_transporte_id)) {
+        if (isset($cambios->zona_transporte_id))
+        {
 
             $zonas_new = ZonaTransporte::select('zonatransporte')->where('id', $cambios->zona_transporte_id)->first();
 
             $zona_lp = $zonas_new->zonatransporte;
-        } else {
+        }
+        else
+        {
 
             $zona_lp = null;
         }
-        if (isset($cambios->estado_id)) {
+        if (isset($cambios->estado_id))
+        {
             $estado_new = EstadosModel::where('id', $cambios->estado_id)->first();
             $estado_lp = $estado_new->nombre_estado;
             $region_lp = RegionModel::find($estado_new->region_id)->nombre_region;
             $ciudad_lp = isset($cambios->ciudad_id) ? CiudadesModel::find($cambios->ciudad_id)->ciudad : [];
-        } else {
+        }
+        else
+        {
             $estado_lp = null;
             $region_lp = null;
             $ciudad_lp = null;
         }
-        if (isset($cambios->todoticket_integral)) {
+        if (isset($cambios->todoticket_integral))
+        {
             $integral_lp = $cambios->todoticket_integral  == "1" ? "SI" : "NO";
-        } else {
+        }
+        else
+        {
             $integral_lp = null;
         }
-        if (isset($cambios->todoticket_alimentacion)) {
+        if (isset($cambios->todoticket_alimentacion))
+        {
             $alimentacion_lp = $cambios->todoticket_alimentacion  == "1" ? "SI" : "NO";
-        } else {
+        }
+        else
+        {
             $alimentacion_lp = null;
         }
 
-        if (isset($cambios->vacaciones_init)) {
+        if (isset($cambios->vacaciones_init))
+        {
             $integral_lp = $cambios->vacaciones_init  == "1" ? "SI" : "NO";
-        } else {
+        }
+        else
+        {
             $integral_lp = null;
         }
-        if (isset($cambios->todoticket_integral)) {
+        if (isset($cambios->todoticket_integral))
+        {
             $integral_lp = $cambios->todoticket_integral  == "1" ? "SI" : "NO";
-        } else {
+        }
+        else
+        {
             $integral_lp = null;
         }
 
-        if (isset($cambios->sede_laboral)) {
+        if (isset($cambios->sede_laboral))
+        {
             $sedenew = SedeModel::select('real_name')->where('nombre_sede', $cambios->sede_laboral)->first();
             $sedelp = $sedenew->real_name;
-        } else {
+        }
+        else
+        {
             $sedelp = null;
         }
 
@@ -1762,14 +1985,17 @@ class PersonalController extends Controller
 
     public function ShowReplicasExpedientes(Request $request)
     {
-        try {
+        try
+        {
             $fecha = Carbon::createFromFormat('m/Y', $request->fecha);
             $año = $fecha->copy()->format('Y');
             $mes = $fecha->copy()->format('m');
 
             $directories = Storage::disk('replicalp')->files($año . '/' . $mes . '/');
-            if (!empty($directories)) {
-                foreach ($directories as $files) {
+            if (!empty($directories))
+            {
+                foreach ($directories as $files)
+                {
                     ///sacamos la ruta del nombre del archivo
                     /// 0 año 1 dia 2 nombre archivo
                     $ident = explode('/', $files);
@@ -1784,10 +2010,14 @@ class PersonalController extends Controller
                     $data[] = $row;
                 }
                 return json_encode($data);
-            } else {
+            }
+            else
+            {
                 return json_encode([]);
             }
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e)
+        {
             return json_encode($e->getMessage());
         }
     }

@@ -438,7 +438,7 @@ class PersonalImport implements ToCollection, WithHeadingRow, WithValidation
                 if (!PersonalModel::where('cedula_empleado', '=', trim($value))->exists()) {
                     $onFailure('La cedula del gerente del area ingresado no existe.');
                 } else {
-                    if (!in_array(PersonalModel::where('cedula_empleado', '=', trim($value))->first()->cargo_id, [1, 2, 3, 59, 60, 61, 62, 63, 64, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 90, 91])) {
+                    if (!in_array(PersonalModel::where('cedula_empleado', '=', trim($value))->first()->cargo_id, [1, 2, 3,27 59, 60, 61, 62, 63, 64, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 90, 91])) {
                         $onFailure('El numero de cedula ingresado no corresponde al de un gerente de area.');
                     }
                 }

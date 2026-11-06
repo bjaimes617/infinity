@@ -80,7 +80,7 @@ class HomeController extends Controller
 
         if ($request->method() == 'GET')
         {
-            $inicio = Carbon::createFromFormat('m/Y', '10/2026')->startOfDay();
+            $inicio = Carbon::now()->startOfDay();
             $mes = $inicio->month;
             $anio = $inicio->year;
             $response = false;

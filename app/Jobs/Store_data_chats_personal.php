@@ -17,6 +17,8 @@ use App\Models\personal\PersonalModel;
 use App\Models\personal\CarteraModel;
 use App\Models\personal\ChartsPersonalModel;
 
+
+
 use Carbon\Carbon;
 
 class Store_data_chats_personal implements ShouldQueue
@@ -47,7 +49,7 @@ class Store_data_chats_personal implements ShouldQueue
      */
     public function handle()
     {
-        $fechaactual = Carbon::parse('2026-10-31');
+        $fechaactual = Carbon::now();
         $mes = $fechaactual->copy()->format('m');
         $anio = $fechaactual->copy()->format('Y');
 
@@ -137,7 +139,7 @@ class Store_data_chats_personal implements ShouldQueue
                     'activos'         => $totalesPorAgentes[$key]['total_activos'],
                     'total_egresos'   => $totalesCampania[$key]['total_egresados'],
                     'total_ingresos'  => $totalesCampania[$key]['total_ingresos'],
-                    'motivos_egresos' => json_encode($totalesCampania[$key]['motivos_egreso']),
+                    'motivos_egresos' => json_encode($totalesPorAgentes[$key]['motivos_egreso']),
                     'personal_final'  => $totalesCampania[$key]['total_activos']
                 ];
 
@@ -173,8 +175,7 @@ class Store_data_chats_personal implements ShouldQueue
         }
     }
 
-    /// solo se invoca la funcion si y solo si, la barrida 
-    ///general no se ejecuto pos inicio de mes y no se almacena datos del perosnal inicial del mes
+    /// solo se invoca la funcion si y solo si, la consulta inicial 
     public function extractReplicasPersonal($mes, $anio, $carterasACtives = null)
     {
         $filePath = $anio . "/" . $mes . "/" . $anio . "_" . $mes . "_" . '01_ReplicaExpedientesDiarios' . '.csv';

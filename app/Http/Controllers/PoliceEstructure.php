@@ -35,26 +35,33 @@ class PoliceEstructure extends Controller
     static function VerifiedNivelPermissions($user)
     {
 
-        try {
+        try
+        {
             ///skill autorizado y personal asignado de su jerarquia del skill - gestion administrativa y asistencia
             //   dd($user,$user->hasAllPermissions(['personal.for.skill','personal.for.skillasigned']));
-            if ($user->hasAllPermissions(['personal.for.skill', 'personal.for.skillasigned'])) {
+            if ($user->hasAllPermissions(['personal.for.skill', 'personal.for.skillasigned']))
+            {
                 return 4;
             }
             /// todo el skill autorizado, sin limite por de personal
-            if ($user->hasPermission('personal.for.skill') && !$user->hasPermission('personal.for.skillasigned')) {
+            if ($user->hasPermission('personal.for.skill') && !$user->hasPermission('personal.for.skillasigned'))
+            {
                 return 3;
             }
             ///autoriza solo personal asignado a su jerarquia 
-            if (!$user->hasPermission('personal.for.skill') && $user->hasPermission('personal.for.skillasigned')) {
+            if (!$user->hasPermission('personal.for.skill') && $user->hasPermission('personal.for.skillasigned'))
+            {
                 return 2;
             }
             ///todas las gerencias - todo el resto        
-            if ($user->hasPermission('personal.all.granted')) {
+            if ($user->hasPermission('personal.all.granted'))
+            {
                 return 1;
             }
             return false;
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e)
+        {
             return abort(500, "ocurrio un problema la verificar sus permisos de Accesos. " . $e->getMessage());
         }
     }
@@ -63,15 +70,19 @@ class PoliceEstructure extends Controller
     static function VerifiedGerenciasPermissions($nivel, $user)
     {
 
-        switch ($nivel) {
+        switch ($nivel)
+        {
             case (4):
             case (3):
-                if (PermisosCarteraModel::where('user_id', $user->id)->exists()) {
+                if (PermisosCarteraModel::where('user_id', $user->id)->exists())
+                {
                     $areas = PermisosCarteraModel::select('dir_area_trabajo.id', 'nombre_campana')
                         ->join('dir_area_trabajo', 'dir_permissions_user.area_trabajo_id', 'dir_area_trabajo.id')
                         ->where('user_id', $user->id)
                         ->groupby('dir_area_trabajo.id')->orderby('nombre_campana', 'DESC')->get();
-                } else {
+                }
+                else
+                {
                     return abort(403, "No cuenta con los permisos necesarios para acceder a estos recursos.");
                 }
                 break;
@@ -103,7 +114,8 @@ class PoliceEstructure extends Controller
     public function GerenciaChangeVerified(Request $request)
     {
 
-        try {
+        try
+        {
             $user = ENV('DEV_USER_CHANGE', false) ?
                 \Auth::loginUsingId(ENV('OTHER_USER_ID'), true) :
                 \Auth::user();
@@ -112,7 +124,8 @@ class PoliceEstructure extends Controller
             $row    = array();
             $data   = array();
 
-            switch ($nivel) {
+            switch ($nivel)
+            {
                 case (4):
                 case (3):
                     $carteraPermisada = $user->RelationPermisos()->where('area_trabajo_id', $request->area)->groupby('cartera_id')->pluck('cartera_id');
@@ -142,13 +155,16 @@ class PoliceEstructure extends Controller
                     break;
             }
 
-            foreach ($carteras as $cartera) {
+            foreach ($carteras as $cartera)
+            {
                 $row["id"] = $cartera->id;
                 $row["nombre_cartera"] = $cartera->nombre_cartera;
                 $data[] = $row;
             }
             return json_encode($data);
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e)
+        {
             return json_encode(abort(500, $e->getMessage()));
         }
     }
@@ -156,7 +172,8 @@ class PoliceEstructure extends Controller
     /// se despliega los Skills en funcion a la campaña enviada o permitida
     public function CampaingChangeVerified(Request $request)
     {
-        try {
+        try
+        {
 
             $user = ENV('DEV_USER_CHANGE', false) ?
                 \Auth::loginUsingId(ENV('OTHER_USER_ID'), true) :
@@ -166,7 +183,8 @@ class PoliceEstructure extends Controller
             $row    = array();
             $data   = array();
 
-            switch ($nivel) {
+            switch ($nivel)
+            {
                 case (4):
                 case (3):
                     $skillPermisado = $user->RelationPermisos()->wherein('cartera_id', is_array($request->cartera) ? $request->cartera : array($request->cartera))
@@ -204,13 +222,16 @@ class PoliceEstructure extends Controller
                     break;
             }
 
-            foreach ($skill as $cartera) {
+            foreach ($skill as $cartera)
+            {
                 $row["id"] = $cartera->id;
                 $row["nombre_skill"] = $cartera->nombre_skill;
                 $data[] = $row;
             }
             return json_encode($data);
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e)
+        {
             return json_encode(abort(500, $e->getMessage()));
         }
     }
@@ -274,7 +295,8 @@ class PoliceEstructure extends Controller
     static function CargosForEstructure($user, $nivel, $skill)
     {
 
-        switch ($nivel) {
+        switch ($nivel)
+        {
             case 1:
                 $cargo_ids = PersonalModel::select('cargo_id')->where('skill_id', $skill)->groupby('cargo_id')->pluck('cargo_id');
                 $cargos = CargoModel::whereIn('id', $cargo_ids)->get();
@@ -303,14 +325,19 @@ class PoliceEstructure extends Controller
     ///funcion para el sub modulo de Estructura gerencial index no requiere permisos | autorize == true para apartado de autorizar usuario
     public function AreasEstructuras(Request $request)
     {
-        try {
-            if ($request->autorize == null) {
+        try
+        {
+            if ($request->autorize == null)
+            {
                 $cartera = CarteraModel::where('area_trabajo_id', $request->area)->orderby('nombre_cartera', 'ASC')->get();
                 return json_encode($cartera);
-            } else {
+            }
+            else
+            {
                 $sql = CarteraModel::whereIn('area_trabajo_id', $request->area)->where('estatus_id', 1)->orderby('nombre_cartera', 'ASC')->get();
                 $cartera = array();
-                foreach ($sql as $carterass) {
+                foreach ($sql as $carterass)
+                {
                     $row["id"] = $carterass->id;
                     $row["nombre_cartera"] = $carterass->nombre_cartera . " - " . $carterass->RelationGerencias->nombre_campana;
                     $row["area_trabajo_id"] = $carterass->area_trabajo_id;
@@ -318,7 +345,9 @@ class PoliceEstructure extends Controller
                 }
                 return json_encode($cartera);
             }
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e)
+        {
             return json_encode(abort(500, $e->getMessage()));
         }
     }
@@ -326,18 +355,23 @@ class PoliceEstructure extends Controller
     ///funcion para el sub modulo de Estructura gerencial index no requiere permisos
     public function CarterasEstructuras(Request $request)
     {
-        try {
-            if ($request->autorize == null) {
+        try
+        {
+            if ($request->autorize == null)
+            {
                 $cartera = SkillModels::where('cartera_id', $request->cartera)
                     ->wherenotnull('cartera_id')->orderby('nombre_skill', 'ASC')->get();
 
                 return json_encode($cartera);
-            } else {
+            }
+            else
+            {
                 $cartera = array();
                 $sql = SkillModels::whereIn('cartera_id', $request->cartera)
                     ->wherenotnull('cartera_id')->where('active', 1)->orderby('nombre_skill', 'ASC')->get();
 
-                foreach ($sql as $skills) {
+                foreach ($sql as $skills)
+                {
                     $row["id"] = $skills->id;
                     $row["nombre_skill"] = $skills->nombre_skill . " - " . $skills->RelationCarteras->RelationGerencias->abrev;
                     $row["cartera_id"] = $skills->cartera_id;
@@ -345,7 +379,9 @@ class PoliceEstructure extends Controller
                 }
                 return json_encode($cartera);
             }
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e)
+        {
             return json_encode(abort(500, $e->getMessage()));
         }
     }
@@ -354,11 +390,13 @@ class PoliceEstructure extends Controller
     {
         $rango = array();
 
-        if (!empty($request->skill_id) || !isset($request->skill_id)) {
+        if (!empty($request->skill_id) || !isset($request->skill_id))
+        {
             //BUSCAMOS QUE TIPO DE PERIODO TIENE ESE SKILL
             $skill = SkillModels::where('id', $request->skill_id)->first();
 
-            switch ($skill->tipo_periodo) {
+            switch ($skill->tipo_periodo)
+            {
                 case "Semanal":
                     $array = json_decode($skill->dias);
                     return json_encode([
@@ -410,12 +448,16 @@ class PoliceEstructure extends Controller
     public function store(Request $request, $tipo)
     {
 
-        switch ($tipo) {
+        switch ($tipo)
+        {
             case "gerencias":
                 $array = explode(" ", $request->area_trabajo);
-                if (count($array) === 3 || count($array) > 3) {
+                if (count($array) === 3 || count($array) > 3)
+                {
                     $obs = substr($array[2], 0, 3);
-                } else {
+                }
+                else
+                {
                     $obs = substr($array[1], 0, 3);
                 }
 
@@ -447,7 +489,8 @@ class PoliceEstructure extends Controller
                 $skill->tipo_periodo  = $request->tipo_periodo;
                 $skill->type_format_uploads = json_encode($request->tipo_formato);
 
-                switch ($request->tipo_periodo) {
+                switch ($request->tipo_periodo)
+                {
                     case "Mixto":
 
                         $skill->dias = json_encode($request->dias);
@@ -494,12 +537,16 @@ class PoliceEstructure extends Controller
     public function UpdateEstructura(Request $request, $tipo)
     {
         // dd($request->all());
-        switch ($tipo) {
+        switch ($tipo)
+        {
             case "gerencias":
                 $array = explode(" ", $request->gerenciaedit);
-                if (count($array) === 3 || count($array) > 3) {
+                if (count($array) === 3 || count($array) > 3)
+                {
                     $obs = substr($array[2], 0, 3);
-                } else {
+                }
+                else
+                {
                     $obs = substr($array[1], 0, 3);
                 }
                 $obareas = AreatrabajoModel::find($request->area_trabajo);
@@ -529,7 +576,8 @@ class PoliceEstructure extends Controller
                 $skill->dias = null;
                 $skill->type_format_uploads = json_encode($request->tipo_formato);
 
-                switch ($request->tipo_periodo) {
+                switch ($request->tipo_periodo)
+                {
                     case "Mixto":
 
                         $skill->dias = json_encode($request->dias);
@@ -552,7 +600,8 @@ class PoliceEstructure extends Controller
                         $skill->dias = json_encode($request->dias);
                         $skill->save();
 
-                        if (SkillRangoQuincenal::where('skill_id', $request->skill)->exists()) {
+                        if (SkillRangoQuincenal::where('skill_id', $request->skill)->exists())
+                        {
                             SkillRangoQuincenal::where('skill_id', $request->skill)->delete();
                         }
 
@@ -583,7 +632,8 @@ class PoliceEstructure extends Controller
     public function DeleteCarteras(Request $request)
     {
 
-        switch ($request->sendformdelete) {
+        switch ($request->sendformdelete)
+        {
             case "gerencia":
                 $areas = AreatrabajoModel::findOrFail($request->delgerencia);
                 $carteras = $areas->RelationCarterass()->pluck('id');
@@ -626,7 +676,8 @@ class PoliceEstructure extends Controller
 
         $relacionEloquent = 'roles'; //Nombre de tu relacion con roles en el modelo User
 
-        $usuariosAdmins = User::whereHas($relacionEloquent, function ($query) {
+        $usuariosAdmins = User::whereHas($relacionEloquent, function ($query)
+        {
             return $query->where('slug', 'admin');
         })->pluck('id');
 
@@ -643,7 +694,8 @@ class PoliceEstructure extends Controller
     public function PermisosStore(Request $request)
     {
 
-        foreach ($request->skill as $idskill) {
+        foreach ($request->skill as $idskill)
+        {
             $store = SkillModels::where('id', $idskill)->first();
             $permissions = new PermisosCarteraModel();
             $permissions->area_trabajo_id = $store->RelationCarteras->RelationGerencias->id;
@@ -661,7 +713,8 @@ class PoliceEstructure extends Controller
 
         $carteras = PermisosCarteraModel::where('user_id', $id)->get();
 
-        foreach ($carteras as $ids) {
+        foreach ($carteras as $ids)
+        {
             $perareas[]     = $ids->area_trabajo_id;
             $percarteras[]  = $ids->cartera_id;
             $skills[]       = $ids->skill_id;
@@ -686,9 +739,11 @@ class PoliceEstructure extends Controller
     public function PermisosUpdate(Request $request, $id)
     {
 
-        try {
+        try
+        {
             PermisosCarteraModel::where('user_id', $id)->delete();
-            foreach ($request->skill as $idskill) {
+            foreach ($request->skill as $idskill)
+            {
 
                 $store = SkillModels::where('id', $idskill)->first();
 
@@ -702,7 +757,9 @@ class PoliceEstructure extends Controller
 
             \Session::flash('success', 'los Permisos han sido actualizados correctamente');
             return redirect()->route('estructura.autorizacion.usuarios');
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e)
+        {
 
             \Session::flash('error', $e->getMessage());
             return back();
@@ -722,7 +779,8 @@ class PoliceEstructure extends Controller
         $carteras = PermisosCarteraModel::where('user_id', $request->user)->get();
         $data = array();
 
-        foreach ($carteras as $ids) {
+        foreach ($carteras as $ids)
+        {
             $row["campania"]    = $ids->RelationAreas->nombre_campana;
             $row["cartera"]     = $ids->RelationCarteras->nombre_cartera;
             $row["skill"]       = $ids->Relationskill->nombre_skill;
