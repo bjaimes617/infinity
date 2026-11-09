@@ -460,7 +460,7 @@ class ControlAccesoController extends Controller
             }
             $objempleado->save();
 
-            $this->StoreAutomaticAsistencia($personal);
+           // $this->StoreAutomaticAsistencia($personal);
             //// revisamos la libranza y determinamos si el dia actual corresponde al dia libre de ser asi
             /// 2 para restringir y 1 para continuar
 
