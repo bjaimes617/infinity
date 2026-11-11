@@ -45,6 +45,9 @@ class DispatchDailyQueue extends Command
         if ($this->option('sync'))
         {
             $this->info('[Síncrono] Iniciando ejecución secuencial de jobs diarios...');
+            
+            $this->line('-> Actualizando metricas del personal');
+            dispatch_sync(new Store_data_chats_personal());
 
             $this->line('-> Ejecutando GeneralDailyTasksJob...');
             dispatch_sync(new GeneralDailyTasksJob());
@@ -55,8 +58,6 @@ class DispatchDailyQueue extends Command
             $this->line('-> Ejecutando Store_Data_profit...');
             dispatch_sync(new ProcessDataProfit());
 
-            $this->line('-> Actualizando metricas del personal');
-            dispatch_sync(new Store_data_chats_personal());
 
             $this->info('[Síncrono] Todos los jobs diarios finalizaron.');
             return 0;
@@ -64,11 +65,11 @@ class DispatchDailyQueue extends Command
 
         $this->info('[Cola] Encolando cadena de jobs diarios (Bus::chain)...');
 
-        Bus::chain([
+        Bus::chain([           
             new GeneralDailyTasksJob(),
-            new ProcessDataProfit(),
-            new ProcessAsistenciaExpedientesJob(),
-            new Store_data_chats_personal()
+            new Store_data_chats_personal(),
+            new ProcessDataProfit(),            
+            new ProcessAsistenciaExpedientesJob()            
         ])->dispatch();
 
         $this->info('[Cola] Cadena de jobs encolada exitosamente. Se procesará por el queue worker.');

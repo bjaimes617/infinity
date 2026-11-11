@@ -17,13 +17,12 @@ use App\Models\personal\PersonalModel;
 use App\Models\personal\CarteraModel;
 use App\Models\personal\ChartsPersonalModel;
 
-
-
 use Carbon\Carbon;
+use Exception;
 
 class Store_data_chats_personal implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels ;
 
     /**
      * Create a new job instance.
@@ -34,13 +33,7 @@ class Store_data_chats_personal implements ShouldQueue
 
     public function __construct()
     {
-        $this->ejecutivo = CargoModel::where('nombre_cargo', 'like', 'Ejecutivo%')
-            ->orwhere('nombre_cargo', 'like', 'Team%')
-            ->orwhere('nombre_cargo', 'like', 'Validador%')
-            ->orwhere('nombre_cargo', 'like', 'Back%')
-            ->orwhere('nombre_cargo', 'like', 'Asesor%')
-            ->orwhere('nombre_cargo', 'like', 'Agente%')->pluck('id');
-    }
+       }
 
     /**
      * Execute the job.
@@ -49,6 +42,16 @@ class Store_data_chats_personal implements ShouldQueue
      */
     public function handle()
     {
+    try{
+        Log::info('[Store_data_chats_personal] inicio');
+
+         $this->ejecutivo = CargoModel::where('nombre_cargo', 'like', 'Ejecutivo%')
+            ->orwhere('nombre_cargo', 'like', 'Team%')
+            ->orwhere('nombre_cargo', 'like', 'Validador%')
+            ->orwhere('nombre_cargo', 'like', 'Back%')
+            ->orwhere('nombre_cargo', 'like', 'Asesor%')
+            ->orwhere('nombre_cargo', 'like', 'Agente%')->pluck('id');
+    
         $fechaactual = Carbon::now();
         $mes = $fechaactual->copy()->format('m');
         $anio = $fechaactual->copy()->format('Y');
@@ -91,87 +94,91 @@ class Store_data_chats_personal implements ShouldQueue
 
 
 
-        $totalesCampania = PersonalModel::where('area_trabajo_id', '2')
-            ->wherenotIn('cartera_id', [53])
-            //->wherenotIn('sede_laboral', ['HomeOffice'])
-            ->get()->groupBy('cartera_id')
-            ->map(function ($items) use ($mes, $anio)
-            {
-                $egresadosDelMes = $items->filter(function ($item) use ($mes, $anio)
+            $totalesCampania = PersonalModel::where('area_trabajo_id', '2')
+                ->wherenotIn('cartera_id', [53])
+                //->wherenotIn('sede_laboral', ['HomeOffice'])
+                ->get()->groupBy('cartera_id')
+                ->map(function ($items) use ($mes, $anio)
                 {
-                    if (!$item->fecha_egreso) return false;
-                    $fecha = Carbon::parse($item->fecha_egreso);
-                    return $fecha->month == (int)$mes && $fecha->year == (int)$anio;
-                });
+                    $egresadosDelMes = $items->filter(function ($item) use ($mes, $anio)
+                    {
+                        if (!$item->fecha_egreso) return false;
+                        $fecha = Carbon::parse($item->fecha_egreso);
+                        return $fecha->month == (int)$mes && $fecha->year == (int)$anio;
+                    });
 
-                $ingresosDelmes = $items->filter(function ($item) use ($mes, $anio)
-                {
-                    if (!$item->fecha_ingreso) return false;
-                    $fecha = Carbon::parse($item->fecha_ingreso);
-                    return $fecha->month == (int)$mes && $fecha->year == (int)$anio;
-                });
+                    $ingresosDelmes = $items->filter(function ($item) use ($mes, $anio)
+                    {
+                        if (!$item->fecha_ingreso) return false;
+                        $fecha = Carbon::parse($item->fecha_ingreso);
+                        return $fecha->month == (int)$mes && $fecha->year == (int)$anio;
+                    });
 
-                return [
-                    'total_activos'   => $items->where('estatus_id', 1)->count(),
-                    'total_ingresos'  => $ingresosDelmes->count(),
-                    'total_egresados' => $egresadosDelMes->count(),
-                    // Agrupa y cuenta los motivos de egreso en forma de array asociativo [motivo => total]
-                    'motivos_egreso'  => $egresadosDelMes->whereNotNull('motivo_egreso')
-                        ->groupBy('motivo_egreso')
-                        ->map->count()
-                        ->toArray(),
-                ];
-            })->keyBy(fn($item, $carteraId) => $carteraId);
+                    return [
+                        'total_activos'   => $items->where('estatus_id', 1)->count(),
+                        'total_ingresos'  => $ingresosDelmes->count(),
+                        'total_egresados' => $egresadosDelMes->count(),
+                        // Agrupa y cuenta los motivos de egreso en forma de array asociativo [motivo => total]
+                        'motivos_egreso'  => $egresadosDelMes->whereNotNull('motivo_egreso')
+                            ->groupBy('motivo_egreso')
+                            ->map->count()
+                            ->toArray(),
+                    ];
+                })->keyBy(fn($item, $carteraId) => $carteraId);
 
-        ////validamos inicio de mes
-        $personalInitia = $fechaactual->isSameDay($fechaactual->copy()->startOfMonth());
+            ////validamos inicio de mes
+            $personalInitia = $fechaactual->isSameDay($fechaactual->copy()->startOfMonth());
 
-        foreach ($totalesPorAgentes as $key => $chat)
-        {
-            if (in_array($key, $carterasACtives))
+            foreach ($totalesPorAgentes as $key => $chat)
             {
-                if ($totalesPorAgentes[$key]['total_activos'] == 0)
+                if (in_array($key, $carterasACtives))
+                {
+                    if ($totalesPorAgentes[$key]['total_activos'] == 0)
+                    {
+                        continue;
+                    }
+
+                    $datos = [
+                        'activos'         => $totalesPorAgentes[$key]['total_activos'],
+                        'total_egresos'   => $totalesCampania[$key]['total_egresados'],
+                        'total_ingresos'  => $totalesCampania[$key]['total_ingresos'],
+                        'motivos_egresos' => json_encode($totalesPorAgentes[$key]['motivos_egreso']),
+                        'personal_final'  => $totalesCampania[$key]['total_activos']
+                    ];
+
+                    // Solo se actualiza si es inicio de mes
+                    if ($personalInitia)
+                    {
+                        $datos['personal_inicial'] = $totalesCampania[$key]['total_activos'];
+                    }
+
+                    ChartsPersonalModel::updateOrCreate(
+                        [
+                            'cartera_id'    => $key,
+                            'mes'           => $mes,
+                            'anio'          => $anio
+                        ],
+                        $datos
+                    );
+                }
+                else
                 {
                     continue;
                 }
-
-                $datos = [
-                    'activos'         => $totalesPorAgentes[$key]['total_activos'],
-                    'total_egresos'   => $totalesCampania[$key]['total_egresados'],
-                    'total_ingresos'  => $totalesCampania[$key]['total_ingresos'],
-                    'motivos_egresos' => json_encode($totalesPorAgentes[$key]['motivos_egreso']),
-                    'personal_final'  => $totalesCampania[$key]['total_activos']
-                ];
-
-                // Solo se actualiza si es inicio de mes
-                if ($personalInitia)
-                {
-                    $datos['personal_inicial'] = $totalesCampania[$key]['total_activos'];
-                }
-
-                ChartsPersonalModel::updateOrCreate(
-                    [
-                        'cartera_id'    => $key,
-                        'mes'           => $mes,
-                        'anio'          => $anio
-                    ],
-                    $datos
-                );
             }
-            else
+
+            $validateInit = ChartsPersonalModel::where('mes', $mes)
+                ->where('anio', $anio)
+                ->whereNull('personal_inicial')
+                ->exists();
+
+            if ($validateInit)
             {
-                continue;
+                $this->extractReplicasPersonal($mes, $anio, $carterasACtives);
             }
-        }
-
-        $validateInit = ChartsPersonalModel::where('mes', $mes)
-            ->where('anio', $anio)
-            ->whereNull('personal_inicial')
-            ->exists();
-
-        if ($validateInit)
-        {
-            $this->extractReplicasPersonal($mes, $anio, $carterasACtives);
+        }catch(Exception $e){
+            Log::error('[Store_data_chats_personal] Error al guardar el personal: ' . $e->getMessage());
+            throw $e;
         }
     }
 

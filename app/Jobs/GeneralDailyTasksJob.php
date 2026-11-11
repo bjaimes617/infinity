@@ -41,7 +41,7 @@ class GeneralDailyTasksJob implements ShouldQueue
         Log::info('[GeneralDailyTasksJob] Iniciando tareas generales...');
 
         Artisan::call('infinity:inactivevisitantes');
-        Artisan::call('infinity:convocadoscarteras');
+        Artisan::call('infinity:convocadoscarteras');         
         Artisan::call('infinity:deletevisitantes');
         Artisan::call('infinity:cursosactive');
 

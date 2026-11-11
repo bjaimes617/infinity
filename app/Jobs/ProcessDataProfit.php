@@ -182,9 +182,11 @@ class ProcessDataProfit implements ShouldQueue
             }
             ///---fin foreach nomina---////    
             Log::info('[ProcessDataProfit] RunProfit finalizado exitosamente.');
+            
         } catch (\Exception $e) {
             // Registramos el error con nivel 'error' y detalles adicionales
             Log::error("Error al ejecutar ProcessDataProfit: " . $e->getMessage());
+            throw $e;
         }
     }
     ////Registra el periodo, depende del corte en curso
